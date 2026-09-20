@@ -717,7 +717,7 @@ export const COPY: Record<Lang, Copy> = { es, en, pt };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
-  lang: 'es',
+  lang: 'en',
   setLang: () => {},
 });
 
@@ -727,7 +727,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem('vf-lang');
       if (stored === 'es' || stored === 'en' || stored === 'pt') return stored;
     } catch (e) {}
-    return 'es';
+    return 'en';
   });
   const setLang = (l: Lang) => {
     setLangState(l);
