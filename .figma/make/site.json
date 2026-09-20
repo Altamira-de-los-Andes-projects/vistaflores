@@ -1,0 +1,10 @@
+{
+  "description": "This web application transforms design mockups into responsive, visually appealing websites, ensuring fidelity to original designs while enhancing user experience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
