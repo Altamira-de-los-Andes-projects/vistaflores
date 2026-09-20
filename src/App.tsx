@@ -4,7 +4,7 @@ import { LangProvider, useLang, useT, LANGS, type Lang, type Copy } from './i18n
 type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail';
 type Nav = (p: Page, wineId?: string) => void;
 
-const A = '/assets';
+const A = `${import.meta.env.BASE_URL}assets`;
 
 // Themed replacements for stock images that didn't reference wine/vineyards
 const IMG = {
