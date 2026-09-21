@@ -178,3 +178,68 @@ html { scroll-behavior: smooth; }
     animation: none;
   }
 }
+
+/* ── Terrain map (Leaflet) — elegant, on-brand chrome ───────────────────────── */
+.vf-map { position: relative; z-index: 0; }
+.leaflet-container {
+  background: #14120f;
+  font-family: var(--sans, 'Archivo', system-ui, sans-serif);
+}
+/* Custom vineyard pins */
+.vf-pin { pointer-events: none; }
+.vf-pin__dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 13px;
+  height: 13px;
+  margin: -6.5px 0 0 -6.5px;
+  border-radius: 50%;
+  background: #6b1f2a;
+  border: 2px solid #fdfbf7;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+}
+.vf-pin__label {
+  position: absolute;
+  left: 12px;
+  top: -12px;
+  white-space: nowrap;
+  font-family: 'Cormorant Garamond:Regular', Georgia, serif;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: #fdfbf7;
+  background: rgba(20, 18, 15, 0.62);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(253, 251, 247, 0.18);
+}
+/* Zoom control */
+.leaflet-touch .leaflet-bar,
+.leaflet-bar {
+  border: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.leaflet-bar a,
+.leaflet-touch .leaflet-bar a {
+  background: rgba(20, 18, 15, 0.72);
+  color: #f2ede4;
+  border: none;
+  border-bottom: 1px solid rgba(242, 237, 228, 0.14);
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  font-weight: 400;
+}
+.leaflet-bar a:hover { background: rgba(20, 18, 15, 0.92); color: #fff; }
+.leaflet-bar a:first-child { border-radius: 8px 8px 0 0; }
+.leaflet-bar a:last-child { border-radius: 0 0 8px 8px; border-bottom: none; }
+/* Attribution */
+.leaflet-control-attribution {
+  background: rgba(20, 18, 15, 0.55) !important;
+  color: rgba(242, 237, 228, 0.55) !important;
+  font-size: 9px;
+  padding: 1px 6px;
+}
+.leaflet-control-attribution a { color: rgba(242, 237, 228, 0.8) !important; }

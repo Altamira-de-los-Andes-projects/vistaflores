@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { LangProvider, useLang, useT, LANGS, type Lang, type Copy } from './i18n';
+import { useState, useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail';
 type Nav = (p: Page, wineId?: string) => void;
@@ -844,118 +846,61 @@ function Vinos({ onNav }: { onNav: Nav }) {
   );
 }
 
-// ─── Location map — Argentina + Uco Valley inset (bespoke illustration) ───────
-function smoothClosed(pts: [number, number][]): string {
-  const n = pts.length;
-  let d = '';
-  for (let i = 0; i < n; i++) {
-    const p0 = pts[(i - 1 + n) % n];
-    const p1 = pts[i];
-    const p2 = pts[(i + 1) % n];
-    const p3 = pts[(i + 2) % n];
-    if (i === 0) d += `M ${p1[0]} ${p1[1]} `;
-    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
-    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
-    d += `C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2[0]} ${p2[1]} `;
-  }
-  return d + 'Z';
-}
-
-const AR_POINTS: [number, number][] = [
-  [472, 92], [516, 74], [556, 96], [548, 128], [566, 156], [556, 196], [574, 236],
-  [556, 286], [560, 330], [532, 388], [512, 430], [486, 480], [466, 516], [462, 548],
-  [448, 566], [442, 548], [458, 512], [452, 464], [470, 420], [462, 366], [474, 312],
-  [466, 262], [478, 214], [470, 168], [480, 126],
-];
-const CL_POINTS: [number, number][] = [
-  [456, 110], [448, 175], [452, 245], [444, 315], [452, 385], [442, 455], [450, 510],
-  [432, 560], [424, 574], [452, 545], [476, 470], [468, 405], [482, 345], [472, 285],
-  [484, 225], [474, 175], [486, 130], [470, 112],
-];
-const MZ_POINTS: [number, number][] = [
-  [470, 280], [492, 284], [500, 306], [488, 332], [468, 328], [460, 302],
-];
-const VALLEY_POINTS: [number, number][] = [
-  [150, 322], [162, 320], [172, 360], [168, 418], [156, 430], [146, 400], [144, 356],
-];
-
-function wrapTwo(s: string): [string, string] {
-  const words = s.split(' ');
-  if (words.length < 3) return [s, ''];
-  const mid = Math.ceil(words.length / 2);
-  return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
-}
-
-function LocationMap({ art }: { art: Copy['vinedos']['mapArt'] }) {
-  const serif = "'Cormorant Garamond:Regular', Georgia, serif";
-  const italic = "'Cormorant Garamond:Italic', Georgia, serif";
-  const vy = art.vineyards;
-  return (
-    <svg viewBox="0 0 640 600" className="w-full h-auto" role="img" aria-label={`${art.argentina} · ${art.mendoza} · ${art.valley}`}>
-      <defs>
-        <radialGradient id="circleFill" cx="42%" cy="38%" r="75%">
-          <stop offset="0%" stopColor="#ece3d3" />
-          <stop offset="100%" stopColor="#d2c5af" />
-        </radialGradient>
-      </defs>
-
-      {/* Ocean labels */}
-      <text x="404" y="352" fill="#e8e0d2" opacity="0.5" fontStyle="italic" fontSize="15" textAnchor="middle" style={{ fontFamily: italic }} transform="rotate(-78 404 352)">
-        {art.pacific}
-      </text>
-      <text x="596" y="300" fill="#e8e0d2" opacity="0.5" fontStyle="italic" fontSize="15" textAnchor="middle" style={{ fontFamily: italic }} transform="rotate(-78 596 300)">
-        {art.atlantic}
-      </text>
-
-      {/* Chile + Argentina */}
-      <path d={smoothClosed(CL_POINTS)} fill="#cabda6" stroke="#f2ede4" strokeOpacity="0.4" strokeWidth="1" />
-      <path d={smoothClosed(AR_POINTS)} fill="#d9ccb6" stroke="#f2ede4" strokeOpacity="0.45" strokeWidth="1" />
-      <path d={smoothClosed(MZ_POINTS)} fill="#9d8681" />
-
-      {/* Country labels */}
-      <text x="438" y="292" fill="#efe7d8" fontSize="13" letterSpacing="1" textAnchor="end" style={{ fontFamily: serif }}>{art.chile}</text>
-      <text x="516" y="286" fill="#2e261e" fontSize="14" letterSpacing="1.5" textAnchor="middle" style={{ fontFamily: serif }}>{art.argentina}</text>
-
-      {/* Leader line from Mendoza to the inset */}
-      <line x1="470" y1="308" x2="342" y2="322" stroke="#8a7c64" strokeWidth="1" />
-
-      {/* Uco Valley inset circle */}
-      <circle cx="188" cy="352" r="168" fill="url(#circleFill)" stroke="#f2ede4" strokeOpacity="0.22" strokeWidth="1.5" />
-      <path d={smoothClosed(VALLEY_POINTS)} fill="#b39c92" opacity="0.85" />
-
-      {/* Mendoza city */}
-      <circle cx="208" cy="300" r="4.5" fill="#463b2e" />
-      <text x="208" y="284" fill="#2e261e" fontSize="24" letterSpacing="1.5" textAnchor="middle" style={{ fontFamily: serif }}>{art.mendoza}</text>
-      {/* Uco Valley label */}
-      <text x="214" y="346" fill="#2e261e" fontSize="21" textAnchor="middle" style={{ fontFamily: serif }}>{art.valley}</text>
-
-      {/* Vineyard 1 — Vista Flores (label to the left) */}
-      <circle cx="158" cy="392" r="5" fill="#fdfbf7" stroke="#2a231d" strokeOpacity="0.35" strokeWidth="1.4" />
-      <text x="146" y="388" fill="#3a2f25" fontSize="12.5" fontStyle="italic" textAnchor="end" style={{ fontFamily: italic }}>
-        {wrapTwo(vy[0]).map((ln, i) => (
-          <tspan key={i} x="146" dy={i === 0 ? 0 : 14}>{ln}</tspan>
-        ))}
-      </text>
-
-      {/* Vineyard 2 — La Consulta (label to the right) */}
-      <circle cx="176" cy="380" r="5" fill="#fdfbf7" stroke="#2a231d" strokeOpacity="0.35" strokeWidth="1.4" />
-      <text x="190" y="376" fill="#3a2f25" fontSize="12.5" fontStyle="italic" textAnchor="start" style={{ fontFamily: italic }}>
-        {wrapTwo(vy[1]).map((ln, i) => (
-          <tspan key={i} x="190" dy={i === 0 ? 0 : 14}>{ln}</tspan>
-        ))}
-      </text>
-
-      {/* Vineyard 3 — Altamira (label to the right, lower) */}
-      <circle cx="172" cy="402" r="5" fill="#fdfbf7" stroke="#2a231d" strokeOpacity="0.35" strokeWidth="1.4" />
-      <text x="190" y="418" fill="#3a2f25" fontSize="12.5" fontStyle="italic" textAnchor="start" style={{ fontFamily: italic }}>
-        {wrapTwo(vy[2]).map((ln, i) => (
-          <tspan key={i} x="190" dy={i === 0 ? 0 : 14}>{ln}</tspan>
-        ))}
-      </text>
-    </svg>
-  );
+// ─── Terrain map — real relief tiles (Leaflet + OpenTopoMap) ──────────────────
+function TerrainMap() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const pins = [
+      { name: 'Vista Flores', lat: -33.68, lon: -69.13 },
+      { name: 'La Consulta', lat: -33.76, lon: -69.07 },
+      { name: 'Altamira', lat: -33.79, lon: -69.13 },
+    ];
+    const map = L.map(el, {
+      scrollWheelZoom: false,
+      zoomControl: false,
+      attributionControl: true,
+      minZoom: 8,
+      maxZoom: 16,
+    });
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    // Real satellite imagery — the irrigated vineyards read as green against the
+    // arid Andes foothills (a cultivated oasis, not an empty desert).
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Imagery © Esri · Maxar · Earthstar Geographics', maxZoom: 18 }
+    ).addTo(map);
+    // Subtle place/road labels for orientation (towns, routes — shows it is farmland).
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '', maxZoom: 18, opacity: 0.9 }
+    ).addTo(map);
+    pins.forEach((p) => {
+      const icon = L.divIcon({
+        className: 'vf-pin',
+        html: `<span class="vf-pin__dot"></span><span class="vf-pin__label">${p.name}</span>`,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      });
+      L.marker([p.lat, p.lon], { icon }).addTo(map);
+    });
+    // Frame the cultivated valley so the geometric green vineyard parcels fill the
+    // view (clearly farmland, not desert) with the three estates spread across it.
+    map.fitBounds(
+      L.latLngBounds([
+        [-33.61, -69.2],
+        [-33.86, -68.99],
+      ]),
+      { padding: [8, 8] }
+    );
+    const timer = setTimeout(() => map.invalidateSize(), 120);
+    return () => {
+      clearTimeout(timer);
+      map.remove();
+    };
+  }, []);
+  return <div ref={ref} className="vf-map h-[clamp(380px,46vw,560px)] w-full" />;
 }
 
 // ─── VIÑEDOS ──────────────────────────────────────────────────────────────────
@@ -1038,8 +983,8 @@ function Vinedos() {
               ))}
             </div>
           </div>
-          <div className="reveal reveal-d1">
-            <LocationMap art={t.vinedos.mapArt} />
+          <div className="reveal reveal-d1 overflow-hidden rounded-[14px] border border-on-dark/[0.14] shadow-[0_20px_60px_-24px_rgba(0,0,0,0.7)]">
+            <TerrainMap />
           </div>
         </div>
       </section>
