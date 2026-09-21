@@ -861,9 +861,9 @@ function Vinos({ onNav }: { onNav: Nav }) {
         </div>
       </section>
 
-      <div className="border-b border-ink/[0.12] flex items-center gap-[26px] px-5 sm:px-8 lg:px-12 py-[26px]">
+      <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-5 gap-y-3 px-5 sm:px-8 lg:px-12 py-5 lg:py-[26px]">
         <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.45]">{t.vinos.filterLabel}</span>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {(['TODOS', 'ALTAMIRA', 'VAV', 'BLENDS'] as const).map((f) => (
             <button
               key={f}
