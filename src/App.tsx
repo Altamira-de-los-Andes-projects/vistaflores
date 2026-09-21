@@ -113,6 +113,16 @@ const MoonIcon = () => (
     <path d="M20 14.6A8 8 0 0 1 9.4 4 6.6 6.6 0 1 0 20 14.6z" />
   </svg>
 );
+const MenuIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+);
+const CloseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
 
 // ─── Signature motif: altitude / topographic contour lines ────────────────────
 // Generated smooth elevation curves — the quiet visual thread unique to the
@@ -217,7 +227,7 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
 function Breath({ label, pre, em, post }: { label: string; pre: string; em: string; post: string }) {
   useReveal();
   return (
-    <section className="relative overflow-hidden bg-surface px-12 py-[clamp(84px,13vh,158px)]">
+    <section className="relative overflow-hidden bg-surface px-5 sm:px-8 lg:px-12 py-[clamp(84px,13vh,158px)]">
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-ink">
         <Contours className="h-full w-full" lines={8} seed={5} opacity={0.06} />
       </div>
@@ -243,6 +253,11 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
   const { theme, toggle } = useTheme();
   const { lang, setLang } = useLang();
   const t = useT();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const go = (p: Page) => {
+    setMenuOpen(false);
+    onNav(p);
+  };
   const navItems: [Page, string][] = [
     ['home', t.nav.home],
     ['vinos', t.nav.vinos],
@@ -252,7 +267,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
   ];
   return (
     <header
-      className={`z-50 flex items-center justify-between px-12 py-5 ${
+      className={`z-50 flex items-center justify-between px-5 sm:px-8 lg:px-12 py-5 ${
         isHome
           ? 'absolute top-0 left-0 right-0 bg-gradient-to-b from-[rgba(20,18,15,0.55)] via-[rgba(20,18,15,0.18)] to-transparent'
           : 'sticky top-0 bg-surface border-b border-ink/[0.09]'
@@ -275,7 +290,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
         </span>
       </button>
 
-      <nav className="flex gap-[30px] items-center">
+      <nav className="hidden lg:flex gap-[30px] items-center">
         {navItems.map(([p, label]) => {
           const active = page === p || (page === 'wine-detail' && p === 'vinos');
           return (
@@ -299,8 +314,8 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
         })}
       </nav>
 
-      <div className="flex items-center gap-4">
-        <div className="flex gap-0.5 items-center">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className="hidden lg:flex gap-0.5 items-center">
           {LANGS.map((code, i) => {
             const activeLang = code === lang;
             return (
@@ -329,7 +344,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
           })}
         </div>
 
-        <span className={`w-px h-[16px] ${isHome ? 'bg-white/30' : 'bg-ink/[0.15]'}`} />
+        <span className={`hidden lg:block w-px h-[16px] ${isHome ? 'bg-white/30' : 'bg-ink/[0.15]'}`} />
 
         <button
           onClick={toggle}
@@ -343,7 +358,50 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
         >
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </button>
+
+        <button
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-expanded={menuOpen}
+          className={`lg:hidden grid place-items-center size-[34px] ${isHome ? 'text-white' : 'text-ink'}`}
+        >
+          {menuOpen ? <CloseIcon /> : <MenuIcon />}
+        </button>
       </div>
+
+      {menuOpen && (
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-surface border-t border-b border-ink/[0.1] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.45)] px-5 sm:px-8 pt-2 pb-5 flex flex-col">
+          {navItems.map(([p, label]) => {
+            const active = page === p || (page === 'wine-detail' && p === 'vinos');
+            return (
+              <button
+                key={p}
+                onClick={() => go(p)}
+                className={`text-left font-['Cormorant_Garamond:Regular'] text-[24px] py-3 border-b border-ink/[0.08] transition-colors ${
+                  active ? 'text-ink' : 'text-ink/[0.65]'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+          <div className="flex gap-1.5 items-center pt-4">
+            {LANGS.map((code) => (
+              <button
+                key={code}
+                onClick={() => setLang(code as Lang)}
+                aria-current={code === lang ? 'true' : undefined}
+                aria-label={t.a11y.langOf(code.toUpperCase())}
+                className={`font-['IBM_Plex_Mono:Medium'] text-[11px] tracking-[1px] px-3 py-2 rounded transition-colors ${
+                  code === lang ? 'text-ink border border-ink/[0.3]' : 'text-ink/[0.45] border border-transparent'
+                }`}
+              >
+                {code.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
@@ -353,7 +411,7 @@ function Footer({ onNav }: { onNav: Nav }) {
   const t = useT();
   return (
     <footer className="bg-accent-solid">
-      <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-[50px] px-12 pt-20 pb-10">
+      <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-[50px] px-5 sm:px-8 lg:px-12 pt-20 pb-10">
         <div className="flex flex-col gap-[19px]">
           <div className="flex flex-col items-start leading-none text-on-dark">
             <span className="font-['Cormorant_Garamond:Regular'] text-[34px] leading-[0.95] tracking-[0.1em]">
@@ -435,7 +493,7 @@ function Footer({ onNav }: { onNav: Nav }) {
         </div>
       </div>
 
-      <div className="border-t border-on-dark/[0.2] flex items-center justify-between px-12 pt-[23px] pb-[34px]">
+      <div className="border-t border-on-dark/[0.2] flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 pt-[23px] pb-[34px]">
         <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
           {t.footer.copyright}
         </span>
@@ -485,15 +543,15 @@ function Home({ onNav }: { onNav: Nav }) {
             }}
           />
         </div>
-        <div className="absolute bottom-[103px] left-12 max-w-[760px]">
+        <div className="absolute bottom-[103px] left-5 sm:left-8 lg:left-12 max-w-[760px]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-white/80 hero-line-1">
             {t.home.heroEyebrow}
           </p>
           <div className="mt-5">
-            <p className="font-['Cormorant_Garamond:Light_Italic'] text-[clamp(44px,5vw,64px)] text-on-dark leading-[1.04] hero-line-2">
+            <p className="font-['Cormorant_Garamond:Light_Italic'] text-[clamp(34px,7vw,64px)] text-on-dark leading-[1.04] hero-line-2">
               {t.home.heroTitle1}
             </p>
-            <p className="font-['Cormorant_Garamond:Light'] text-[clamp(44px,5vw,64px)] text-on-dark leading-[1.04] hero-line-3">
+            <p className="font-['Cormorant_Garamond:Light'] text-[clamp(34px,7vw,64px)] text-on-dark leading-[1.04] hero-line-3">
               {t.home.heroTitle2}
             </p>
           </div>
@@ -511,7 +569,7 @@ function Home({ onNav }: { onNav: Nav }) {
             {t.home.heroCta}
           </button>
         </div>
-        <div className="absolute bottom-[38px] left-12 flex items-center gap-4">
+        <div className="absolute bottom-[38px] left-5 sm:left-8 lg:left-12 flex items-center gap-4">
           <div className="border border-on-dark/[0.5] rounded-full size-[32px] flex items-center justify-center">
             <span className="text-on-dark/[0.85] text-[12px]">↓</span>
           </div>
@@ -525,7 +583,7 @@ function Home({ onNav }: { onNav: Nav }) {
       <Breath label={t.home.breathLabel} pre={t.home.breathPre} em={t.home.breathEm} post={t.home.breathPost} />
 
       {/* "Vinos únicos" split section */}
-      <section className="grid grid-cols-[1fr_1.3fr] gap-[70px] px-12 py-[110px]">
+      <section className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-[70px] px-5 sm:px-8 lg:px-12 py-16 lg:py-[110px]">
         <div className="flex flex-col gap-[22px]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">
             {t.home.estateEyebrow}
@@ -539,7 +597,7 @@ function Home({ onNav }: { onNav: Nav }) {
             <img src={`${A}/c3bec.png`} alt={t.home.estateEyebrow} className="w-full h-full object-cover" />
           </div>
         </div>
-        <div className="flex flex-col justify-center pt-[147px]">
+        <div className="flex flex-col justify-center lg:pt-[147px]">
           <p
             className="font-['Archivo:Light'] text-[clamp(16px,1.5vw,20px)] text-ink/[0.86] leading-[1.72] reveal reveal-d1"
             style={{ fontVariationSettings: '"wdth" 100' }}
@@ -573,7 +631,7 @@ function Home({ onNav }: { onNav: Nav }) {
 
       {/* Vineyards dark section */}
       <section className="bg-panel">
-        <div className="flex gap-[60px] items-end justify-center px-12 pt-[100px] pb-16">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:gap-[60px] justify-center px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[100px] pb-16">
           <div className="flex flex-col gap-[21px] max-w-[562px]">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5] reveal">
               {t.home.vyEyebrow}
@@ -599,14 +657,14 @@ function Home({ onNav }: { onNav: Nav }) {
           return (
             <div
               key={vyd.num}
-              className={`border-t border-on-dark/[0.14] grid ${imgLeft ? 'grid-cols-[1.12fr_1fr]' : 'grid-cols-[1fr_1.12fr]'}`}
+              className={`border-t border-on-dark/[0.14] grid ${imgLeft ? 'grid-cols-1 lg:grid-cols-[1.12fr_1fr]' : 'grid-cols-1 lg:grid-cols-[1fr_1.12fr]'}`}
             >
               {imgLeft && (
                 <div className="overflow-hidden" style={{ aspectRatio: '676/520' }}>
                   <img src={img} alt={vyd.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                 </div>
               )}
-              <div className={`flex flex-col gap-6 justify-center py-[98px] px-[55px] reveal ${imgLeft ? 'border-l border-on-dark/[0.14]' : ''}`}>
+              <div className={`flex flex-col gap-6 justify-center py-14 px-6 lg:py-[98px] lg:px-[55px] reveal ${imgLeft ? 'border-l border-on-dark/[0.14]' : ''}`}>
                 <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{vyd.num}</p>
                 <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[38px] text-on-dark leading-[42.56px]">
                   {vyd.name}
@@ -640,7 +698,7 @@ function Home({ onNav }: { onNav: Nav }) {
         })}
 
         {/* Stats band — oversized serif numerals over the altitude motif */}
-        <div className="relative overflow-hidden border-t border-on-dark/[0.14] px-12 pt-[84px] pb-[100px]">
+        <div className="relative overflow-hidden border-t border-on-dark/[0.14] px-5 sm:px-8 lg:px-12 pt-[84px] pb-16 lg:pb-[100px]">
           <div className="pointer-events-none absolute inset-0 text-on-dark">
             <Contours className="h-full w-full" lines={10} seed={7} opacity={0.07} />
           </div>
@@ -650,17 +708,17 @@ function Home({ onNav }: { onNav: Nav }) {
           >
             {t.home.statsIntro}
           </p>
-          <div className="relative mt-[68px] grid grid-cols-4 reveal reveal-d1">
+          <div className="relative mt-[68px] grid grid-cols-2 md:grid-cols-4 reveal reveal-d1">
             {t.home.stats.map((s, i) => (
               <div
                 key={s.label}
-                className={`flex flex-col gap-[18px] px-9 ${i > 0 ? 'border-l border-on-dark/[0.16]' : 'pl-0'}`}
+                className={`flex flex-col gap-[18px] px-4 sm:px-9 ${i > 0 ? 'border-l border-on-dark/[0.16]' : 'pl-0'}`}
               >
                 <span className="flex items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.6px] text-on-dark/[0.55]">
                   <span className="h-px w-4 bg-accent" />
                   {s.label}
                 </span>
-                <span className="font-['Cormorant_Garamond:Light'] text-[clamp(46px,5.2vw,80px)] leading-[0.86] tracking-[-0.01em] text-on-dark">
+                <span className="font-['Cormorant_Garamond:Light'] text-[clamp(38px,8vw,80px)] leading-[0.86] tracking-[-0.01em] text-on-dark">
                   {s.num}
                 </span>
                 <span className="font-['Cormorant_Garamond:Italic'] italic text-[15px] text-on-dark/[0.6]">
@@ -673,18 +731,18 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* Wines section */}
-      <section className="px-12 pt-[110px] pb-10">
-        <div className="flex items-end justify-between mb-11">
+      <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-11">
           <div className="flex flex-col gap-[19px]">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.home.winesEyebrow}</p>
-            <h2 className="font-['Cormorant_Garamond:Light'] text-[44px] text-ink leading-[49.28px] reveal reveal-d1">{t.home.winesTitle}</h2>
+            <h2 className="font-['Cormorant_Garamond:Light'] text-[30px] sm:text-[38px] lg:text-[44px] text-ink leading-[1.12] lg:leading-[49.28px] reveal reveal-d1">{t.home.winesTitle}</h2>
           </div>
           <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[25.2px] max-w-[380px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
             {t.home.winesPara}
           </p>
         </div>
 
-        <div className="flex gap-px bg-ink/[0.13] border-t border-b border-ink/[0.13]">
+        <div className="flex flex-col lg:flex-row gap-px bg-ink/[0.13] border-t border-b border-ink/[0.13]">
           {t.home.wines.map((wine, i) => (
             <button
               key={wine.name}
@@ -722,7 +780,7 @@ function Home({ onNav }: { onNav: Nav }) {
           <img src={`${A}/1aa54.png`} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
         </div>
-        <div className="relative text-center px-16 max-w-[860px] reveal">
+        <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[860px] reveal">
           <p className="font-['Playfair_Display:Bold_Italic'] font-bold italic text-[34px] text-on-dark leading-[48.28px]">
             {t.home.quote}
           </p>
@@ -733,26 +791,26 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* Awards */}
-      <section className="px-12 pt-[110px] pb-10">
+      <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
         <div className="flex flex-col gap-[23px] items-center text-center mb-[27px] reveal">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.awardsEyebrow}</p>
-          <h2 className="font-['Cormorant_Garamond:Light'] text-[40px] text-ink leading-[45.6px]">{t.home.awardsTitle}</h2>
+          <h2 className="font-['Cormorant_Garamond:Light'] text-[28px] sm:text-[34px] lg:text-[40px] text-ink leading-[1.14] lg:leading-[45.6px]">{t.home.awardsTitle}</h2>
         </div>
         <div className="flex gap-6 justify-center flex-wrap">
           {HOME_AWARD_IMGS.map((src, i) => (
-            <div key={i} className={`border border-ink/[0.16] rounded-full size-[177px] flex items-center justify-center reveal reveal-d${(i % 5) + 1}`}>
-              <img src={src} alt={t.home.awardAlt} className="size-[120px] object-contain" />
+            <div key={i} className={`border border-ink/[0.16] rounded-full size-[130px] sm:size-[177px] flex items-center justify-center reveal reveal-d${(i % 5) + 1}`}>
+              <img src={src} alt={t.home.awardAlt} className="size-[88px] sm:size-[120px] object-contain" />
             </div>
           ))}
         </div>
       </section>
 
       {/* News section */}
-      <section className="bg-surface-2 border-t border-ink/[0.1] px-12 pt-[101px] pb-[100px] mt-16">
-        <div className="flex items-end justify-between mb-12">
+      <section className="bg-surface-2 border-t border-ink/[0.1] px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[101px] pb-16 lg:pb-[100px] mt-16">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div className="flex flex-col gap-[18px]">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.home.newsEyebrow}</p>
-            <h2 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[44px] text-ink leading-[49.28px] reveal reveal-d1">{t.home.newsTitle}</h2>
+            <h2 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[30px] sm:text-[38px] lg:text-[44px] text-ink leading-[1.12] lg:leading-[49.28px] reveal reveal-d1">{t.home.newsTitle}</h2>
             <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.68] leading-[25.2px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
               {t.home.newsPara}
             </p>
@@ -761,7 +819,7 @@ function Home({ onNav }: { onNav: Nav }) {
             {t.home.seeMoreNews}
           </button>
         </div>
-        <div className="flex gap-10">
+        <div className="flex flex-col md:flex-row gap-10">
           {t.home.news.map((article, i) => (
             <button key={article.title} className={`flex-1 flex flex-col gap-[17px] cursor-pointer reveal reveal-d${i + 1} text-left`} onClick={() => onNav('novedades')}>
               <div className="overflow-hidden h-[382px]">
@@ -794,16 +852,16 @@ function Vinos({ onNav }: { onNav: Nav }) {
       <section className="relative h-[340px] overflow-hidden flex items-center">
         <img src={`${A}/7755d.png`} alt="" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0 bg-[rgba(20,18,15,0.5)]" />
-        <div className="relative px-12 flex flex-col gap-4">
+        <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.7] hero-line-1">{t.vinos.heroEyebrow}</p>
-          <h1 className="font-['Cormorant_Garamond:Light'] text-[52px] text-on-dark leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
+          <h1 className="font-['Cormorant_Garamond:Light'] text-[34px] sm:text-[44px] lg:text-[52px] text-on-dark leading-[1.12] lg:leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
           <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.8] leading-[25.2px] max-w-[520px] hero-line-3" style={{ fontVariationSettings: '"wdth" 100' }}>
             {t.vinos.heroPara}
           </p>
         </div>
       </section>
 
-      <div className="border-b border-ink/[0.12] flex items-center gap-[26px] px-12 py-[26px]">
+      <div className="border-b border-ink/[0.12] flex items-center gap-[26px] px-5 sm:px-8 lg:px-12 py-[26px]">
         <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.45]">{t.vinos.filterLabel}</span>
         <div className="flex gap-2">
           {(['TODOS', 'ALTAMIRA', 'VAV', 'BLENDS'] as const).map((f) => (
@@ -824,7 +882,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
         <span className="ml-auto font-['IBM_Plex_Mono:Regular'] text-[10.5px] text-ink/[0.45]">{filtered.length.toString().padStart(2, '0')}</span>
       </div>
 
-      <div className="grid grid-cols-3 gap-px bg-ink/[0.13]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-ink/[0.13]">
         {filtered.map((wine, i) => (
           <button
             key={wine.id}
@@ -914,9 +972,9 @@ function Vinedos() {
           <img src={IMG.vinedosHero} alt="" className="absolute inset-0 size-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.25)] to-[rgba(20,18,15,0.62)]" />
         </div>
-        <div className="relative px-12 pb-14 flex flex-col gap-[18px]">
+        <div className="relative px-5 sm:px-8 lg:px-12 pb-14 flex flex-col gap-[18px]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.72] hero-line-1">{t.vinedos.heroEyebrow}</p>
-          <h1 className="font-['Cormorant_Garamond:Light'] text-[54px] text-on-dark leading-[59.4px] max-w-[760px] hero-line-2">
+          <h1 className="font-['Cormorant_Garamond:Light'] text-[36px] sm:text-[44px] lg:text-[54px] text-on-dark leading-[1.1] lg:leading-[59.4px] max-w-[760px] hero-line-2">
             {t.vinedos.heroTitle1}
             <br />
             {t.vinedos.heroTitle2}
@@ -924,7 +982,7 @@ function Vinedos() {
         </div>
       </section>
 
-      <section className="border-b border-ink/[0.12] grid grid-cols-[1.4fr_1fr] gap-[60px] px-12 py-20">
+      <section className="border-b border-ink/[0.12] grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-[60px] px-5 sm:px-8 lg:px-12 py-20">
         <p className="font-['Archivo:Light'] text-[22px] text-ink/[0.84] leading-[37.84px] reveal" style={{ fontVariationSettings: '"wdth" 100' }}>
           {t.vinedos.intro1}
         </p>
@@ -933,7 +991,7 @@ function Vinedos() {
         </p>
       </section>
 
-      <section className="flex gap-px bg-ink/[0.13]">
+      <section className="flex flex-col lg:flex-row gap-px bg-ink/[0.13]">
         {t.vinedos.cards.map((v, i) => (
           <article key={v.num} className={`bg-surface flex-1 flex flex-col reveal reveal-d${i + 1}`}>
             <div className="overflow-hidden" style={{ aspectRatio: '426/532' }}>
@@ -959,11 +1017,11 @@ function Vinedos() {
       </section>
 
       {/* Map — bespoke location illustration (Argentina + Uco Valley inset) */}
-      <section className="relative overflow-hidden bg-panel px-12 py-[clamp(70px,9vw,120px)]">
+      <section className="relative overflow-hidden bg-panel px-5 sm:px-8 lg:px-12 py-[clamp(70px,9vw,120px)]">
         <div className="pointer-events-none absolute inset-0 text-on-dark">
           <Contours className="h-full w-full" lines={9} seed={4} opacity={0.05} />
         </div>
-        <div className="relative mx-auto grid max-w-[1180px] grid-cols-[0.82fr_1.18fr] gap-[50px] items-center">
+        <div className="relative mx-auto grid max-w-[1180px] grid-cols-1 lg:grid-cols-[0.82fr_1.18fr] gap-[50px] items-center">
           <div className="flex flex-col gap-5 reveal">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.vinedos.mapLabel}</p>
             <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(30px,3.4vw,44px)] text-on-dark leading-[1.1]">
@@ -998,17 +1056,17 @@ function Novedades() {
   const t = useT();
   return (
     <div className="bg-surface w-full">
-      <section className="border-b border-ink/[0.12] flex items-end justify-between px-12 pt-20 pb-[51px]">
+      <section className="border-b border-ink/[0.12] flex flex-col md:flex-row md:items-end md:justify-between gap-5 px-5 sm:px-8 lg:px-12 pt-20 pb-[51px]">
         <div className="flex flex-col gap-[18px]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.novedades.eyebrow}</p>
-          <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[50px] text-ink leading-[55px] reveal reveal-d1">{t.novedades.title}</h1>
+          <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[34px] sm:text-[42px] lg:text-[50px] text-ink leading-[1.1] lg:leading-[55px] reveal reveal-d1">{t.novedades.title}</h1>
         </div>
         <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.68] leading-[25.2px] max-w-[420px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
           {t.novedades.para}
         </p>
       </section>
 
-      <section className="border-b border-ink/[0.12] grid grid-cols-[1.25fr_1fr] gap-[50px] px-12 pt-[60px] pb-[41px]">
+      <section className="border-b border-ink/[0.12] grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-[50px] px-5 sm:px-8 lg:px-12 pt-[60px] pb-[41px]">
         <div className="overflow-hidden reveal" style={{ aspectRatio: '630/394' }}>
           <img src={IMG.vinexpo} alt={t.novedades.featured.title1} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
         </div>
@@ -1026,7 +1084,7 @@ function Novedades() {
         </div>
       </section>
 
-      <section className="flex gap-[34px] px-12 pt-10 pb-[90px]">
+      <section className="flex flex-col md:flex-row gap-[34px] px-5 sm:px-8 lg:px-12 pt-10 pb-[90px]">
         {t.novedades.articles.map((a, i) => (
           <article key={a.title} className={`flex-1 flex flex-col gap-[15px] cursor-pointer reveal reveal-d${i + 1}`}>
             <div className="overflow-hidden" style={{ aspectRatio: '372/248' }}>
@@ -1058,12 +1116,12 @@ function Contacto() {
   ];
   return (
     <div className="bg-surface w-full">
-      <div className="flex min-h-[calc(100vh-72px)]">
+      <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-72px)]">
         {/* Form left */}
-        <div className="flex-1 py-20 px-14 flex flex-col">
+        <div className="flex-1 py-20 px-5 sm:px-9 lg:px-14 flex flex-col">
           <div className="flex flex-col gap-[18px] mb-[25px] reveal">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.contacto.eyebrow}</p>
-            <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[46px] text-ink leading-[50.6px]">{t.contacto.title}</h1>
+            <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[46px] text-ink leading-[1.1] lg:leading-[50.6px]">{t.contacto.title}</h1>
           </div>
           <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.7] leading-[25.9px] mb-8 reveal reveal-d1" style={{ fontVariationSettings: '"wdth" 100' }}>
             {t.contacto.intro1}<br />
@@ -1098,7 +1156,7 @@ function Contacto() {
         </div>
 
         {/* Image right */}
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative overflow-hidden min-h-[440px] lg:min-h-0">
           <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.1)] to-[rgba(20,18,15,0.6)]" />
           <div className="absolute bottom-0 left-0 right-0 grid grid-cols-2 gap-x-[26px] gap-y-8 p-11">
@@ -1130,7 +1188,7 @@ function Contacto() {
         </div>
       </div>
 
-      <div className="bg-accent-solid flex items-center justify-between px-12 py-[34px]">
+      <div className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
         <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>
         <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>
       </div>
@@ -1147,28 +1205,28 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
   return (
     <div className="bg-surface w-full">
       {/* Breadcrumb */}
-      <div className="border-b border-ink/[0.09] px-12 py-[18px]">
+      <div className="border-b border-ink/[0.09] px-5 sm:px-8 lg:px-12 py-[18px]">
         <p className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1px] text-ink/[0.45]">
           {t.nav.vinos} › {wine.region}
         </p>
       </div>
 
       {/* Split: dark left / light right */}
-      <section className="flex min-h-[700px]">
-        <div className="bg-panel w-[45%] flex items-center justify-center relative overflow-hidden">
+      <section className="flex flex-col lg:flex-row lg:min-h-[700px]">
+        <div className="bg-panel w-full lg:w-[45%] flex items-center justify-center relative overflow-hidden min-h-[420px] lg:min-h-0">
           <div className="absolute inset-0 opacity-[0.32]">
             <img src={`${A}/e17ef.png`} alt="" className="size-full object-cover" />
           </div>
           <div className="relative py-16 reveal">
-            <img src={WINE_META[wine.id].img} alt={`${wine.title1} ${wine.title2}`} className="h-[620px] object-contain hover:scale-105 transition-transform duration-700" />
+            <img src={WINE_META[wine.id].img} alt={`${wine.title1} ${wine.title2}`} className="h-[420px] lg:h-[620px] object-contain hover:scale-105 transition-transform duration-700" />
           </div>
         </div>
 
-        <div className="flex-1 py-[60px] px-[60px] flex flex-col justify-center reveal reveal-d1">
+        <div className="flex-1 py-12 px-6 lg:py-[60px] lg:px-[60px] flex flex-col justify-center reveal reveal-d1">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] mb-5">{wine.region}</p>
           <div className="mb-8">
-            <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[48px] text-ink leading-[52.8px]">{wine.title1}</p>
-            <p className="font-['Cormorant_Garamond:Light'] text-[48px] text-ink leading-[52.8px]">{wine.title2}</p>
+            <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[48px] text-ink leading-[1.1] lg:leading-[52.8px]">{wine.title1}</p>
+            <p className="font-['Cormorant_Garamond:Light'] text-[32px] sm:text-[40px] lg:text-[48px] text-ink leading-[1.1] lg:leading-[52.8px]">{wine.title2}</p>
           </div>
           <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[27.75px] max-w-prose mb-8" style={{ fontVariationSettings: '"wdth" 100' }}>
             {wine.desc}
@@ -1212,9 +1270,9 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
       </section>
 
       {/* Tasting notes */}
-      <section className="bg-surface-2 px-12 py-[90px]">
+      <section className="bg-surface-2 px-5 sm:px-8 lg:px-12 py-[90px]">
         <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] text-center mb-11 reveal">{t.wineDetail.notesLabel}</p>
-        <div className="flex gap-px bg-ink/[0.14] reveal reveal-d1">
+        <div className="flex flex-col md:flex-row gap-px bg-ink/[0.14] reveal reveal-d1">
           {wine.notes.map((note) => (
             <div key={note.label} className="bg-surface-2 flex-1 flex flex-col gap-4 px-[30px] pt-[33px] pb-[66px]">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.53px] text-ink/[0.5]">{note.label}</p>
@@ -1225,7 +1283,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
       </section>
 
       {/* Vineyard CTA */}
-      <section className="bg-panel flex items-center min-h-[400px] px-[60px] py-[60px] reveal">
+      <section className="bg-panel flex items-center min-h-[400px] px-6 py-14 lg:px-[60px] lg:py-[60px] reveal">
         <div className="flex flex-col gap-6 max-w-[600px]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.wineDetail.vyEyebrow}</p>
           <h3 className="font-['Cormorant_Garamond:Light'] text-[34px] text-on-dark leading-[38.76px]">{t.wineDetail.vyTitle}</h3>
@@ -1243,8 +1301,8 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
       </section>
 
       {/* Other wines */}
-      <section className="px-12 pt-20 pb-[90px]">
-        <div className="flex items-end justify-between mb-[34px]">
+      <section className="px-5 sm:px-8 lg:px-12 pt-20 pb-[90px]">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-[34px]">
           <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] text-ink leading-[35.2px] reveal">{t.wineDetail.otherWines}</h3>
           <button
             onClick={() => onNav('vinos')}
@@ -1254,7 +1312,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
             {t.wineDetail.seeAllWines}
           </button>
         </div>
-        <div className="flex gap-[30px]">
+        <div className="flex flex-col md:flex-row gap-[30px]">
           {others.map((w, i) => (
             <button
               key={w.id}
@@ -1336,7 +1394,7 @@ function Site() {
 function FooterBar() {
   const t = useT();
   return (
-    <footer className="bg-accent-solid flex items-center justify-between px-12 py-[34px]">
+    <footer className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
       <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>
       <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>
     </footer>
