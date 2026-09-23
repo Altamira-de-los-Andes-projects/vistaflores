@@ -189,8 +189,8 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
       </div>
       <div className="relative flex max-w-[560px] flex-col items-center gap-8 text-center">
         <div className="flex flex-col items-center leading-none">
-          <span className="font-['Cormorant_Garamond:Regular'] text-[clamp(34px,6vw,54px)] tracking-[0.12em]">
-            VISTA FLORES
+          <span className="font-['Cormorant_Garamond:Regular'] text-[clamp(26px,5.4vw,44px)] tracking-[0.1em] leading-[1.08]">
+            ALTAMIRA DE LOS ANDES
           </span>
           <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.5em] text-on-dark/70">
             ESTATE · MENDOZA
@@ -275,11 +275,11 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     >
       <button
         onClick={() => onNav('home')}
-        aria-label="Vista Flores Estate"
+        aria-label="Altamira de los Andes Estate"
         className={`group flex flex-col items-start shrink-0 leading-none ${isHome ? 'text-white' : 'text-ink'}`}
       >
-        <span className="font-['Cormorant_Garamond:Regular'] text-[23px] leading-[0.95] tracking-[0.14em]">
-          VISTA FLORES
+        <span className="font-['Cormorant_Garamond:Regular'] text-[15px] sm:text-[18px] lg:text-[22px] leading-[1] tracking-[0.09em] lg:tracking-[0.12em] whitespace-nowrap">
+          ALTAMIRA DE LOS ANDES
         </span>
         <span
           className={`font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.44em] mt-[7px] pl-px transition-opacity group-hover:opacity-100 ${
@@ -414,8 +414,8 @@ function Footer({ onNav }: { onNav: Nav }) {
       <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-[50px] px-5 sm:px-8 lg:px-12 pt-20 pb-10">
         <div className="flex flex-col gap-[19px]">
           <div className="flex flex-col items-start leading-none text-on-dark">
-            <span className="font-['Cormorant_Garamond:Regular'] text-[34px] leading-[0.95] tracking-[0.1em]">
-              VISTA FLORES
+            <span className="font-['Cormorant_Garamond:Regular'] text-[26px] sm:text-[30px] leading-[1.05] tracking-[0.06em]">
+              ALTAMIRA DE LOS ANDES
             </span>
             <span className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.42em] mt-[10px] pl-px text-on-dark/[0.7]">
               ESTATE · MENDOZA
@@ -911,7 +911,7 @@ function TerrainMap() {
     const el = ref.current;
     if (!el) return;
     const pins = [
-      { name: 'Vista Flores', lat: -33.68, lon: -69.13 },
+      { name: 'Altamira de los Andes', lat: -33.68, lon: -69.13 },
       { name: 'La Consulta', lat: -33.76, lon: -69.07 },
       { name: 'Altamira', lat: -33.79, lon: -69.13 },
     ];
