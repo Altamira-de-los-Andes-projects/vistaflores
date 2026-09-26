@@ -529,7 +529,7 @@ function Home({ onNav }: { onNav: Nav }) {
         <div className="absolute inset-0">
           {reduceMotion ? (
             <img
-              src={`${A}/hero-vineyard.jpg`}
+              src={`${A}/hero-andes.jpg`}
               alt={t.home.heroEyebrow}
               className="absolute inset-0 size-full object-cover"
             />
@@ -540,16 +540,16 @@ function Home({ onNav }: { onNav: Nav }) {
               muted
               loop
               playsInline
-              poster={`${A}/hero-vineyard.jpg`}
+              poster={`${A}/hero-andes.jpg`}
             >
-              <source src={`${A}/hero-vineyard.mp4`} type="video/mp4" />
+              <source src={`${A}/hero-andes.mp4`} type="video/mp4" />
             </video>
           )}
           <div
             className="absolute inset-0"
             style={{
               backgroundImage:
-                'linear-gradient(180deg, rgba(20,18,15,0.5) 0%, rgba(20,18,15,0.14) 26%, rgba(20,18,15,0.34) 66%, rgba(20,18,15,0.68) 100%)',
+                'linear-gradient(180deg, rgba(20,18,15,0.56) 0%, rgba(20,18,15,0.18) 26%, rgba(20,18,15,0.44) 62%, rgba(20,18,15,0.82) 100%)',
             }}
           />
         </div>
