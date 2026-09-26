@@ -975,10 +975,14 @@ function Vinedos() {
   const t = useT();
   return (
     <div className="bg-surface w-full">
-      <section className="relative h-[420px] overflow-hidden flex items-end">
+      <section className="relative h-[clamp(440px,56vh,580px)] overflow-hidden flex items-end">
         <div className="absolute inset-0">
-          <img src={`${A}/mza-laconsulta.jpg`} alt="" className="absolute inset-0 size-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.25)] to-[rgba(20,18,15,0.62)]" />
+          <img
+            src={`${A}/andes-real.jpg`}
+            alt={t.vinedos.heroTitle1 + ' ' + t.vinedos.heroTitle2}
+            className="absolute inset-0 size-full object-cover object-[50%_20%]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.28)] via-transparent to-[rgba(20,18,15,0.72)]" />
         </div>
         <div className="relative px-5 sm:px-8 lg:px-12 pb-14 flex flex-col gap-[18px]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.72] hero-line-1">{t.vinedos.heroEyebrow}</p>
