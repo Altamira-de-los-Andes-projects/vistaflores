@@ -637,9 +637,7 @@ function Home({ onNav }: { onNav: Nav }) {
               {t.home.vyEyebrow}
             </p>
             <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.5vw,44px)] text-on-dark leading-[1.12] reveal reveal-d1">
-              {t.home.vyTitle1}
-              <br />
-              {t.home.vyTitle2}
+              {t.home.vyTitle1} {t.home.vyTitle2}
             </h2>
           </div>
           <p
@@ -975,9 +973,7 @@ function Vinedos() {
         <div className="relative px-5 sm:px-8 lg:px-12 pb-14 flex flex-col gap-[18px]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.72] hero-line-1">{t.vinedos.heroEyebrow}</p>
           <h1 className="font-['Cormorant_Garamond:Light'] text-[36px] sm:text-[44px] lg:text-[54px] text-on-dark leading-[1.1] lg:leading-[59.4px] max-w-[760px] hero-line-2">
-            {t.vinedos.heroTitle1}
-            <br />
-            {t.vinedos.heroTitle2}
+            {t.vinedos.heroTitle1} {t.vinedos.heroTitle2}
           </h1>
         </div>
       </section>
