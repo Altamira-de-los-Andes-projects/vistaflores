@@ -1203,7 +1203,10 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
       {/* Breadcrumb */}
       <div className="border-b border-ink/[0.09] px-5 sm:px-8 lg:px-12 py-[18px]">
         <p className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1px] text-ink/[0.45]">
-          {t.nav.vinos} › {wine.region}
+          <button onClick={() => onNav('vinos')} className="hover:text-ink transition-colors">
+            {t.nav.vinos}
+          </button>{' '}
+          › {wine.region}
         </p>
       </div>
 
@@ -1333,9 +1336,26 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
 }
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
+const PAGES: Page[] = ['home', 'vinos', 'vinedos', 'novedades', 'contacto', 'wine-detail'];
+
+function parseHash(): { page: Page; wineId?: string } {
+  if (typeof window === 'undefined') return { page: 'home' };
+  const h = window.location.hash.replace(/^#\/?/, '');
+  if (!h || h === 'home') return { page: 'home' };
+  if (h.startsWith('wine/')) return { page: 'wine-detail', wineId: h.slice(5) || 'dama' };
+  return PAGES.includes(h as Page) && h !== 'wine-detail' ? { page: h as Page } : { page: 'home' };
+}
+
+function hashFor(p: Page, wineId?: string): string {
+  if (p === 'home') return '#/';
+  if (p === 'wine-detail') return '#/wine/' + (wineId || 'dama');
+  return '#/' + p;
+}
+
 function Site() {
-  const [page, setPage] = useState<Page>('home');
-  const [activeWine, setActiveWine] = useState('dama');
+  const initial = parseHash();
+  const [page, setPage] = useState<Page>(initial.page);
+  const [activeWine, setActiveWine] = useState(initial.wineId || 'dama');
   const [entered, setEntered] = useState(() => {
     try {
       return localStorage.getItem('vf-age-ok') === '1';
@@ -1343,6 +1363,18 @@ function Site() {
       return false;
     }
   });
+
+  // Browser back/forward (and refresh / deep links) via hash history.
+  useEffect(() => {
+    const onPop = () => {
+      const s = parseHash();
+      setPage(s.page);
+      if (s.wineId) setActiveWine(s.wineId);
+      window.scrollTo({ top: 0 });
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   const enter = () => {
     try {
@@ -1354,6 +1386,10 @@ function Site() {
   function navigate(p: Page, wineId?: string) {
     if (wineId) setActiveWine(wineId);
     setPage(p);
+    const url = hashFor(p, wineId);
+    if (typeof window !== 'undefined' && window.location.hash !== url) {
+      window.history.pushState({ p, wineId }, '', url);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
