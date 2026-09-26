@@ -31,11 +31,11 @@ const IMG = {
 };
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
-const HOME_VY_IMGS = [`${A}/e3e36.png`, `${A}/26c37.png`, `${A}/0238b.png`];
+const HOME_VY_IMGS = [`${A}/mza-altamira.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/mza-laconsulta.jpg`];
 const HOME_WINE_IMGS = [`${A}/73a8f.png`, `${A}/941aa.png`, `${A}/4600e.png`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `${A}/5b74e.png`, `${A}/fb3eb.png`, `${A}/36671.png`];
-const VINEDOS_IMGS = [IMG.vinedoAltamira, IMG.vinedoVistaFlores, IMG.vinedoLaConsulta];
+const VINEDOS_IMGS = [`${A}/mza-estate.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/mza-altamira.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 
 // Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
@@ -594,7 +594,7 @@ function Home({ onNav }: { onNav: Nav }) {
             {t.home.estateTitle2}
           </h2>
           <div className="overflow-hidden h-[min(55vw,664px)] reveal reveal-d2">
-            <img src={`${A}/c3bec.png`} alt={t.home.estateEyebrow} className="w-full h-full object-cover" />
+            <img src={`${A}/mza-estate.jpg`} alt={t.home.estateEyebrow} className="w-full h-full object-cover" />
           </div>
         </div>
         <div className="flex flex-col justify-center lg:pt-[147px]">
@@ -777,7 +777,7 @@ function Home({ onNav }: { onNav: Nav }) {
       {/* Quote section */}
       <section className="relative h-[480px] overflow-hidden flex items-center justify-center mt-16">
         <div className="absolute inset-0">
-          <img src={`${A}/1aa54.png`} alt="" className="w-full h-full object-cover" />
+          <img src={`${A}/mza-valley.jpg`} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
         </div>
         <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[860px] reveal">
@@ -850,7 +850,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
   return (
     <div className="bg-surface w-full">
       <section className="relative h-[340px] overflow-hidden flex items-center">
-        <img src={`${A}/7755d.png`} alt="" className="absolute inset-0 size-full object-cover" />
+        <img src={`${A}/mza-altamira.jpg`} alt="" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0 bg-[rgba(20,18,15,0.5)]" />
         <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.7] hero-line-1">{t.vinos.heroEyebrow}</p>
@@ -969,7 +969,7 @@ function Vinedos() {
     <div className="bg-surface w-full">
       <section className="relative h-[420px] overflow-hidden flex items-end">
         <div className="absolute inset-0">
-          <img src={IMG.vinedosHero} alt="" className="absolute inset-0 size-full object-cover" />
+          <img src={`${A}/mza-laconsulta.jpg`} alt="" className="absolute inset-0 size-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.25)] to-[rgba(20,18,15,0.62)]" />
         </div>
         <div className="relative px-5 sm:px-8 lg:px-12 pb-14 flex flex-col gap-[18px]">
