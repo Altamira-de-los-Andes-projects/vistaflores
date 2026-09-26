@@ -184,9 +184,19 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
     <div
       className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-panel px-6 text-on-dark`}
     >
-      <div className="pointer-events-none absolute inset-0 text-on-dark">
-        <Contours className="h-full w-full" lines={11} seed={2} opacity={0.1} />
-      </div>
+      <img
+        src={`${A}/mza-altamira.jpg`}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 size-full object-cover kenburns"
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(180deg, rgba(15,13,11,0.64) 0%, rgba(15,13,11,0.40) 42%, rgba(15,13,11,0.78) 100%)',
+        }}
+      />
       <div className="relative flex max-w-[560px] flex-col items-center gap-8 text-center">
         <div className="flex flex-col items-center leading-none">
           <span className="font-['Cormorant_Garamond:Regular'] text-[clamp(26px,5.4vw,44px)] tracking-[0.1em] leading-[1.08]">
@@ -548,10 +558,10 @@ function Home({ onNav }: { onNav: Nav }) {
             {t.home.heroEyebrow}
           </p>
           <div className="mt-5">
-            <p className="font-['Cormorant_Garamond:Light_Italic'] text-[clamp(34px,7vw,64px)] text-on-dark leading-[1.04] hero-line-2">
+            <h1 className="font-['Cormorant_Garamond:Regular'] text-[clamp(52px,11vw,116px)] text-on-dark leading-[0.92] tracking-[0.02em] hero-line-2">
               {t.home.heroTitle1}
-            </p>
-            <p className="font-['Cormorant_Garamond:Light'] text-[clamp(34px,7vw,64px)] text-on-dark leading-[1.04] hero-line-3">
+            </h1>
+            <p className="font-['Cormorant_Garamond:Light'] text-[clamp(19px,3.3vw,34px)] text-on-dark/90 leading-[1.1] tracking-[0.34em] mt-2 hero-line-3">
               {t.home.heroTitle2}
             </p>
           </div>
