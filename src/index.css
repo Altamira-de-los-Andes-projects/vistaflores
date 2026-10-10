@@ -1,64 +1,33 @@
 @import 'tailwindcss';
 
-/* Dark mode is driven by [data-theme] on <html>, set before paint in index.html */
-@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
-
-/* Type: Jost (geometric — the label's own voice) + Bodoni Moda italic for emotion. */
+/* V3 "Cava" — a dark-native design: night cellar, champagne light, vaulted arches. */
 @theme {
-  --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Italiana', 'Didot', Georgia, serif;
 }
 
-/* Semantic color tokens — utilities (bg-surface, text-ink/50, …) resolve to these
-   vars, so overriding them under [data-theme='dark'] re-themes everything. */
 @theme inline {
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-panel: var(--panel);
-  --color-panel-2: var(--panel-2);
-  --color-ink: var(--ink);
-  --color-on-dark: var(--on-dark);
-  --color-accent: var(--accent);
-  --color-accent-solid: var(--accent-solid);
-  --color-accent-light: var(--accent-light);
+  --color-night: var(--night);
+  --color-night-2: var(--night-2);
+  --color-night-3: var(--night-3);
+  --color-bone: var(--bone);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
   --color-line: var(--line);
-  --color-line-dark: var(--line-dark);
 }
 
 :root {
-  --surface: #f3efe7;      /* label paper */
-  --surface-2: #ebe5da;
-  --surface-3: #dcd4c5;
-  --panel: #110f0c;        /* bottle glass — always-dark chapters */
-  --panel-2: #1c1915;
-  --ink: #16130f;
-  --on-dark: #f0ebe2;
-  --accent: #8f5530;       /* copper, text-safe on paper */
-  --accent-solid: #b0703f; /* copper for marks and rules */
-  --accent-light: #d09a6c; /* copper that reads on the dark panel */
-  --line: rgba(22, 19, 15, 0.14);
-  --line-dark: rgba(240, 235, 226, 0.16);
+  --night: #0b0a09;    /* the cellar */
+  --night-2: #12100e;  /* raised panels */
+  --night-3: #1a1714;
+  --bone: #ede7dc;     /* text */
+  --gold: #c6a979;     /* champagne — the single accent */
+  --gold-soft: #dcc59c;
+  --line: rgba(237, 231, 220, 0.12);
 
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --gutter: clamp(16px, 3.4vw, 52px);
-  --header: 84px;
-  color-scheme: light;
-}
-
-:root[data-theme='dark'] {
-  --surface: #12100d;
-  --surface-2: #1a1713;
-  --surface-3: #231f1a;
-  --panel: #0a0907;
-  --panel-2: #26211b;
-  --ink: #ebe5da;
-  --on-dark: #f0ebe2;
-  --accent: #cf9466;
-  --accent-solid: #b8794a;
-  --accent-light: #d6a275;
-  --line: rgba(235, 229, 218, 0.14);
-  --line-dark: rgba(240, 235, 226, 0.14);
+  --ease: cubic-bezier(0.19, 1, 0.22, 1);
+  --gutter: clamp(18px, 4vw, 64px);
+  --header: 88px;
   color-scheme: dark;
 }
 
@@ -66,27 +35,27 @@
   html {
     scroll-behavior: smooth;
     overflow-x: clip;
+    background: var(--night);
   }
   body {
     font-family: var(--font-sans);
-    font-weight: 350;
-    font-size: 16px;
-    line-height: 1.7;
-    color: var(--ink);
-    background: var(--surface);
+    font-weight: 400;
+    font-size: 15.5px;
+    line-height: 1.75;
+    color: var(--bone);
+    background: var(--night);
     overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: 'kern' 1, 'liga' 1;
-    transition: background-color 0.4s ease, color 0.4s ease;
   }
   ::selection {
-    background: var(--accent-solid);
-    color: #fff;
+    background: var(--gold);
+    color: var(--night);
   }
   :focus-visible {
-    outline: 1px solid var(--accent-solid);
+    outline: 1px solid var(--gold);
     outline-offset: 4px;
+    border-radius: 4px;
   }
   :where(button, a):focus:not(:focus-visible) {
     outline: none;
@@ -96,400 +65,413 @@
   }
 }
 
-/* ── Type scale ─────────────────────────────────────────────────────────────
-   In the components layer so a Tailwind utility (text-[…], text-ink/60) can
-   still adjust size or colour on any one element. */
 @layer components {
-  .t-mega {
-    font-family: var(--font-sans);
-    font-weight: 300;
-    text-transform: uppercase;
-    line-height: 0.86;
-    letter-spacing: 0.1em;
-  }
-  .t-display {
-    font-family: var(--font-serif);
-    font-style: italic;
+  /* ── Type ── */
+  .f-display {
+    font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(30px, 4.1vw, 62px);
-    line-height: 1.14;
-    letter-spacing: -0.01em;
-    text-wrap: balance;
+    line-height: 0.92;
+    letter-spacing: 0.01em;
   }
-  .t-h1 {
-    font-weight: 300;
-    font-size: clamp(40px, 5.6vw, 84px);
-    line-height: 1.02;
-    letter-spacing: -0.028em;
-    text-wrap: balance;
-  }
-  .t-h2 {
-    font-weight: 300;
-    font-size: clamp(31px, 3.7vw, 54px);
-    line-height: 1.07;
-    letter-spacing: -0.022em;
-    text-wrap: balance;
-  }
-  .t-h3 {
+  .f-title {
+    font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(21px, 1.85vw, 27px);
-    line-height: 1.26;
-    letter-spacing: -0.008em;
+    font-size: clamp(40px, 5.2vw, 82px);
+    line-height: 1.04;
+    letter-spacing: 0.004em;
     text-wrap: balance;
   }
-  .t-name {
-    font-family: var(--font-serif);
-    font-style: italic;
+  .f-h3 {
+    font-family: var(--font-display);
     font-weight: 400;
-    line-height: 1.12;
-    letter-spacing: -0.006em;
-  }
-  .t-statement {
-    font-weight: 300;
-    font-size: clamp(25px, 3vw, 44px);
-    line-height: 1.38;
-    letter-spacing: -0.014em;
+    font-size: clamp(28px, 2.7vw, 42px);
+    line-height: 1.1;
     text-wrap: balance;
   }
-  .t-statement em {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-weight: 400;
-    font-size: 1.08em;
-    letter-spacing: 0;
-    color: var(--accent);
-  }
-  .t-lead {
+  .f-lead {
     font-weight: 300;
-    font-size: clamp(18px, 1.55vw, 22px);
-    line-height: 1.62;
+    font-size: clamp(17px, 1.4vw, 20px);
+    line-height: 1.72;
     text-wrap: pretty;
   }
-  .t-body {
-    font-size: 16px;
-    line-height: 1.75;
+  .f-body {
+    font-size: 15.5px;
+    line-height: 1.8;
     text-wrap: pretty;
   }
-  .t-small {
-    font-size: 14.5px;
+  .f-small {
+    font-size: 14px;
     line-height: 1.7;
     text-wrap: pretty;
   }
-  .t-label {
-    font-weight: 500;
-    font-size: 11px;
-    line-height: 1.45;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-  }
-  .t-data {
-    font-weight: 400;
-    font-size: 11.5px;
+  .f-label {
+    font-weight: 600;
+    font-size: 10.5px;
     line-height: 1.5;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.28em;
     text-transform: uppercase;
-    font-variant-numeric: tabular-nums;
-  }
-  .t-num {
-    font-weight: 200;
-    line-height: 0.9;
-    letter-spacing: -0.035em;
-    font-variant-numeric: tabular-nums lining-nums;
   }
 
   .wrap {
     width: 100%;
-    max-width: 1440px;
+    max-width: 1480px;
     margin-inline: auto;
     padding-inline: var(--gutter);
   }
 
-  /* Numbered chapter marker — "02 ─── Our vineyards" */
-  .chapter {
+  /* Eyebrow: a short champagne rule and a label */
+  .eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 14px;
-    color: var(--accent);
+    color: var(--gold);
   }
-  .chapter__n {
-    font-variant-numeric: tabular-nums;
-  }
-  .chapter__rule {
-    width: 32px;
+  .eyebrow::before {
+    content: '';
+    width: 26px;
     height: 1px;
     background: currentColor;
-    opacity: 0.55;
+  }
+  .eyebrow--center::after {
+    content: '';
+    width: 26px;
+    height: 1px;
+    background: currentColor;
   }
 
-  /* Buttons: hairline by default, filled on hover; one solid variant. */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 26px 15px;
-    font-weight: 500;
-    font-size: 11px;
-    line-height: 1;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    border: 1px solid currentColor;
-    transition: background-color 0.35s var(--ease), color 0.35s var(--ease),
-      border-color 0.35s var(--ease), transform 0.2s var(--ease);
-  }
-  .btn:hover {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--surface);
-  }
-  .btn:active {
-    transform: translateY(1px);
-  }
-  .btn--solid {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--surface);
-  }
-  .btn--solid:hover {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  .btn--light {
-    color: var(--on-dark);
-  }
-  .btn--light:hover {
-    background: var(--on-dark);
-    border-color: var(--on-dark);
-    color: var(--panel);
-  }
-
-  /* Text link with a hairline that firms up on hover. */
-  .tlink {
+  /* ── Buttons: pill with a champagne fill that rises from below ── */
+  .b-pill {
     position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 7px;
-    font-weight: 500;
+    padding: 16px 30px;
+    border-radius: 999px;
+    border: 1px solid rgba(198, 169, 121, 0.5);
+    color: var(--bone);
+    font-weight: 600;
     font-size: 11px;
-    line-height: 1.2;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.24em;
     text-transform: uppercase;
+    line-height: 1;
+    transition: color 0.5s var(--ease), border-color 0.5s var(--ease), transform 0.2s ease;
   }
-  .tlink::after {
+  .b-pill::before {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.32;
-    transition: opacity 0.35s var(--ease);
+    inset: 0;
+    z-index: -1;
+    background: var(--gold);
+    transform: translateY(101%);
+    border-radius: inherit;
+    transition: transform 0.6s var(--ease);
   }
-  .tlink:hover::after,
-  .group:hover .tlink::after {
-    opacity: 1;
+  .b-pill:hover {
+    color: var(--night);
+    border-color: var(--gold);
   }
-  .arrow {
-    flex: none;
-    transition: transform 0.45s var(--ease);
+  .b-pill:hover::before {
+    transform: none;
   }
-  .tlink:hover .arrow,
-  .btn:hover .arrow,
-  .group:hover .arrow {
-    transform: translateX(4px);
+  .b-pill:active {
+    transform: scale(0.98);
+  }
+  .b-pill--solid {
+    color: var(--night);
+    border-color: var(--gold);
+  }
+  .b-pill--solid::before {
+    transform: none;
+  }
+  .b-pill--solid:hover {
+    color: var(--night);
+  }
+  .b-pill--solid:hover::before {
+    background: var(--gold-soft);
   }
 
-  /* Viewfinder corner marks — the "mira" in Altamira. */
-  .corners {
-    position: absolute;
-    inset: var(--ci, 14px);
-    pointer-events: none;
-    z-index: 2;
+  /* Text link with a small arrow in a ring */
+  .b-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--bone);
+    transition: color 0.4s var(--ease);
   }
-  .corners i {
-    position: absolute;
-    width: var(--cs, 16px);
-    height: var(--cs, 16px);
-    border: 0 solid currentColor;
+  .b-link .ring {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--gold);
+    transition: border-color 0.4s var(--ease), background-color 0.4s var(--ease), color 0.4s var(--ease);
   }
-  .corners i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
-  .corners i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
-  .corners i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
-  .corners i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+  .b-link .ring svg {
+    transition: transform 0.5s var(--ease);
+  }
+  .b-link:hover,
+  .group:hover .b-link {
+    color: var(--gold-soft);
+  }
+  .b-link:hover .ring,
+  .group:hover .b-link .ring {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--night);
+  }
+  .b-link:hover .ring svg,
+  .group:hover .b-link .ring svg {
+    transform: rotate(-45deg);
+  }
+
+  /* Round icon button (carousel) */
+  .b-icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--bone);
+    transition: border-color 0.4s var(--ease), color 0.4s var(--ease), transform 0.2s ease;
+  }
+  .b-icon:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .b-icon:active {
+    transform: scale(0.95);
+  }
 
   /* Underlined form field */
   .field {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
   .field__input {
     width: 100%;
     background: transparent;
     border: 0;
     border-bottom: 1px solid var(--line);
-    padding: 8px 0 10px;
+    padding: 10px 0 12px;
     font-size: 17px;
-    font-weight: 350;
-    color: var(--ink);
+    color: var(--bone);
     outline: none;
     border-radius: 0;
-    transition: border-color 0.3s var(--ease);
+    transition: border-color 0.4s var(--ease);
   }
   .field__input:focus {
-    border-bottom-color: var(--accent-solid);
+    border-bottom-color: var(--gold);
   }
 
-  /* Mobile horizontal shelf */
-  .lineup {
-    scrollbar-width: none;
-  }
-  .lineup::-webkit-scrollbar {
-    display: none;
+  /* Rotating seal */
+  .seal {
+    animation: spin 46s linear infinite;
   }
 
-  /* Live indicator dot */
-  .live {
+  /* Awards marquee */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 48s linear infinite;
+  }
+  .marquee:hover {
+    animation-play-state: paused;
+  }
+
+  /* Odometer digits — each column rolls to its value */
+  .odo {
+    display: inline-flex;
+    align-items: flex-start;
+    line-height: 1;
+  }
+  .odo .d {
     display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent-light);
-    animation: live 2.4s ease-in-out infinite;
+    height: 1em;
+    overflow: hidden;
+  }
+  .odo .d > span {
+    display: block;
+    transform: translateY(calc(var(--n) * -10%));
+    transition: transform 2.2s var(--ease);
+    transition-delay: calc(var(--c) * 110ms);
+  }
+  .odo .d > span > span {
+    display: block;
+    height: 1em;
   }
 }
 
-/* ── Motion ─────────────────────────────────────────────────────────────────
-   Masks and wipes, never blur. Everything settles on one easing. */
-@keyframes riseIn {
-  from { transform: translateY(108%); }
-  to { transform: none; }
+/* ── Motion ─────────────────────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+@keyframes ltrIn {
+  from { opacity: 0; transform: translateY(0.32em); }
   to { opacity: 1; transform: none; }
 }
-@keyframes frameIn {
-  from { clip-path: inset(7% 7% 7% 7%); }
-  to { clip-path: inset(0 0 0 0); }
+@keyframes riseFade {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: none; }
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes archOpen {
+  from { clip-path: inset(100% 0 0 0); transform: scale(1.12); }
+  to { clip-path: inset(0 0 0 0); transform: none; }
 }
-@keyframes kenburns {
-  from { transform: scale(1.02); }
-  to { transform: scale(1.1); }
+@keyframes bottleIn {
+  from { opacity: 0; transform: translateX(calc(var(--dir, 1) * 46px)) scale(0.97); }
+  to { opacity: 1; transform: none; }
 }
-@keyframes live {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
+@keyframes cue {
+  0% { transform: scaleY(0); transform-origin: top; }
+  45% { transform: scaleY(1); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
 }
 
 /* Intro (on mount) */
-.in-rise { display: block; overflow: hidden; padding-bottom: 0.04em; }
-.in-rise > span { display: block; animation: riseIn 1.3s var(--ease) both; }
-.in-fade { animation: fadeUp 1.1s var(--ease) both; }
-.in-frame { animation: frameIn 1.7s var(--ease) both; }
-.d1 { animation-delay: 0.15s; }
-.d2 { animation-delay: 0.3s; }
-.d3 { animation-delay: 0.45s; }
-.d4 { animation-delay: 0.65s; }
-.d5 { animation-delay: 0.85s; }
-.kenburns { animation: kenburns 24s ease-out both; }
+.ltr {
+  display: inline-block;
+  animation: ltrIn 1.5s var(--ease) both;
+  animation-delay: calc(var(--i) * 75ms + 250ms);
+}
+.in-up { animation: riseFade 1.3s var(--ease) both; animation-delay: var(--d, 0ms); }
+.in-arch { animation: archOpen 2s var(--ease) both; animation-delay: var(--d, 0ms); }
+.sc-in { animation: riseFade 1s var(--ease) both; animation-delay: var(--d, 0ms); }
+.sc-bottle { animation: bottleIn 1.15s var(--ease) both; }
+.cue { animation: cue 2.6s var(--ease) infinite; }
 
-/* On scroll (the observer in <Site> adds .visible). Only armed once <Site> has
-   mounted (.js-reveal on <html>), so content is never hidden without JS.
-   Clip-paths go on the children, never on the observed element: a fully
-   clipped target has no visible area, so it would never report as on screen. */
-.js-reveal .reveal {
+/* On scroll — the observer in <Site> adds .in. Only armed once the app has
+   mounted (.js-reveal on <html>), and transforms/clips always sit on children
+   of the observed element so it never measures as zero-size. */
+.js-reveal .fx-up {
   opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 1s var(--ease), transform 1s var(--ease);
+  transform: translateY(28px);
+  transition: opacity 1.2s var(--ease), transform 1.2s var(--ease);
+  transition-delay: var(--d, 0ms);
 }
-.js-reveal .reveal.visible { opacity: 1; transform: none; }
-.js-reveal .unveil > * {
-  clip-path: inset(100% 0 0 0);
-  transition: clip-path 1.4s var(--ease);
-}
-.js-reveal .unveil.visible > * { clip-path: inset(0 0 0 0); }
-.js-reveal .draw > * {
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 2.4s var(--ease) 0.15s;
-}
-.js-reveal .draw.visible > * { clip-path: inset(0 0 0 0); }
+.js-reveal .fx-up.in { opacity: 1; transform: none; }
 
-/* Age-gate cover cross-fade */
-.gate { animation: fadeIn 0.6s ease both; }
-.gate--leaving { opacity: 0; transition: opacity 0.7s var(--ease); }
+.fx-words > span { display: inline-block; }
+.js-reveal .fx-words > span {
+  opacity: 0;
+  transform: translateY(0.42em);
+  transition: opacity 1.1s var(--ease), transform 1.3s var(--ease);
+  transition-delay: calc(var(--i) * 55ms + var(--d, 0ms));
+}
+.js-reveal .fx-words.in > span { opacity: 1; transform: none; }
+
+.js-reveal .fx-img > img,
+.js-reveal .fx-img > video {
+  opacity: 0;
+  transform: scale(1.16);
+  transition: opacity 1.4s var(--ease), transform 2.4s var(--ease);
+}
+.js-reveal .fx-img.in > img,
+.js-reveal .fx-img.in > video { opacity: 1; transform: none; }
+
+.js-reveal .fx-arch > * {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 1.7s var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+.js-reveal .fx-arch > img { transform: scale(1.14); transition: clip-path 1.7s var(--ease), transform 2.6s var(--ease); }
+.js-reveal .fx-arch.in > * { clip-path: inset(0 0 0 0); }
+.js-reveal .fx-arch.in > img { transform: none; }
+
+.fx-line > i { display: block; height: 1px; background: currentColor; }
+.js-reveal .fx-line > i {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.8s var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+.js-reveal .fx-line.in > i { transform: none; }
+
+.js-reveal .odo:not(.in) .d > span { transform: translateY(0); }
+
+/* Age-gate cross-fade */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.gate { animation: fadeIn 0.8s ease both; }
+.gate--leaving { opacity: 0; transform: scale(1.02); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .js-reveal .reveal,
-  .js-reveal .unveil > *,
-  .js-reveal .draw > * { opacity: 1; transform: none; clip-path: none; transition: none; }
-  .in-rise > span, .in-fade, .in-frame, .kenburns, .live { animation: none; }
+  .ltr, .in-up, .in-arch, .sc-in, .sc-bottle, .cue, .seal, .marquee { animation: none; }
+  .js-reveal .fx-up, .js-reveal .fx-words > span, .js-reveal .fx-img > img, .js-reveal .fx-img > video,
+  .js-reveal .fx-arch > *, .js-reveal .fx-line > i {
+    opacity: 1; transform: none; clip-path: none; transition: none;
+  }
+  .odo .d > span { transition: none; }
 }
 
-/* ── Terrain map (Leaflet) — on-brand chrome ─────────────────────────────── */
+/* ── Terrain map (Leaflet) ──────────────────────────────────────────────── */
 .vf-map { position: relative; z-index: 0; }
-.leaflet-container {
-  background: #110f0c;
-  font-family: var(--font-sans);
-}
+.leaflet-container { background: #0b0a09; font-family: var(--font-sans); }
 .vf-pin { pointer-events: none; }
 .vf-pin__dot {
   position: absolute;
   left: 0;
   top: 0;
-  width: 11px;
-  height: 11px;
-  margin: -5.5px 0 0 -5.5px;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
   border-radius: 50%;
-  background: #b0703f;
-  box-shadow: 0 0 0 3px rgba(240, 235, 226, 0.9), 0 0 0 9px rgba(176, 112, 63, 0.28);
+  background: #c6a979;
+  box-shadow: 0 0 0 4px rgba(11, 10, 9, 0.7), 0 0 0 10px rgba(198, 169, 121, 0.22);
 }
 .vf-pin__label {
   position: absolute;
-  left: 16px;
-  top: -11px;
+  left: 18px;
+  top: -13px;
   white-space: nowrap;
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 10.5px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #f0ebe2;
-  background: rgba(17, 15, 12, 0.78);
-  padding: 4px 9px 3px;
-  border: 1px solid rgba(240, 235, 226, 0.18);
+  color: #ede7dc;
+  background: rgba(11, 10, 9, 0.8);
+  padding: 5px 12px 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(198, 169, 121, 0.35);
 }
 .leaflet-touch .leaflet-bar,
 .leaflet-bar {
-  border: 1px solid rgba(240, 235, 226, 0.18) !important;
+  border: 1px solid rgba(237, 231, 220, 0.16) !important;
   box-shadow: none;
-  border-radius: 0;
+  border-radius: 999px !important;
+  overflow: hidden;
 }
 .leaflet-bar a,
 .leaflet-touch .leaflet-bar a {
-  background: rgba(17, 15, 12, 0.82);
-  color: #f0ebe2;
+  background: rgba(11, 10, 9, 0.85);
+  color: #ede7dc;
   border: none;
-  border-bottom: 1px solid rgba(240, 235, 226, 0.14);
-  width: 32px;
-  height: 32px;
-  line-height: 32px;
+  border-bottom: 1px solid rgba(237, 231, 220, 0.12);
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
   font-weight: 300;
-  border-radius: 0 !important;
 }
-.leaflet-bar a:hover { background: #b0703f; color: #fff; }
+.leaflet-bar a:hover { background: #c6a979; color: #0b0a09; }
 .leaflet-bar a:last-child { border-bottom: none; }
 .leaflet-control-attribution {
-  background: rgba(17, 15, 12, 0.6) !important;
-  color: rgba(240, 235, 226, 0.55) !important;
+  background: rgba(11, 10, 9, 0.6) !important;
+  color: rgba(237, 231, 220, 0.5) !important;
   font-size: 9px;
   padding: 1px 6px;
 }
-.leaflet-control-attribution a { color: rgba(240, 235, 226, 0.8) !important; }
+.leaflet-control-attribution a { color: rgba(237, 231, 220, 0.75) !important; }

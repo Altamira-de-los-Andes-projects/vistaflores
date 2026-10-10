@@ -1,4 +1,12 @@
-import { useState, useEffect, useLayoutEffect, useRef, type FormEvent, type ReactNode } from 'react';
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type CSSProperties,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
@@ -7,11 +15,12 @@ type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-deta
 type Nav = (p: Page, wineId?: string) => void;
 
 const A = `${import.meta.env.BASE_URL}assets`;
+const v = (o: Record<string, string | number>) => o as CSSProperties;
 
-// Editorial images still served remotely (News page).
+// Editorial images still served remotely.
 const IMG = {
   vinexpo:
-    'https://images.unsplash.com/photo-1641830879467-e22004141bcb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+    'https://images.unsplash.com/photo-1641830879467-e22004141bcb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400',
   prowein:
     'https://images.unsplash.com/photo-1690986535140-dc095e75b726?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
   vendimia:
@@ -29,6 +38,7 @@ const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `
 const VINEDOS_IMGS = [`${A}/mza-estate.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/mza-altamira.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 const CONTACT_EMAIL = 'facundo@vistafloresestate.com';
+const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 // Vineyard positions, in the same order as the copy: Altamira · Altamira de los Andes · La Consulta.
 const VY_COORDS: [number, number][] = [
@@ -38,7 +48,7 @@ const VY_COORDS: [number, number][] = [
 ];
 const ESTATE_COORD = VY_COORDS[1];
 
-// Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
+// Wine catalog scaffolding (bottle image / line / blend flag) keyed by id.
 const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; blend: boolean }> = {
   dama: { img: `${A}/5c918.png`, tag: 'ALTAMIRA', blend: true },
   navigato: { img: `${A}/3d3ec.png`, tag: 'ALTAMIRA', blend: true },
@@ -47,189 +57,160 @@ const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; blend: b
   'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', blend: false },
   'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', blend: true },
 };
-const HOME_WINE_IDS = ['dama', 'navigato', 'reserva-malbec'];
 const HOME_ESTATE_IDS = ['navigato', 'dama', 'reserva-malbec', 'vav-malbec'];
 
-// ─── Instrument helpers: coordinates and the live hour in Mendoza ─────────────
-function dms(v: number, pos: string, neg: string) {
-  const a = Math.abs(v);
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function dms(val: number, pos: string, neg: string) {
+  const a = Math.abs(val);
   const d = Math.floor(a);
   const mf = (a - d) * 60;
   const m = Math.floor(mf);
   const s = Math.round((mf - m) * 60);
-  return `${d}°${String(m).padStart(2, '0')}′${String(s).padStart(2, '0')}″${v < 0 ? neg : pos}`;
+  return `${d}°${String(m).padStart(2, '0')}′${String(s).padStart(2, '0')}″${val < 0 ? neg : pos}`;
 }
 function useCoords() {
   const { lang } = useLang();
   const west = lang === 'en' ? 'W' : 'O';
-  return (c: [number, number]) => `${dms(c[0], 'N', 'S')}  ${dms(c[1], 'E', west)}`;
+  return (c: [number, number]) => `${dms(c[0], 'N', 'S')} · ${dms(c[1], 'E', west)}`;
 }
-function mendozaTime() {
-  try {
-    return new Intl.DateTimeFormat('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'America/Argentina/Mendoza',
-    }).format(new Date());
-  } catch (e) {
-    return '';
-  }
-}
-function useMendozaTime() {
-  const [time, setTime] = useState(mendozaTime);
-  useEffect(() => {
-    const id = setInterval(() => setTime(mendozaTime()), 15000);
-    return () => clearInterval(id);
-  }, []);
-  return time;
-}
-
-// ─── Theme (light / dark) ─────────────────────────────────────────────────────
-function useTheme() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof document !== 'undefined') {
-      const t = document.documentElement.getAttribute('data-theme');
-      if (t === 'dark' || t === 'light') return t;
-    }
-    return 'light';
-  });
-  const toggle = () =>
-    setTheme((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      try {
-        localStorage.setItem('vf-theme', next);
-      } catch (e) {}
-      return next;
-    });
-  return { theme, toggle };
-}
+const pad2 = (n: number) => String(n).padStart(2, '0');
 
 // ─── Icons & brand marks ──────────────────────────────────────────────────────
-const ThemeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-    <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.1" />
-    <path d="M8 1.6a6.4 6.4 0 0 1 0 12.8z" fill="currentColor" />
+const Arrow = ({ size = 14, flip = false }: { size?: number; flip?: boolean }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 14 14"
+    fill="none"
+    aria-hidden="true"
+    style={flip ? { transform: 'scaleX(-1)' } : undefined}
+  >
+    <path d="M1 7h11.5M8 2.5 12.5 7 8 11.5" stroke="currentColor" strokeWidth="1.2" />
   </svg>
 );
 const MenuIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
-    <path d="M3 9h18M3 15h18" />
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
+    <path d="M4 9h16M8 15h12" />
   </svg>
 );
 const CloseIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
-    <path d="M5 5l14 14M19 5L5 19" />
-  </svg>
-);
-const Arrow = ({ className = '' }: { className?: string }) => (
-  <svg className={`arrow ${className}`} width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true">
-    <path d="M0 5h14.5M10.5 1l4 4-4 4" stroke="currentColor" strokeWidth="1.1" />
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
+    <path d="M6 6l12 12M18 6L6 18" />
   </svg>
 );
 
-// The estate's own mark, as printed on the labels: a fine "A" crossed by the horizon.
-function Mark({ className = '', stroke = 1.4 }: { className?: string; stroke?: number }) {
+// The estate's own mark from the labels: a fine "A" crossed by the horizon.
+function Mark({ className = '' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 64 52" fill="none" aria-hidden="true">
-      <path
-        d="M18.5 50 L32 3.5 L45.5 50"
-        stroke="currentColor"
-        strokeWidth={stroke}
-        vectorEffect="non-scaling-stroke"
-        strokeLinejoin="miter"
-      />
+      <path d="M18.5 50 L32 3.5 L45.5 50" stroke="currentColor" strokeWidth="1.3" vectorEffect="non-scaling-stroke" />
       <path d="M1 39 Q32 21 63 39 Q32 26.5 1 39 Z" fill="currentColor" />
     </svg>
   );
 }
 
-// Lockup: mark + ALTAMIRA / DE LOS ANDES, stacked like the label.
-function Lockup({ className = '' }: { className?: string }) {
+function Lockup() {
   return (
-    <span className={`flex items-center gap-3 leading-none ${className}`}>
-      <Mark className="w-[30px] h-auto text-accent-solid" />
+    <span className="flex items-center gap-3 leading-none">
+      <Mark className="h-auto w-[30px] text-gold" />
       <span className="flex flex-col items-start">
-        <span className="text-[16px] sm:text-[17px] font-normal tracking-[0.28em]">ALTAMIRA</span>
-        <span className="mt-[6px] text-[8.5px] font-medium tracking-[0.46em] opacity-75">DE LOS ANDES</span>
+        <span className="f-display text-[21px] tracking-[0.16em]">ALTAMIRA</span>
+        <span className="mt-[5px] text-[8px] font-semibold tracking-[0.46em] text-bone/55">DE LOS ANDES</span>
       </span>
     </span>
   );
 }
 
-// The curve of the horizon seen from altitude — the signature line.
-function Horizon({ className = '' }: { className?: string }) {
+// Rotating seal: the estate's name around the mark.
+function Seal({ text }: { text: string }) {
   return (
-    <svg className={className} viewBox="0 0 1000 100" preserveAspectRatio="none" fill="none" aria-hidden="true">
-      <path d="M0 99 Q500 1 1000 99" stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-    </svg>
+    <div className="relative size-[136px] rounded-full border border-line bg-night">
+      <svg viewBox="0 0 136 136" className="seal absolute inset-0 text-gold" aria-hidden="true">
+        <defs>
+          <path id="seal-path" d="M68,68 m-54,0 a54,54 0 1,1 108,0 a54,54 0 1,1 -108,0" />
+        </defs>
+        <text fill="currentColor" style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 9.5 }}>
+          <textPath href="#seal-path" textLength="336" lengthAdjust="spacing">
+            {text}
+          </textPath>
+        </text>
+      </svg>
+      <span className="absolute inset-[30px] grid place-items-center rounded-full border border-line bg-night">
+        <Mark className="h-auto w-[34px] text-gold" />
+      </span>
+    </div>
   );
 }
 
-function Corners({ className = '' }: { className?: string }) {
+// Splits text into word spans for the staggered word reveal (.fx-words).
+function Words({ text, parts }: { text?: string; parts?: { t: string; cls?: string }[] }) {
+  const list = parts ?? [{ t: text ?? '' }];
+  let i = 0;
   return (
-    <span className={`corners ${className}`} aria-hidden="true">
-      <i />
-      <i />
-      <i />
-      <i />
+    <>
+      {list.map((p, k) =>
+        p.t.split(/(\s+)/).map((tok, j) =>
+          tok.trim() === '' ? (
+            tok
+          ) : (
+            <span key={`${k}-${j}`} className={p.cls} style={v({ '--i': i++ })}>
+              {tok}
+            </span>
+          )
+        )
+      )}
+    </>
+  );
+}
+
+function Letters({ text }: { text: string }) {
+  return (
+    <>
+      {[...text].map((ch, i) => (
+        <span key={i} aria-hidden="true" className="ltr" style={v({ '--i': i })}>
+          {ch === ' ' ? ' ' : ch}
+        </span>
+      ))}
+    </>
+  );
+}
+
+// Odometer: every digit column rolls up to its value; separators stay put.
+function Odometer({ value }: { value: string }) {
+  let c = 0;
+  return (
+    <span className="odo" role="img" aria-label={value}>
+      {value.split('').map((ch, i) =>
+        /\d/.test(ch) ? (
+          <span key={i} className="d" aria-hidden="true" style={v({ '--n': +ch, '--c': c++ })}>
+            <span>
+              {DIGITS.map((d) => (
+                <span key={d}>{d}</span>
+              ))}
+            </span>
+          </span>
+        ) : (
+          <span key={i} aria-hidden="true">
+            {ch}
+          </span>
+        )
+      )}
     </span>
   );
 }
 
-function Chapter({ n, children, className = '' }: { n?: string; children: ReactNode; className?: string }) {
-  return (
-    <p className={`chapter t-label ${className}`}>
-      {n && <span className="chapter__n">{n}</span>}
-      <span className="chapter__rule" aria-hidden="true" />
-      <span>{children}</span>
-    </p>
-  );
+function Eyebrow({ children, center = false, className = '' }: { children: ReactNode; center?: boolean; className?: string }) {
+  return <p className={`eyebrow f-label ${center ? 'eyebrow--center' : ''} ${className}`}>{children}</p>;
 }
 
-// ─── Topographic contour lines (altitude texture for dark chapters) ───────────
-function Contours({
-  className = '',
-  lines = 9,
-  seed = 1,
-  opacity = 0.5,
-}: {
-  className?: string;
-  lines?: number;
-  seed?: number;
-  opacity?: number;
-}) {
-  const W = 1440;
-  const H = 560;
-  const paths: string[] = [];
-  for (let i = 0; i < lines; i++) {
-    const base = H * 0.16 + (i / (lines - 1)) * H * 0.72;
-    const amp = 54 + i * 11;
-    const pts: string[] = [];
-    for (let x = 0; x <= W; x += 16) {
-      const t = x / W;
-      const y =
-        base -
-        amp * Math.exp(-Math.pow((t - 0.46) * 3.1, 2)) -
-        amp * 0.4 * Math.exp(-Math.pow((t - 0.82) * 5.5, 2)) +
-        9 * Math.sin(t * 5.5 + i * 0.7 + seed);
-      pts.push(`${x},${y.toFixed(1)}`);
-    }
-    paths.push('M' + pts.join(' L'));
-  }
+function LinkArrow({ children }: { children: ReactNode }) {
   return (
-    <svg
-      className={className}
-      viewBox={`0 0 ${W} ${H}`}
-      fill="none"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-      style={{ opacity }}
-    >
-      {paths.map((d, i) => (
-        <path key={i} d={d} stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-      ))}
-    </svg>
+    <>
+      <span>{children}</span>
+      <span className="ring">
+        <Arrow />
+      </span>
+    </>
   );
 }
 
@@ -239,43 +220,38 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
   const [leaving, setLeaving] = useState(false);
   const enter = () => {
     setLeaving(true);
-    setTimeout(onEnter, 700);
+    setTimeout(onEnter, 850);
   };
   return (
-    <div
-      className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-panel px-6 text-on-dark`}
-    >
-      <img
-        src={`${A}/mza-altamira.jpg`}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 size-full object-cover kenburns"
-      />
-      <div className="absolute inset-0 bg-[rgba(10,9,7,0.58)]" />
-      <Corners className="[--ci:clamp(14px,2.6vw,30px)] [--cs:22px] text-on-dark/70" />
-
-      <div className="relative flex max-w-[560px] flex-col items-center text-center">
-        <Mark className="w-[60px] h-auto text-accent-light in-fade" />
-        <p className="t-mega mt-7 text-[clamp(36px,6.6vw,66px)] in-fade d1" style={{ paddingLeft: '0.1em' }}>
-          ALTAMIRA
+    <div className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] overflow-y-auto bg-night text-bone`}>
+      <div className="flex min-h-full flex-col items-center justify-center px-6 py-14 text-center">
+        <div className="relative h-[clamp(200px,34vh,360px)] w-[clamp(160px,24vh,270px)]">
+          <span className="absolute -inset-[10px] rounded-t-full border border-gold/25" aria-hidden="true" />
+          <div className="absolute inset-0 overflow-hidden rounded-t-full">
+            <img src={`${A}/mza-altamira.jpg`} alt="" className="absolute inset-0 size-full object-cover in-arch" />
+          </div>
+        </div>
+        <Mark className="mt-10 h-auto w-[44px] text-gold in-up" />
+        <p className="f-display mt-5 text-[clamp(44px,7vw,76px)] tracking-[0.08em]" aria-label="ALTAMIRA">
+          <Letters text="ALTAMIRA" />
         </p>
-        <p
-          className="mt-4 text-[clamp(10px,1.35vw,13.5px)] font-normal tracking-[0.5em] text-on-dark/85 in-fade d1"
-          style={{ paddingLeft: '0.5em' }}
-        >
+        <p className="f-label mt-3 tracking-[0.5em] text-gold in-up" style={v({ '--d': '700ms' })}>
           DE LOS ANDES
         </p>
-        <p className="t-name mt-12 text-[clamp(20px,2.3vw,27px)] text-on-dark/90 in-fade d2">
+        <p className="f-lead mt-9 text-bone/80 in-up" style={v({ '--d': '850ms' })}>
           {t.gate.line1}
           <br />
           {t.gate.line2}
         </p>
-        <p className="t-small mt-6 max-w-[40ch] text-on-dark/65 in-fade d3">{t.gate.confirm}</p>
-        <button onClick={enter} className="btn btn--light mt-10 in-fade d4">
+        <p className="f-small mt-5 max-w-[42ch] text-bone/50 in-up" style={v({ '--d': '950ms' })}>
+          {t.gate.confirm}
+        </p>
+        <button onClick={enter} className="b-pill b-pill--solid mt-9 in-up" style={v({ '--d': '1050ms' })}>
           {t.gate.enter}
-          <Arrow />
         </button>
-        <p className="t-data mt-9 text-[10px] text-on-dark/45 in-fade d5">{t.gate.warning}</p>
+        <p className="f-label mt-9 text-[9px] text-bone/35 in-up" style={v({ '--d': '1150ms' })}>
+          {t.gate.warning}
+        </p>
       </div>
     </div>
   );
@@ -283,12 +259,17 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 function Header({ page, onNav }: { page: Page; onNav: Nav }) {
-  const isHome = page === 'home';
-  const { theme, toggle } = useTheme();
   const { lang, setLang } = useLang();
   const t = useT();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 24);
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => {
@@ -308,68 +289,58 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     ['contacto', t.nav.contacto],
   ];
   const isActive = (p: Page) => page === p || (page === 'wine-detail' && p === 'vinos');
-  const tone = isHome && !menuOpen ? 'text-on-dark' : 'text-ink';
+  const solid = scrolled || menuOpen;
 
   return (
     <header
-      className={`z-50 ${
-        isHome
-          ? `absolute inset-x-0 top-0 ${menuOpen ? 'bg-surface' : ''}`
-          : 'sticky top-0 bg-surface/95 backdrop-blur-md border-b border-line'
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-500 ${
+        solid ? 'border-line bg-night/85 backdrop-blur-xl' : 'border-transparent bg-transparent'
       }`}
     >
-      <div className={`wrap flex h-[var(--header)] items-center justify-between gap-6 ${tone}`}>
+      <div className="wrap flex h-[var(--header)] items-center justify-between gap-6">
         <button onClick={() => go('home')} aria-label="Altamira de los Andes Estate" className="shrink-0">
           <Lockup />
         </button>
 
-        <nav className="hidden lg:flex items-center gap-9" aria-label="Main">
+        <nav
+          className="hidden items-center gap-1 rounded-full border border-line bg-night/50 p-1.5 backdrop-blur-md lg:flex"
+          aria-label="Main"
+        >
           {navItems.map(([p, label]) => (
             <button
               key={p}
               onClick={() => go(p)}
               aria-current={isActive(p) ? 'page' : undefined}
-              className={`t-label relative py-2 transition-opacity ${
-                isActive(p) ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+              className={`f-label rounded-full px-5 py-2.5 text-[10px] transition-colors duration-500 ${
+                isActive(p) ? 'bg-gold text-night' : 'text-bone/70 hover:text-bone'
               }`}
             >
               {label}
-              {isActive(p) && <span className="absolute left-0 right-[0.22em] -bottom-[3px] h-px bg-accent-solid" />}
             </button>
           ))}
         </nav>
 
-        <div className="flex items-center gap-5">
-          <div className="hidden lg:flex items-center gap-3 t-label">
-            {LANGS.map((code, i) => (
-              <span key={code} className="flex items-center gap-3">
-                {i > 0 && <span className="h-[10px] w-px bg-current opacity-25" />}
-                <button
-                  onClick={() => setLang(code as Lang)}
-                  aria-current={code === lang ? 'true' : undefined}
-                  aria-label={t.a11y.langOf(code.toUpperCase())}
-                  className={`py-2 transition-opacity ${code === lang ? 'opacity-100' : 'opacity-45 hover:opacity-80'}`}
-                >
-                  {code.toUpperCase()}
-                </button>
-              </span>
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center lg:flex">
+            {LANGS.map((code) => (
+              <button
+                key={code}
+                onClick={() => setLang(code as Lang)}
+                aria-current={code === lang ? 'true' : undefined}
+                aria-label={t.a11y.langOf(code.toUpperCase())}
+                className={`f-label px-2.5 py-2 text-[10px] transition-colors ${
+                  code === lang ? 'text-gold' : 'text-bone/45 hover:text-bone'
+                }`}
+              >
+                {code.toUpperCase()}
+              </button>
             ))}
           </div>
-
-          <button
-            onClick={toggle}
-            aria-label={theme === 'dark' ? t.a11y.toLight : t.a11y.toDark}
-            title={theme === 'dark' ? t.a11y.light : t.a11y.dark}
-            className="grid size-[36px] place-items-center rounded-full border border-current/25 transition-colors hover:border-current/70"
-          >
-            <ThemeIcon />
-          </button>
-
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-label={menuOpen ? t.ui.close : t.ui.menu}
             aria-expanded={menuOpen}
-            className="lg:hidden grid size-[36px] place-items-center"
+            className="grid size-12 place-items-center rounded-full border border-line transition-colors hover:border-gold lg:hidden"
           >
             {menuOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
@@ -377,29 +348,28 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
       </div>
 
       {menuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-[var(--header)] bottom-0 overflow-y-auto bg-surface text-ink border-t border-line">
-          <nav className="wrap flex flex-col pt-4 pb-10" aria-label="Main">
+        <div className="fixed inset-x-0 bottom-0 top-[var(--header)] overflow-y-auto bg-night lg:hidden">
+          <nav className="wrap flex flex-col pb-12 pt-8" aria-label="Main">
             {navItems.map(([p, label], i) => (
               <button
                 key={p}
                 onClick={() => go(p)}
-                className="group flex items-baseline gap-5 border-b border-line py-5 text-left"
+                className="flex items-baseline gap-5 border-b border-line py-5 text-left in-up"
+                style={v({ '--d': `${i * 70}ms` })}
               >
-                <span className="t-data text-accent">{String(i + 1).padStart(2, '0')}</span>
-                <span className={`text-[30px] font-light tracking-[-0.02em] ${isActive(p) ? 'text-ink' : 'text-ink/60'}`}>
-                  {label}
-                </span>
+                <span className="f-label text-gold">{pad2(i + 1)}</span>
+                <span className={`f-display text-[40px] ${isActive(p) ? 'text-gold-soft' : 'text-bone'}`}>{label}</span>
               </button>
             ))}
-            <div className="mt-8 flex items-center gap-2">
+            <div className="mt-10 flex gap-2 in-up" style={v({ '--d': '400ms' })}>
               {LANGS.map((code) => (
                 <button
                   key={code}
                   onClick={() => setLang(code as Lang)}
                   aria-current={code === lang ? 'true' : undefined}
                   aria-label={t.a11y.langOf(code.toUpperCase())}
-                  className={`t-label px-4 py-3 border ${
-                    code === lang ? 'border-ink text-ink' : 'border-transparent text-ink/45'
+                  className={`f-label rounded-full px-5 py-3 ${
+                    code === lang ? 'bg-gold text-night' : 'border border-line text-bone/60'
                   }`}
                 >
                   {code.toUpperCase()}
@@ -417,78 +387,61 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
 function Footer({ onNav }: { onNav: Nav }) {
   const t = useT();
   const pages: [Page, string][] = [
+    ['home', t.nav.home],
     ['vinos', t.nav.vinos],
     ['vinedos', t.nav.vinedos],
     ['novedades', t.nav.novedades],
     ['contacto', t.nav.contacto],
   ];
   return (
-    <footer className="bg-panel text-on-dark overflow-hidden">
-      <div className="wrap pt-[clamp(80px,10vw,140px)]">
-        <div className="grid gap-12 lg:grid-cols-12">
-          <div className="lg:col-span-4 flex flex-col gap-7">
-            <Lockup />
-            <p className="t-small max-w-[36ch] text-on-dark/65">
-              {t.footer.tagline1} {t.footer.tagline2}
+    <footer className="relative mt-[clamp(40px,6vw,90px)] overflow-hidden rounded-t-[clamp(28px,4vw,64px)] border-t border-line bg-night-2">
+      <div className="wrap flex flex-col items-center pb-14 pt-[clamp(90px,10vw,140px)] text-center">
+        <Mark className="h-auto w-[52px] text-gold fx-up" />
+        <p className="f-display mt-7 text-[clamp(52px,8vw,118px)] tracking-[0.07em] fx-up">ALTAMIRA</p>
+        <p className="f-label mt-3 tracking-[0.52em] text-gold">DE LOS ANDES</p>
+        <p className="f-small mt-8 max-w-[44ch] text-bone/55">
+          {t.footer.tagline1} {t.footer.tagline2}
+        </p>
+        <nav className="mt-12 flex flex-wrap justify-center gap-x-9 gap-y-3" aria-label="Footer">
+          {pages.map(([p, label]) => (
+            <button key={p} onClick={() => onNav(p)} className="f-label text-bone/65 transition-colors hover:text-gold">
+              {label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <div className="wrap">
+        <div className="grid gap-10 border-t border-line py-12 text-center sm:grid-cols-3 sm:text-left">
+          <div>
+            <p className="f-label text-bone/40">{t.footer.officeLabel}</p>
+            <p className="f-small mt-3 text-bone/80">
+              Av. Colón 241
+              <br />
+              (5500) Mendoza, Argentina
             </p>
           </div>
-
-          <nav className="lg:col-span-2 lg:col-start-6 flex flex-col items-start gap-3" aria-label="Footer">
-            {pages.map(([p, label]) => (
-              <button key={p} onClick={() => onNav(p)} className="t-small text-on-dark/80 hover:text-on-dark transition-colors">
-                {label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="lg:col-span-3 flex flex-col gap-8">
-            <div>
-              <p className="t-label text-on-dark/45">{t.footer.officeLabel}</p>
-              <p className="t-small mt-3 text-on-dark/85">
-                Av. Colón 241
-                <br />
-                (5500) Mendoza, Argentina
-              </p>
-            </div>
-            <div>
-              <p className="t-label text-on-dark/45">{t.footer.phoneLabel}</p>
-              <p className="t-small mt-3 text-on-dark/85">
-                Tel / Fax +54 261 4299962
-                <br />
-                Mobile USA +1 (305) 988 5992
-              </p>
-            </div>
+          <div>
+            <p className="f-label text-bone/40">{t.footer.phoneLabel}</p>
+            <p className="f-small mt-3 text-bone/80">
+              Tel / Fax +54 261 4299962
+              <br />
+              Mobile USA +1 (305) 988 5992
+            </p>
           </div>
-
-          <div className="lg:col-span-3 flex flex-col gap-8">
-            <div>
-              <p className="t-label text-on-dark/45">{t.footer.contactLabel}</p>
-              <a href={`mailto:${CONTACT_EMAIL}`} className="t-small mt-3 inline-block text-on-dark/85 border-b border-on-dark/30 pb-1 hover:border-on-dark transition-colors">
-                {CONTACT_EMAIL}
-              </a>
-            </div>
-            <div>
-              <p className="t-label text-on-dark/45">{t.footer.followLabel}</p>
-              <p className="t-small mt-3 flex flex-wrap gap-x-5 text-on-dark/85">
-                <span>Instagram</span>
-                <span>Facebook</span>
-                <span>LinkedIn</span>
-              </p>
-            </div>
+          <div>
+            <p className="f-label text-bone/40">{t.footer.contactLabel}</p>
+            <a href={`mailto:${CONTACT_EMAIL}`} className="f-small mt-3 inline-block text-bone/80 transition-colors hover:text-gold">
+              {CONTACT_EMAIL}
+            </a>
+            <p className="f-small mt-2 flex flex-wrap justify-center gap-x-4 text-bone/50 sm:justify-start">
+              <span>Instagram</span>
+              <span>Facebook</span>
+              <span>LinkedIn</span>
+            </p>
           </div>
         </div>
-
-        <Horizon className="draw mt-[clamp(64px,8vw,110px)] h-[34px] w-full text-accent-solid" />
-        <p
-          aria-hidden="true"
-          className="t-mega -mt-[0.04em] select-none text-center text-[clamp(56px,15vw,236px)] leading-[0.8] text-on-dark/[0.92]"
-          style={{ paddingLeft: '0.1em' }}
-        >
-          ALTAMIRA
-        </p>
-      </div>
-      <div className="mt-10 border-t border-line-dark">
-        <div className="wrap flex flex-col gap-2 py-7 t-data text-[10.5px] text-on-dark/50 md:flex-row md:justify-between">
+        <div className="f-label flex flex-col gap-2 border-t border-line py-7 text-center text-[9.5px] text-bone/35 md:flex-row md:justify-between md:text-left">
           <span>{t.footer.copyright}</span>
           <span>{t.footer.warning}</span>
         </div>
@@ -497,317 +450,483 @@ function Footer({ onNav }: { onNav: Nav }) {
   );
 }
 
+// ─── Wine showcase — one bottle at a time, with its sheet ─────────────────────
+function WineShowcase({ onNav }: { onNav: Nav }) {
+  const t = useT();
+  const wines = t.wineCatalog;
+  const [i, setI] = useState(0);
+  const [dir, setDir] = useState(1);
+  const [paused, setPaused] = useState(false);
+  const touch = useRef<number | null>(null);
+  const n = wines.length;
+
+  const go = (to: number, d: number) => {
+    setDir(d);
+    setI(((to % n) + n) % n);
+  };
+  const next = () => go(i + 1, 1);
+  const prev = () => go(i - 1, -1);
+
+  // Slow autoplay; pauses while the visitor is reading or interacting.
+  useEffect(() => {
+    if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const id = setTimeout(() => go(i + 1, 1), 7000);
+    return () => clearTimeout(id);
+  });
+
+  const w = wines[i];
+  const meta = WINE_META[w.id];
+
+  return (
+    <section className="relative overflow-hidden rounded-t-[clamp(28px,4vw,64px)] bg-night-2 py-[clamp(100px,12vw,170px)]">
+      <div className="wrap flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <Eyebrow>{t.home.winesEyebrow}</Eyebrow>
+          <h2 className="f-title mt-8 fx-words">
+            <Words text={t.home.winesTitle} />
+          </h2>
+        </div>
+        <div className="flex max-w-[40ch] flex-col items-start gap-6 fx-up">
+          <p className="f-body text-bone/60">{t.home.winesPara}</p>
+          <button onClick={() => onNav('vinos')} className="b-link">
+            <LinkArrow>{t.home.seeAllWines}</LinkArrow>
+          </button>
+        </div>
+      </div>
+
+      <div
+        className="wrap mt-16 grid items-center gap-x-12 gap-y-10 lg:grid-cols-[1fr_minmax(0,1.05fr)_1fr]"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        onTouchStart={(e) => {
+          touch.current = e.touches[0].clientX;
+          setPaused(true);
+        }}
+        onTouchEnd={(e) => {
+          if (touch.current === null) return;
+          const dx = e.changedTouches[0].clientX - touch.current;
+          touch.current = null;
+          if (Math.abs(dx) > 50) (dx < 0 ? next : prev)();
+        }}
+        aria-roledescription="carousel"
+        aria-label={t.home.winesTitle}
+      >
+        {/* Left: name, notes, score */}
+        <div key={`l-${w.id}`} className="order-2 lg:order-1" aria-live="polite">
+          <p className="f-label text-gold sc-in">
+            {meta.tag} · {w.gridRegion}
+          </p>
+          <h3 className="f-display mt-5 text-[clamp(42px,4.4vw,68px)] sc-in" style={v({ '--d': '80ms' })}>
+            {w.name}
+          </h3>
+          <p className="f-label mt-3 text-bone/55 sc-in" style={v({ '--d': '140ms' })}>
+            {w.sub}
+          </p>
+          <p className="f-body mt-6 max-w-[42ch] text-bone/70 sc-in" style={v({ '--d': '200ms' })}>
+            {w.desc}
+          </p>
+          <div className="mt-8 flex items-center gap-5 sc-in" style={v({ '--d': '260ms' })}>
+            <span className="f-display grid size-[72px] place-items-center rounded-full border border-gold/45 text-[30px] text-gold">
+              {w.score.value}
+            </span>
+            <span className="flex flex-col">
+              <span className="f-label">{w.score.critic}</span>
+              <span className="f-label text-bone/45">
+                {w.score.year} · {t.ui.points}
+              </span>
+            </span>
+          </div>
+          <button onClick={() => onNav('wine-detail', w.id)} className="b-link mt-9 sc-in" style={v({ '--d': '320ms' })}>
+            <LinkArrow>{t.home.fullInfo}</LinkArrow>
+          </button>
+        </div>
+
+        {/* Centre: the bottle in its niche */}
+        <div className="relative order-1 mx-auto flex h-[clamp(440px,62vh,660px)] w-full max-w-[440px] items-end justify-center lg:order-2">
+          <span className="absolute inset-x-[6%] bottom-0 top-0 rounded-t-full border border-gold/20" aria-hidden="true" />
+          <span className="absolute inset-x-[18%] bottom-0 top-[14%] rounded-t-full bg-night-3" aria-hidden="true" />
+          <span
+            key={`n-${w.id}`}
+            aria-hidden="true"
+            className="f-display pointer-events-none absolute left-1/2 top-[2%] -translate-x-1/2 select-none text-[clamp(150px,18vw,260px)] leading-none text-transparent [-webkit-text-stroke:1px_rgba(198,169,121,0.22)] sc-in"
+          >
+            {pad2(i + 1)}
+          </span>
+          <img
+            key={w.id}
+            src={meta.img}
+            alt={`${w.name} ${w.sub}`}
+            className="relative mb-[4%] h-[86%] w-auto object-contain sc-bottle"
+            style={v({ '--dir': dir })}
+          />
+          <span className="absolute inset-x-0 bottom-0 h-px bg-gold/35" aria-hidden="true" />
+        </div>
+
+        {/* Right: the technical sheet */}
+        <div key={`r-${w.id}`} className="order-3">
+          <p className="f-label text-gold sc-in">{t.wineDetail.fichaLabel}</p>
+          <dl className="mt-5">
+            {w.ficha.map((s, k) => (
+              <div
+                key={s.label}
+                className="flex items-baseline justify-between gap-6 border-b border-line py-4 sc-in"
+                style={v({ '--d': `${80 + k * 60}ms` })}
+              >
+                <dt className="f-label text-[9.5px] text-bone/45">{s.label}</dt>
+                <dd className="f-small text-right text-bone/90">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="wrap mt-14 flex items-center justify-between gap-6">
+        <div className="flex gap-3">
+          <button onClick={prev} className="b-icon" aria-label={t.ui.prev}>
+            <Arrow size={16} flip />
+          </button>
+          <button onClick={next} className="b-icon" aria-label={t.ui.next}>
+            <Arrow size={16} />
+          </button>
+        </div>
+        <div className="hidden flex-1 items-center justify-center gap-2 sm:flex">
+          {wines.map((x, k) => (
+            <button
+              key={x.id}
+              onClick={() => go(k, k > i ? 1 : -1)}
+              aria-label={`${x.name} ${x.sub}`}
+              aria-current={k === i ? 'true' : undefined}
+              className="group py-3"
+            >
+              <span
+                className={`block h-px transition-all duration-700 ${
+                  k === i ? 'w-14 bg-gold' : 'w-6 bg-bone/25 group-hover:bg-bone/60'
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+        <p className="f-label text-bone/55">
+          <span className="text-gold">{pad2(i + 1)}</span> / {pad2(n)}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// ─── Terroirs — panels that open on hover ─────────────────────────────────────
+function TerroirPanels() {
+  const t = useT();
+  const coords = useCoords();
+  const [active, setActive] = useState(0);
+  return (
+    <div className="wrap mt-16 flex flex-col gap-4 lg:h-[clamp(560px,78vh,760px)] lg:flex-row">
+      {t.home.vyRows.map((r, k) => {
+        const on = active === k;
+        return (
+          <article
+            key={r.num}
+            tabIndex={0}
+            onMouseEnter={() => setActive(k)}
+            onFocus={() => setActive(k)}
+            onClick={() => setActive(k)}
+            className={`relative min-h-[480px] cursor-pointer overflow-hidden rounded-t-[200px] transition-[flex-grow] duration-[1100ms] ease-[cubic-bezier(.19,1,.22,1)] lg:min-h-0 ${
+              on ? 'lg:flex-[3.2]' : 'lg:flex-1'
+            }`}
+          >
+            <img
+              src={HOME_VY_IMGS[k]}
+              alt={r.name}
+              className={`absolute inset-0 size-full object-cover transition-transform duration-[1800ms] ease-[cubic-bezier(.19,1,.22,1)] ${
+                on ? 'scale-100' : 'lg:scale-110'
+              }`}
+            />
+            <div className={`absolute inset-0 transition-colors duration-700 ${on ? 'bg-night/40' : 'bg-night/40 lg:bg-night/65'}`} />
+            <div className="absolute inset-x-0 bottom-0 p-[clamp(24px,3vw,44px)]">
+              <p className="f-label text-gold">{r.num}</p>
+              <h3 className="f-h3 mt-3 max-w-[16ch]">{r.name}</h3>
+              <div
+                className={`grid grid-rows-[1fr] transition-[grid-template-rows] duration-[1000ms] ease-[cubic-bezier(.19,1,.22,1)] ${
+                  on ? 'lg:grid-rows-[1fr]' : 'lg:grid-rows-[0fr]'
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className={`pt-5 transition-opacity duration-700 ${on ? 'lg:opacity-100 lg:delay-300' : 'lg:opacity-0'}`}>
+                    <p className="f-label text-[9.5px] text-bone/55">{coords(VY_COORDS[k])}</p>
+                    <p className="f-body mt-4 max-w-[48ch] text-bone/85">{r.desc}</p>
+                    <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
+                      {r.stats.map((s) => (
+                        <div key={s.l}>
+                          <dt className="f-label text-[9.5px] text-bone/50">{s.l}</dt>
+                          <dd className="f-display mt-1 text-[26px]">{s.v}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── HOME ─────────────────────────────────────────────────────────────────────
 function Home({ onNav }: { onNav: Nav }) {
   const t = useT();
   const coords = useCoords();
-  const time = useMendozaTime();
   const reduceMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const altitude = t.home.stats[0];
-  const statBorders = ['', 'border-l border-line-dark pl-6 lg:pl-8', 'lg:border-l lg:border-line-dark lg:pl-8', 'border-l border-line-dark pl-6 lg:pl-8'];
+  const statBorders = ['', 'border-l border-line', 'lg:border-l lg:border-line', 'border-l border-line'];
 
   return (
-    <div className="w-full bg-surface">
-      {/* HERO — a viewfinder onto the Andes: "alta mira", the view from above. */}
-      <section className="relative flex min-h-[100dvh] flex-col bg-panel pt-[var(--header)] text-on-dark">
-        <div className="wrap flex flex-1 flex-col pb-7">
-          <div className="relative min-h-[440px] flex-1 overflow-hidden in-frame">
-            {reduceMotion ? (
-              <img src={`${A}/hero-andes.jpg`} alt={t.home.heroEyebrow} className="absolute inset-0 size-full object-cover" />
-            ) : (
-              <video
-                className="absolute inset-0 size-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-                poster={`${A}/hero-andes.jpg`}
+    <div className="w-full">
+      {/* HERO — the name on the left, the Andes through a cellar vault on the right */}
+      <section className="relative overflow-hidden pt-[var(--header)]">
+        <div className="wrap grid min-h-[calc(100dvh_-_var(--header))] items-center gap-14 pb-24 pt-10 lg:grid-cols-12 lg:pt-0">
+          <div className="relative z-10 flex flex-col lg:col-span-6">
+            <Eyebrow className="in-up">{t.home.heroEyebrow}</Eyebrow>
+            <h1 className="mt-9">
+              <span
+                className="f-display block whitespace-nowrap text-[clamp(56px,8.6vw,152px)] tracking-[0.02em]"
+                aria-label={t.home.heroTitle1}
               >
-                <source src={`${A}/hero-andes.mp4`} type="video/mp4" />
-              </video>
-            )}
-            <div className="absolute inset-0 bg-[rgba(10,9,7,0.34)]" />
-            <Corners className="[--ci:16px] text-on-dark/80" />
-
-            {/* Instrument readouts */}
-            <p className="absolute left-[38px] top-[34px] t-data text-[10.5px] text-on-dark/80 in-fade d4">
-              {coords(ESTATE_COORD)}
+                <Letters text={t.home.heroTitle1} />
+              </span>
+              <span
+                className="mt-5 block text-[clamp(13px,1.45vw,20px)] font-semibold tracking-[0.56em] text-gold in-up"
+                style={v({ '--d': '900ms' })}
+              >
+                {t.home.heroTitle2}
+              </span>
+            </h1>
+            <p className="f-lead mt-10 max-w-[32ch] text-bone/75 in-up" style={v({ '--d': '1100ms' })}>
+              {t.home.heroSubtitle}
             </p>
-            <p className="absolute right-[38px] top-[34px] hidden t-data text-[10.5px] text-on-dark/80 sm:block in-fade d4">
-              {altitude.num} m · {altitude.unit}
-            </p>
-            <p className="absolute bottom-[34px] left-[38px] flex items-center gap-3 t-data text-[10.5px] text-on-dark/80 in-fade d5">
-              <span className="live" aria-hidden="true" />
-              Mendoza {time}
-            </p>
-            <p className="absolute bottom-[34px] right-[38px] hidden t-data text-[10.5px] text-on-dark/80 sm:block in-fade d5">
-              {t.vinedos.mapPlace1}
-            </p>
-
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-              <Mark className="w-[clamp(44px,5.4vw,84px)] h-auto text-on-dark in-fade d1" />
-              <h1 className="t-mega mt-[clamp(16px,2.2vw,30px)] text-[clamp(44px,12.4vw,190px)]">
-                <span className="in-rise">
-                  <span className="d2" style={{ paddingLeft: '0.1em' }}>
-                    {t.home.heroTitle1}
-                  </span>
-                </span>
-                <span className="in-rise mt-[0.42em] text-[0.27em] font-normal tracking-[0.46em]">
-                  <span className="d3" style={{ paddingLeft: '0.46em' }}>
-                    {t.home.heroTitle2}
-                  </span>
-                </span>
-              </h1>
-            </div>
-          </div>
-
-          <div className="grid items-end gap-6 pt-8 lg:grid-cols-[1fr_auto_1fr]">
-            <p className="t-label hidden text-on-dark/55 lg:block in-fade d4">{t.home.heroEyebrow}</p>
-            <p className="t-lead mx-auto max-w-[34ch] text-center text-on-dark/90 in-fade d4">{t.home.heroSubtitle}</p>
-            <div className="flex justify-center lg:justify-end in-fade d5">
-              <button onClick={() => onNav('vinedos')} className="btn btn--light">
+            <div className="mt-12 flex flex-wrap gap-4 in-up" style={v({ '--d': '1250ms' })}>
+              <button onClick={() => onNav('vinos')} className="b-pill b-pill--solid">
+                {t.home.seeAllWines}
+              </button>
+              <button onClick={() => onNav('vinedos')} className="b-pill">
                 {t.home.heroCta}
-                <Arrow />
               </button>
             </div>
           </div>
+
+          <div className="relative flex justify-center lg:col-span-6 lg:justify-end">
+            <div className="relative h-[clamp(460px,76vh,800px)] w-[min(100%,540px)]">
+              <span
+                className="absolute -inset-[16px] rounded-t-full border border-gold/25 in-up"
+                style={v({ '--d': '700ms' })}
+                aria-hidden="true"
+              />
+              <div className="absolute inset-0 overflow-hidden rounded-t-full bg-night-3">
+                <div className="absolute inset-0 in-arch" style={v({ '--d': '150ms' })}>
+                  {reduceMotion ? (
+                    <img src={`${A}/hero-andes.jpg`} alt={t.home.heroEyebrow} className="absolute inset-0 size-full object-cover" />
+                  ) : (
+                    <video
+                      className="absolute inset-0 size-full object-cover"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      poster={`${A}/hero-andes.jpg`}
+                    >
+                      <source src={`${A}/hero-andes.mp4`} type="video/mp4" />
+                    </video>
+                  )}
+                  <div className="absolute inset-0 bg-night/15" />
+                </div>
+              </div>
+              <div className="absolute -left-[54px] bottom-16 hidden sm:block in-up" style={v({ '--d': '1400ms' })}>
+                <Seal text={`ALTAMIRA DE LOS ANDES · ${t.vinedos.mapPlace1.toUpperCase()} · `} />
+              </div>
+              <p className="f-label absolute -bottom-12 right-0 text-[9.5px] text-bone/50 in-up" style={v({ '--d': '1500ms' })}>
+                {altitude.num} m · {coords(ESTATE_COORD)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pointer-events-none absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 lg:flex">
+          <span className="f-label text-[9px] text-bone/45">{t.ui.scroll}</span>
+          <span className="block h-12 w-px overflow-hidden bg-line">
+            <span className="cue block h-full w-full bg-gold" />
+          </span>
         </div>
       </section>
 
-      {/* 01 — The place */}
-      <section className="py-[clamp(110px,15vw,210px)]">
-        <div className="wrap flex max-w-[1120px] flex-col items-center text-center">
-          <Chapter n="01">{t.home.breathLabel}</Chapter>
-          <p className="t-statement mt-10 reveal">
-            {t.home.breathPre}
-            <em>{t.home.breathEm}</em>
-            {t.home.breathPost}
+      {/* The place — one sentence */}
+      <section className="py-[clamp(120px,16vw,230px)]">
+        <div className="wrap flex max-w-[1200px] flex-col items-center text-center">
+          <Mark className="h-auto w-[44px] text-gold fx-up" />
+          <Eyebrow center className="mt-10">
+            {t.home.breathLabel}
+          </Eyebrow>
+          <p className="f-title mt-10 fx-words">
+            <Words parts={[{ t: t.home.breathPre }, { t: t.home.breathEm, cls: 'text-gold' }, { t: t.home.breathPost }]} />
           </p>
-          <Horizon className="draw mt-16 h-[44px] w-[min(760px,92%)] text-accent-solid" />
         </div>
       </section>
 
-      {/* 02 — The estate */}
-      <section className="wrap grid grid-cols-1 gap-x-12 gap-y-14 pb-[clamp(110px,13vw,190px)] lg:grid-cols-12">
-        <figure className="relative aspect-[4/5] overflow-hidden lg:col-span-7 lg:aspect-[6/7] unveil">
-          <img src={`${A}/mza-estate.jpg`} alt={t.home.estateEyebrow} className="absolute inset-0 size-full object-cover" />
-          <Corners className="text-on-dark/85" />
-          <figcaption className="absolute bottom-[32px] left-[38px] t-data text-[10.5px] text-on-dark/85">
-            {coords(VY_COORDS[0])}
-          </figcaption>
-        </figure>
-        <div className="flex flex-col lg:col-span-5 lg:pt-[16%]">
-          <Chapter n="02">{t.home.estateEyebrow}</Chapter>
-          <h2 className="t-h2 mt-8 reveal">
-            {t.home.estateTitle1} {t.home.estateTitle2}
+      {/* The estate — text with two layered images */}
+      <section className="wrap grid items-center gap-16 pb-[clamp(120px,14vw,200px)] lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <Eyebrow>{t.home.estateEyebrow}</Eyebrow>
+          <h2 className="f-title mt-8 fx-words">
+            <Words text={`${t.home.estateTitle1} ${t.home.estateTitle2}`} />
           </h2>
-          <p className="t-lead mt-8 text-ink/80 reveal">{t.home.estatePara1}</p>
-          <p className="t-body mt-6 text-ink/62 reveal">{t.home.estatePara2}</p>
-          <ul className="mt-12 border-t border-line reveal">
+          <p className="f-lead mt-8 text-bone/80 fx-up">{t.home.estatePara1}</p>
+          <p className="f-body mt-6 text-bone/55 fx-up">{t.home.estatePara2}</p>
+          <ul className="mt-12 grid gap-3 sm:grid-cols-2 fx-up">
             {t.home.estateWines.map((w, i) => (
               <li key={w.name}>
                 <button
                   onClick={() => onNav('wine-detail', HOME_ESTATE_IDS[i])}
-                  className="group flex w-full items-center justify-between gap-6 border-b border-line py-5 text-left"
+                  className="group flex h-full w-full items-center justify-between gap-4 rounded-[18px] border border-line px-5 py-4 text-left transition-colors duration-500 hover:border-gold/50 hover:bg-night-2"
                 >
-                  <span className="flex flex-col gap-1">
-                    <span className="t-name text-[clamp(23px,2vw,29px)] transition-colors group-hover:text-accent">
-                      {w.name}
-                    </span>
-                    <span className="t-label text-[10px] text-ink/45">{w.sub}</span>
+                  <span className="flex flex-col">
+                    <span className="f-display text-[22px] leading-tight">{w.name}</span>
+                    <span className="f-label mt-1 text-[9px] text-bone/45">{w.sub}</span>
                   </span>
-                  <Arrow className="text-ink/50" />
+                  <span className="text-gold transition-transform duration-500 group-hover:translate-x-1">
+                    <Arrow />
+                  </span>
                 </button>
               </li>
             ))}
           </ul>
         </div>
+        <div className="relative h-[clamp(560px,62vw,840px)] lg:col-span-6 lg:col-start-7">
+          <div className="absolute right-0 top-0 h-[86%] w-[72%] overflow-hidden rounded-t-full fx-arch">
+            <img src={`${A}/mza-estate.jpg`} alt={t.home.estateEyebrow} className="absolute inset-0 size-full object-cover" />
+          </div>
+          <div className="absolute bottom-0 left-0 h-[48%] w-[48%]" data-speed="-0.07">
+            <div className="size-full overflow-hidden rounded-[24px] border-[10px] border-night fx-img">
+              <img src={`${A}/mza-vistaflores.jpg`} alt="" className="size-full object-cover" />
+            </div>
+          </div>
+          <p className="f-label absolute bottom-2 right-0 text-[9.5px] text-bone/45">{coords(VY_COORDS[0])}</p>
+        </div>
       </section>
 
-      {/* 03 — The vineyards (dark chapter) */}
-      <section className="bg-panel text-on-dark">
-        <div className="wrap grid items-end gap-10 pb-[clamp(56px,7vw,96px)] pt-[clamp(100px,12vw,170px)] lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <Chapter n="03" className="text-accent-light">
-              {t.home.vyEyebrow}
-            </Chapter>
-            <h2 className="t-h2 mt-8 reveal">
-              {t.home.vyTitle1} {t.home.vyTitle2}
+      <WineShowcase onNav={onNav} />
+
+      {/* The vineyards */}
+      <section className="py-[clamp(110px,13vw,190px)]">
+        <div className="wrap flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Eyebrow>{t.home.vyEyebrow}</Eyebrow>
+            <h2 className="f-title mt-8 max-w-[15ch] fx-words">
+              <Words text={`${t.home.vyTitle1} ${t.home.vyTitle2}`} />
             </h2>
           </div>
-          <p className="t-body text-on-dark/68 lg:col-span-4 lg:col-start-9 reveal">{t.home.vyIntro}</p>
-        </div>
-
-        {t.home.vyRows.map((vyd, idx) => {
-          const flip = idx % 2 === 1;
-          return (
-            <article key={vyd.num} className="border-t border-line-dark">
-              <div className="wrap grid items-center gap-x-12 gap-y-10 py-[clamp(48px,6vw,88px)] lg:grid-cols-12">
-                <figure
-                  className={`relative aspect-[4/3] overflow-hidden lg:row-start-1 lg:col-span-7 unveil ${
-                    flip ? 'lg:col-start-6' : 'lg:col-start-1'
-                  }`}
-                >
-                  <img src={HOME_VY_IMGS[idx]} alt={vyd.name} className="absolute inset-0 size-full object-cover" />
-                  <Corners className="text-on-dark/80" />
-                </figure>
-                <div className={`flex flex-col lg:row-start-1 lg:col-span-4 ${flip ? 'lg:col-start-1' : 'lg:col-start-9'}`}>
-                  <p className="t-data text-accent-light">{vyd.num}</p>
-                  <h3 className="t-name mt-4 text-[clamp(32px,3.3vw,50px)] reveal">{vyd.name}</h3>
-                  <p className="t-data mt-4 text-[10.5px] text-on-dark/50">{coords(VY_COORDS[idx])}</p>
-                  <p className="t-body mt-6 text-on-dark/72 reveal">{vyd.desc}</p>
-                  <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-line-dark pt-5">
-                    {vyd.stats.map((s) => (
-                      <div key={s.l}>
-                        <dt className="t-label text-[10px] text-on-dark/45">{s.l}</dt>
-                        <dd className="mt-2 text-[21px] font-light">{s.v}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <button onClick={() => onNav('vinedos')} className="tlink mt-9 self-start">
-                    {t.home.vyBtn}
-                    <Arrow />
-                  </button>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-
-        {/* Altitude, in numbers */}
-        <div className="relative overflow-hidden border-t border-line-dark">
-          <div className="pointer-events-none absolute inset-0 text-on-dark">
-            <Contours className="h-full w-full" lines={10} seed={7} opacity={0.06} />
-          </div>
-          <div className="wrap relative py-[clamp(90px,11vw,150px)]">
-            <p className="t-lead max-w-[46ch] text-on-dark/78 reveal">{t.home.statsIntro}</p>
-            <dl className="mt-16 grid grid-cols-2 gap-y-14 lg:grid-cols-4 reveal">
-              {t.home.stats.map((s, i) => (
-                <div key={s.label} className={`flex flex-col gap-4 ${statBorders[i]}`}>
-                  <dt className="t-label text-accent-light">{s.label}</dt>
-                  <dd className="t-num text-[clamp(54px,7.2vw,112px)]">{s.num}</dd>
-                  <dd className="t-small text-on-dark/55">{s.unit}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </div>
-      </section>
-
-      {/* 04 — The wines: bottles stand on a shelf, no boxes */}
-      <section className="py-[clamp(110px,13vw,190px)]">
-        <div className="wrap grid items-end gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-6">
-            <Chapter n="04">{t.home.winesEyebrow}</Chapter>
-            <h2 className="t-h2 mt-8 reveal">{t.home.winesTitle}</h2>
-          </div>
-          <div className="flex flex-col items-start gap-7 lg:col-span-4 lg:col-start-9">
-            <p className="t-body text-ink/62 reveal">{t.home.winesPara}</p>
-            <button onClick={() => onNav('vinos')} className="tlink">
-              {t.home.seeAllWines}
-              <Arrow />
+          <div className="flex max-w-[40ch] flex-col items-start gap-6 fx-up">
+            <p className="f-body text-bone/60">{t.home.vyIntro}</p>
+            <button onClick={() => onNav('vinedos')} className="b-link">
+              <LinkArrow>{t.home.vyBtn}</LinkArrow>
             </button>
           </div>
         </div>
 
-        <div className="wrap mt-[clamp(56px,7vw,100px)]">
-          <div className="lineup -mx-[var(--gutter)] flex snap-x snap-mandatory gap-8 overflow-x-auto px-[var(--gutter)] lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-14 lg:overflow-visible lg:px-0">
-            {t.home.wines.map((wine, i) => {
-              const id = HOME_WINE_IDS[i];
-              return (
-                <button
-                  key={wine.name}
-                  onClick={() => onNav('wine-detail', id)}
-                  className="group flex w-[74%] shrink-0 snap-start flex-col text-left sm:w-[44%] lg:w-auto reveal"
-                >
-                  <span className="relative flex h-[clamp(340px,34vw,480px)] items-end justify-center border-b border-line">
-                    <img
-                      src={WINE_META[id].img}
-                      alt={`${wine.name} ${wine.sub}`}
-                      className="h-[92%] w-auto object-contain transition-transform duration-[900ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-3"
-                    />
-                  </span>
-                  <span className="mt-6 block t-data text-[10.5px] text-ink/45">
-                    {String(i + 1).padStart(2, '0')} — {wine.region}
-                  </span>
-                  <span className="mt-3 block t-name text-[clamp(27px,2.4vw,35px)] transition-colors group-hover:text-accent">
-                    {wine.name}
-                  </span>
-                  <span className="mt-2 block t-label text-ink/55">{wine.sub}</span>
-                  <span className="mt-5 block t-small max-w-[36ch] text-ink/62">{wine.desc}</span>
-                  <span className="tlink mt-7 self-start text-accent">
-                    {t.home.fullInfo}
-                    <Arrow />
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+        <TerroirPanels />
+
+        <div className="wrap mt-[clamp(90px,11vw,150px)]">
+          <p className="f-lead mx-auto max-w-[58ch] text-center text-bone/70 fx-up">{t.home.statsIntro}</p>
+          <dl className="mt-16 grid grid-cols-2 gap-y-14 border-t border-line pt-14 lg:grid-cols-4">
+            {t.home.stats.map((s, i) => (
+              <div key={s.label} className={`flex flex-col items-center gap-4 text-center ${statBorders[i]}`}>
+                <dt className="f-label text-gold">{s.label}</dt>
+                <dd className="f-display text-[clamp(58px,6.6vw,108px)]">
+                  <Odometer value={s.num} />
+                </dd>
+                <dd className="f-small text-bone/50">{s.unit}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
       {/* Quote */}
-      <section className="relative overflow-hidden text-on-dark">
-        <img src={`${A}/mza-valley.jpg`} alt="" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-[rgba(10,9,7,0.56)]" />
-        <Corners className="[--ci:22px] text-on-dark/70" />
-        <div className="wrap relative flex flex-col items-center py-[clamp(120px,15vw,220px)] text-center">
-          <Mark className="w-[46px] h-auto text-accent-light reveal" />
-          <blockquote className="t-display mt-10 max-w-[24ch] reveal">{t.home.quote}</blockquote>
-          <p className="t-label mt-10 text-on-dark/65 reveal">{t.home.quoteSub}</p>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-x-0 -bottom-[14%] -top-[14%]" data-speed="0.14">
+          <img src={`${A}/mza-valley.jpg`} alt="" className="size-full object-cover" />
+        </div>
+        <div className="absolute inset-0 bg-night/70" />
+        <div className="wrap relative flex flex-col items-center py-[clamp(140px,18vw,260px)] text-center">
+          <Mark className="h-auto w-[42px] text-gold fx-up" />
+          <blockquote className="f-title mt-10 max-w-[24ch] fx-words">
+            <Words text={t.home.quote} />
+          </blockquote>
+          <p className="f-label mt-10 text-gold fx-up">{t.home.quoteSub}</p>
         </div>
       </section>
 
-      {/* 05 — Recognition */}
-      <section className="bg-surface-2 py-[clamp(90px,11vw,150px)]">
-        <div className="wrap grid items-center gap-12 lg:grid-cols-12">
-          <div className="lg:col-span-4">
-            <Chapter n="05">{t.home.awardsEyebrow}</Chapter>
-            <h2 className="t-h2 mt-8 reveal">{t.home.awardsTitle}</h2>
+      {/* Recognition — a slow, endless line of medals */}
+      <section className="border-b border-line py-[clamp(70px,8vw,110px)]">
+        <div className="wrap flex flex-col items-center gap-12 lg:flex-row">
+          <div className="shrink-0 text-center lg:w-[30%] lg:text-left">
+            <Eyebrow>{t.home.awardsEyebrow}</Eyebrow>
+            <h2 className="f-h3 mt-6">{t.home.awardsTitle}</h2>
           </div>
-          <ul className="grid grid-cols-3 border-l border-t border-line sm:grid-cols-6 lg:col-span-8 reveal">
-            {HOME_AWARD_IMGS.map((src, i) => (
-              <li key={i} className="flex aspect-square items-center justify-center border-b border-r border-line p-4">
-                <img src={src} alt={t.home.awardAlt} className="h-auto w-[74%] object-contain" />
-              </li>
-            ))}
-          </ul>
+          <div className="w-full overflow-hidden lg:flex-1">
+            <div className="marquee">
+              {[...HOME_AWARD_IMGS, ...HOME_AWARD_IMGS].map((src, i) => (
+                <div key={i} className="flex items-center">
+                  <img src={src} alt={i < HOME_AWARD_IMGS.length ? t.home.awardAlt : ''} className="mx-10 h-[92px] w-auto" />
+                  <span className="h-12 w-px bg-line" aria-hidden="true" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 06 — News: asymmetric pair */}
+      {/* News */}
       <section className="py-[clamp(110px,13vw,190px)]">
-        <div className="wrap grid items-end gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-6">
-            <Chapter n="06">{t.home.newsEyebrow}</Chapter>
-            <h2 className="t-h2 mt-8 reveal">{t.home.newsTitle}</h2>
+        <div className="wrap flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Eyebrow>{t.home.newsEyebrow}</Eyebrow>
+            <h2 className="f-title mt-8 fx-words">
+              <Words text={t.home.newsTitle} />
+            </h2>
           </div>
-          <div className="flex flex-col items-start gap-7 lg:col-span-4 lg:col-start-9">
-            <p className="t-body text-ink/62 reveal">{t.home.newsPara}</p>
-            <button onClick={() => onNav('novedades')} className="tlink">
-              {t.home.seeMoreNews}
-              <Arrow />
+          <div className="flex max-w-[40ch] flex-col items-start gap-6 fx-up">
+            <p className="f-body text-bone/60">{t.home.newsPara}</p>
+            <button onClick={() => onNav('novedades')} className="b-link">
+              <LinkArrow>{t.home.seeMoreNews}</LinkArrow>
             </button>
           </div>
         </div>
-        <div className="wrap mt-16 grid gap-x-12 gap-y-16 md:grid-cols-12">
-          {t.home.news.map((article, i) => (
+        <div className="wrap mt-16 grid gap-6 md:grid-cols-2">
+          {t.home.news.map((a, i) => (
             <button
-              key={article.title}
+              key={a.title}
               onClick={() => onNav('novedades')}
-              className={`group flex flex-col text-left ${i === 0 ? 'md:col-span-7' : 'md:col-span-5 md:mt-[22%]'}`}
+              className="group relative h-[clamp(440px,46vw,640px)] overflow-hidden rounded-[28px] text-left fx-up"
+              style={v({ '--d': `${i * 140}ms` })}
             >
-              <span className="relative block aspect-[4/3] overflow-hidden unveil">
-                <img
-                  src={HOME_NEWS_IMGS[i]}
-                  alt={article.title}
-                  className="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]"
-                />
+              <span className="absolute inset-0 transition-transform duration-[1600ms] ease-[cubic-bezier(.19,1,.22,1)] group-hover:scale-[1.05]">
+                <img src={HOME_NEWS_IMGS[i]} alt={a.title} className="size-full object-cover" />
               </span>
-              <span className="mt-6 block t-data text-[10.5px] text-ink/45">{article.date}</span>
-              <span className="mt-3 block t-h3 transition-colors group-hover:text-accent">{article.title}</span>
-              <span className="mt-3 block t-small max-w-[50ch] text-ink/62">{article.desc}</span>
+              <span className="absolute inset-0 bg-night/60 transition-colors duration-700 group-hover:bg-night/45" />
+              <span className="b-link absolute right-7 top-7">
+                <span className="ring bg-night/40">
+                  <Arrow />
+                </span>
+              </span>
+              <span className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-8 lg:p-10">
+                <span className="f-label text-gold">{a.date}</span>
+                <span className="f-h3 max-w-[18ch]">{a.title}</span>
+                <span className="f-small max-w-[46ch] text-bone/70">{a.desc}</span>
+              </span>
             </button>
           ))}
         </div>
@@ -816,20 +935,61 @@ function Home({ onNav }: { onNav: Nav }) {
   );
 }
 
-// ─── Shared page heading for inner pages ──────────────────────────────────────
+// ─── Inner page head (centered) ───────────────────────────────────────────────
 function PageHead({ eyebrow, title, para }: { eyebrow: string; title: string; para: string }) {
   return (
-    <section className="wrap grid items-end gap-10 pb-[clamp(44px,6vw,80px)] pt-[clamp(64px,9vw,130px)] lg:grid-cols-12">
-      <div className="lg:col-span-7">
-        <Chapter className="in-fade">{eyebrow}</Chapter>
-        <h1 className="t-h1 mt-8">
-          <span className="in-rise">
-            <span className="d1">{title}</span>
-          </span>
-        </h1>
-      </div>
-      <p className="t-body text-ink/62 lg:col-span-4 lg:col-start-9 in-fade d2">{para}</p>
+    <section className="wrap flex flex-col items-center pb-[clamp(56px,7vw,100px)] pt-[clamp(70px,10vw,150px)] text-center">
+      <Eyebrow center className="in-up">
+        {eyebrow}
+      </Eyebrow>
+      <h1 className="f-display mt-9 max-w-[15ch] text-[clamp(52px,8vw,128px)] fx-words">
+        <Words text={title} />
+      </h1>
+      <p className="f-lead mt-9 max-w-[56ch] text-bone/65 in-up" style={v({ '--d': '500ms' })}>
+        {para}
+      </p>
     </section>
+  );
+}
+
+// A bottle standing in its arched niche — used by the catalogue and the detail page.
+function Niche({
+  id,
+  name,
+  sub,
+  tag,
+  cta,
+  onClick,
+  delay = 0,
+}: {
+  id: string;
+  name: string;
+  sub: string;
+  tag: string;
+  cta: string;
+  onClick: () => void;
+  delay?: number;
+}) {
+  return (
+    <button onClick={onClick} className="group flex flex-col items-center text-center fx-up" style={v({ '--d': `${delay}ms` })}>
+      <span className="relative flex aspect-[3/4] w-full items-end justify-center overflow-hidden rounded-t-full border border-line bg-night-2 transition-colors duration-700 group-hover:border-gold/50">
+        <span
+          className="absolute bottom-0 left-1/2 h-[62%] w-[72%] -translate-x-1/2 rounded-t-full border border-gold/10 bg-night-3/60 transition-colors duration-700 group-hover:border-gold/30"
+          aria-hidden="true"
+        />
+        <img
+          src={WINE_META[id].img}
+          alt={`${name} ${sub}`}
+          className="relative mb-[7%] h-[82%] w-auto object-contain transition-transform duration-[1100ms] ease-[cubic-bezier(.19,1,.22,1)] group-hover:-translate-y-4"
+        />
+      </span>
+      <span className="f-label mt-7 text-gold">{tag}</span>
+      <span className="f-h3 mt-3">{name}</span>
+      <span className="f-label mt-1 text-bone/50">{sub}</span>
+      <span className="b-link mt-6">
+        <LinkArrow>{cta}</LinkArrow>
+      </span>
+    </button>
   );
 }
 
@@ -842,51 +1002,39 @@ function Vinos({ onNav }: { onNav: Nav }) {
     filter === 'TODOS' ? wines : filter === 'BLENDS' ? wines.filter((w) => w.blend) : wines.filter((w) => w.tag === filter);
 
   return (
-    <div className="w-full bg-surface">
+    <div className="w-full">
       <PageHead eyebrow={t.vinos.heroEyebrow} title={t.vinos.heroTitle} para={t.vinos.heroPara} />
 
-      <div className="sticky top-[var(--header)] z-30 border-y border-line bg-surface/95 backdrop-blur-md">
-        <div className="wrap flex flex-wrap items-center gap-x-8 gap-y-2 py-3">
-          <span className="t-label text-ink/45">{t.vinos.filterLabel}</span>
-          <div role="tablist" className="flex flex-wrap gap-x-7">
-            {(['TODOS', 'ALTAMIRA', 'VAV', 'BLENDS'] as const).map((f) => (
-              <button
-                key={f}
-                role="tab"
-                aria-selected={filter === f}
-                onClick={() => setFilter(f)}
-                className={`t-label border-b py-3 transition-colors ${
-                  filter === f ? 'border-accent-solid text-ink' : 'border-transparent text-ink/45 hover:text-ink'
-                }`}
-              >
-                {t.vinos.filterLabels[f]}
-              </button>
-            ))}
-          </div>
-          <span className="ml-auto t-data text-ink/45">{filtered.length.toString().padStart(2, '0')}</span>
+      <div className="pointer-events-none sticky top-[calc(var(--header)_+_10px)] z-30 flex justify-center px-4">
+        <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-1 rounded-full border border-line bg-night/85 p-1.5 backdrop-blur-xl">
+          {(['TODOS', 'ALTAMIRA', 'VAV', 'BLENDS'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              aria-pressed={filter === f}
+              className={`f-label rounded-full px-5 py-2.5 text-[10px] transition-colors duration-500 ${
+                filter === f ? 'bg-gold text-night' : 'text-bone/65 hover:text-bone'
+              }`}
+            >
+              {t.vinos.filterLabels[f]}
+            </button>
+          ))}
+          <span className="f-label px-4 text-[10px] text-bone/40">{pad2(filtered.length)}</span>
         </div>
       </div>
 
-      <div className="wrap grid grid-cols-1 gap-x-14 gap-y-20 py-[clamp(64px,8vw,120px)] sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((wine) => (
-          <button key={wine.id} onClick={() => onNav('wine-detail', wine.id)} className="group flex flex-col text-left reveal">
-            <span className="relative flex h-[clamp(360px,32vw,470px)] items-end justify-center border-b border-line">
-              <img
-                src={wine.img}
-                alt={`${wine.name} ${wine.sub}`}
-                className="h-[90%] w-auto object-contain transition-transform duration-[900ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-3"
-              />
-            </span>
-            <span className="mt-6 block t-data text-[10.5px] text-ink/45">{wine.gridRegion}</span>
-            <span className="mt-3 block t-name text-[clamp(27px,2.3vw,34px)] transition-colors group-hover:text-accent">
-              {wine.name}
-            </span>
-            <span className="mt-2 block t-label text-ink/55">{wine.sub}</span>
-            <span className="tlink mt-7 self-start text-accent">
-              {t.vinos.fullInfo}
-              <Arrow />
-            </span>
-          </button>
+      <div className="wrap grid gap-x-10 gap-y-20 pb-[clamp(100px,12vw,170px)] pt-14 sm:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((w, i) => (
+          <Niche
+            key={w.id}
+            id={w.id}
+            name={w.name}
+            sub={w.sub}
+            tag={w.gridRegion}
+            cta={t.vinos.fullInfo}
+            delay={(i % 3) * 120}
+            onClick={() => onNav('wine-detail', w.id)}
+          />
         ))}
       </div>
     </div>
@@ -904,16 +1052,9 @@ function TerrainMap() {
       { name: 'La Consulta', lat: -33.76, lon: -69.07 },
       { name: 'Altamira', lat: -33.79, lon: -69.13 },
     ];
-    const map = L.map(el, {
-      scrollWheelZoom: false,
-      zoomControl: false,
-      attributionControl: true,
-      minZoom: 8,
-      maxZoom: 16,
-    });
+    const map = L.map(el, { scrollWheelZoom: false, zoomControl: false, attributionControl: true, minZoom: 8, maxZoom: 16 });
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-    // Satellite imagery — the irrigated vineyards read as green against the arid
-    // Andes foothills (a cultivated oasis, not an empty desert).
+    // Satellite imagery — irrigated vineyards read green against the arid foothills.
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Imagery © Esri · Maxar · Earthstar Geographics',
       maxZoom: 18,
@@ -944,101 +1085,96 @@ function TerrainMap() {
       map.remove();
     };
   }, []);
-  return <div ref={ref} className="vf-map h-[clamp(380px,46vw,580px)] w-full" />;
+  return <div ref={ref} className="vf-map h-[clamp(400px,48vw,620px)] w-full" />;
 }
 
 // ─── VIÑEDOS ──────────────────────────────────────────────────────────────────
 function Vinedos() {
   const t = useT();
   const coords = useCoords();
-  const offsets = ['', 'md:mt-28', 'md:mt-14'];
   return (
-    <div className="w-full bg-surface">
-      {/* The estate's own photograph, framed */}
-      <section className="relative flex h-[clamp(500px,76vh,780px)] items-end overflow-hidden text-on-dark">
-        <img
-          src={`${A}/andes-real.jpg`}
-          alt={t.vinedos.heroTitle1 + ' ' + t.vinedos.heroTitle2}
-          className="absolute inset-0 size-full object-cover object-[50%_20%] kenburns"
-        />
-        <div className="absolute inset-0 bg-[rgba(10,9,7,0.36)]" />
-        <Corners className="[--ci:20px] text-on-dark/80" />
-        <div className="wrap relative grid w-full items-end gap-6 pb-[clamp(44px,6vw,84px)] lg:grid-cols-12">
-          <div className="lg:col-span-9">
-            <p className="t-label text-on-dark/80 in-fade">{t.vinedos.heroEyebrow}</p>
-            <h1 className="t-h1 mt-6 max-w-[16ch]">
-              <span className="in-rise">
-                <span className="d1">
-                  {t.vinedos.heroTitle1} {t.vinedos.heroTitle2}
-                </span>
-              </span>
-            </h1>
-          </div>
-          <p className="t-data text-[10.5px] text-on-dark/75 lg:col-span-3 lg:text-right in-fade d2">{coords(ESTATE_COORD)}</p>
+    <div className="w-full">
+      <PageHead eyebrow={t.vinedos.heroEyebrow} title={`${t.vinedos.heroTitle1} ${t.vinedos.heroTitle2}`} para={t.vinedos.intro1} />
+
+      {/* The estate's own photograph under a wide vault */}
+      <section className="wrap">
+        <div className="relative h-[clamp(420px,74vh,780px)] overflow-hidden rounded-t-[min(44vw,640px)] fx-arch">
+          <img
+            src={`${A}/andes-real.jpg`}
+            alt={`${t.vinedos.heroTitle1} ${t.vinedos.heroTitle2}`}
+            className="absolute inset-0 size-full object-cover object-[50%_22%]"
+          />
+        </div>
+        <div className="f-label mt-6 flex flex-wrap justify-between gap-4 text-[9.5px] text-bone/50">
+          <span>{coords(ESTATE_COORD)}</span>
+          <span>
+            {t.home.stats[0].num} m · {t.vinedos.mapPlace1}
+          </span>
         </div>
       </section>
 
-      <section className="wrap grid gap-10 py-[clamp(90px,11vw,160px)] lg:grid-cols-12">
-        <p className="t-lead text-ink/85 lg:col-span-7 reveal">{t.vinedos.intro1}</p>
-        <p className="t-body text-ink/62 lg:col-span-4 lg:col-start-9 reveal">{t.vinedos.intro2}</p>
+      <section className="wrap py-[clamp(100px,12vw,170px)] text-center">
+        <p className="f-lead mx-auto max-w-[62ch] text-bone/75 fx-up">{t.vinedos.intro2}</p>
       </section>
 
-      {/* Three terroirs — a staggered triptych */}
-      <section className="wrap pb-[clamp(110px,13vw,190px)]">
-        <div className="grid gap-x-12 gap-y-20 md:grid-cols-3">
-          {t.vinedos.cards.map((v, i) => (
-            <article key={v.num} className={`flex flex-col ${offsets[i]}`}>
-              <figure className="relative aspect-[4/5] overflow-hidden unveil">
-                <img src={VINEDOS_IMGS[i]} alt={v.name + v.italic} className="absolute inset-0 size-full object-cover" />
-                <Corners className="text-on-dark/80" />
-              </figure>
-              <p className="t-data mt-7 text-accent">{v.num}</p>
-              <h3 className="t-name mt-3 text-[clamp(29px,2.6vw,38px)]">
-                {v.name}
-                {v.italic}
-              </h3>
-              <p className="t-data mt-3 text-[10.5px] text-ink/45">{coords(VY_COORDS[i])}</p>
-              <p className="t-small mt-5 text-ink/70">{v.desc}</p>
-              <dl className="mt-7 border-t border-line">
-                {v.specs.map((s) => (
-                  <div key={s.l} className="flex items-baseline justify-between gap-4 border-b border-line py-3">
-                    <dt className="t-label text-[10px] text-ink/45">{s.l}</dt>
-                    <dd className="text-[15px]">{s.v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </article>
-          ))}
-        </div>
-      </section>
+      {/* The three terroirs */}
+      {t.vinedos.cards.map((c, i) => {
+        const flip = i % 2 === 1;
+        return (
+          <section key={c.num} className="wrap">
+            <div className="grid items-center gap-12 border-t border-line py-[clamp(70px,8vw,120px)] lg:grid-cols-12">
+              <div
+                className={`relative h-[clamp(460px,64vh,680px)] overflow-hidden rounded-t-full lg:col-span-5 lg:row-start-1 fx-arch ${
+                  flip ? 'lg:col-start-8' : 'lg:col-start-1'
+                }`}
+              >
+                <img src={VINEDOS_IMGS[i]} alt={c.name + c.italic} className="absolute inset-0 size-full object-cover" />
+              </div>
+              <div className={`lg:col-span-6 lg:row-start-1 ${flip ? 'lg:col-start-1' : 'lg:col-start-7'}`}>
+                <span className="f-display block text-[clamp(96px,12vw,180px)] leading-[0.8] text-gold/25">{pad2(i + 1)}</span>
+                <p className="f-label mt-6 text-gold">{c.num}</p>
+                <h2 className="f-title mt-4 fx-words">
+                  <Words text={`${c.name}${c.italic}`} />
+                </h2>
+                <p className="f-label mt-5 text-[9.5px] text-bone/45">{coords(VY_COORDS[i])}</p>
+                <p className="f-body mt-6 max-w-[48ch] text-bone/70 fx-up">{c.desc}</p>
+                <dl className="mt-10 grid grid-cols-3 gap-4 rounded-[22px] border border-line p-6 fx-up">
+                  {c.specs.map((s) => (
+                    <div key={s.l}>
+                      <dt className="f-label text-[9.5px] text-bone/45">{s.l}</dt>
+                      <dd className="f-display mt-2 text-[clamp(20px,1.9vw,27px)] leading-tight">{s.v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </div>
+          </section>
+        );
+      })}
 
-      {/* Location — satellite map in a viewfinder */}
-      <section className="relative overflow-hidden bg-panel py-[clamp(90px,11vw,160px)] text-on-dark">
-        <div className="pointer-events-none absolute inset-0 text-on-dark">
-          <Contours className="h-full w-full" lines={9} seed={4} opacity={0.05} />
-        </div>
-        <div className="wrap relative grid items-center gap-14 lg:grid-cols-12">
-          <div className="flex flex-col lg:col-span-4 reveal">
-            <Chapter className="text-accent-light">{t.vinedos.mapLabel}</Chapter>
-            <h2 className="t-h2 mt-8">
+      {/* Location */}
+      <section className="rounded-t-[clamp(28px,4vw,64px)] bg-night-2 py-[clamp(100px,12vw,170px)]">
+        <div className="wrap grid items-center gap-14 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <Eyebrow>{t.vinedos.mapLabel}</Eyebrow>
+            <h2 className="f-title mt-8">
               {t.vinedos.mapPlace1}
-              <span className="t-name block">{t.vinedos.mapPlace2}</span>
+              <span className="block text-gold">{t.vinedos.mapPlace2}</span>
             </h2>
-            <p className="t-body mt-6 max-w-[40ch] text-on-dark/70">{t.vinedos.mapDesc}</p>
-            <ol className="mt-10 border-t border-line-dark">
+            <p className="f-body mt-6 max-w-[40ch] text-bone/65 fx-up">{t.vinedos.mapDesc}</p>
+            <ol className="mt-10 flex flex-col gap-3 fx-up">
               {t.vinedos.mapArt.vineyards.map((name, i) => (
-                <li key={name} className="flex items-baseline gap-5 border-b border-line-dark py-4">
-                  <span className="t-data text-accent-light">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="t-small text-on-dark/85">{name}</span>
+                <li key={name} className="flex items-center gap-4 rounded-full border border-line px-5 py-3">
+                  <span className="f-label grid size-7 shrink-0 place-items-center rounded-full bg-gold text-[9px] text-night">
+                    {i + 1}
+                  </span>
+                  <span className="f-small text-bone/85">{name}</span>
                 </li>
               ))}
             </ol>
           </div>
-          <div className="relative lg:col-span-8 reveal">
-            <div className="border border-line-dark">
-              <TerrainMap />
-            </div>
-            <Corners className="[--ci:-12px] [--cs:20px] text-accent-light" />
+          <div className="overflow-hidden rounded-[28px] border border-line lg:col-span-8 fx-up">
+            <TerrainMap />
           </div>
         </div>
       </section>
@@ -1051,48 +1187,42 @@ function Novedades() {
   const t = useT();
   const f = t.novedades.featured;
   return (
-    <div className="w-full bg-surface">
+    <div className="w-full">
       <PageHead eyebrow={t.novedades.eyebrow} title={t.novedades.title} para={t.novedades.para} />
 
-      <section className="wrap grid items-center gap-12 border-t border-line py-[clamp(56px,7vw,110px)] lg:grid-cols-12">
-        <figure className="relative aspect-[16/10] overflow-hidden lg:col-span-7 unveil">
-          <img src={IMG.vinexpo} alt={f.title1 + ' ' + f.title2} className="absolute inset-0 size-full object-cover" />
-          <Corners className="text-on-dark/80" />
-        </figure>
-        <div className="flex flex-col lg:col-span-4 lg:col-start-9">
-          <p className="t-data text-[10.5px] text-accent">{f.tag}</p>
-          <h2 className="t-h2 mt-6 reveal">
-            {f.title1} {f.title2}
-          </h2>
-          <p className="t-body mt-6 text-ink/68 reveal">{f.desc}</p>
-          <button className="tlink mt-9 self-start">
-            {t.novedades.readNote}
-            <Arrow />
-          </button>
-        </div>
+      <section className="wrap">
+        <article className="relative h-[clamp(500px,74vh,800px)] overflow-hidden rounded-[32px]">
+          <div className="absolute inset-0 fx-img">
+            <img src={IMG.vinexpo} alt={`${f.title1} ${f.title2}`} className="size-full object-cover" />
+          </div>
+          <div className="absolute inset-0 bg-night/55" />
+          <div className="absolute inset-x-0 bottom-0 flex max-w-[680px] flex-col items-start p-[clamp(28px,4.5vw,72px)]">
+            <p className="f-label text-gold">{f.tag}</p>
+            <h2 className="f-title mt-5 fx-words">
+              <Words text={`${f.title1} ${f.title2}`} />
+            </h2>
+            <p className="f-body mt-5 text-bone/75">{f.desc}</p>
+            <button className="b-link mt-8">
+              <LinkArrow>{t.novedades.readNote}</LinkArrow>
+            </button>
+          </div>
+        </article>
       </section>
 
-      <section className="wrap pb-[clamp(90px,11vw,160px)]">
-        <ul className="border-t border-line">
-          {t.novedades.articles.map((a, i) => (
-            <li key={a.title} className="reveal">
-              <article className="grid items-center gap-x-12 gap-y-5 border-b border-line py-10 md:grid-cols-12">
-                <p className="t-data text-[10.5px] text-ink/50 md:col-span-3">{a.tag}</p>
-                <div className="md:col-span-5">
-                  <h3 className="t-h3">{a.title}</h3>
-                  <p className="t-small mt-3 text-ink/62">{a.desc}</p>
-                  <button className="tlink mt-5">
-                    {t.novedades.readNote}
-                    <Arrow />
-                  </button>
-                </div>
-                <div className="relative aspect-[3/2] overflow-hidden md:col-span-3 md:col-start-10">
-                  <img src={NOVEDADES_ARTICLE_IMGS[i]} alt={a.title} className="absolute inset-0 size-full object-cover" />
-                </div>
-              </article>
-            </li>
-          ))}
-        </ul>
+      <section className="wrap grid gap-x-10 gap-y-16 py-[clamp(100px,12vw,170px)] md:grid-cols-3">
+        {t.novedades.articles.map((a, i) => (
+          <article key={a.title} className="flex flex-col fx-up" style={v({ '--d': `${i * 120}ms` })}>
+            <div className="relative aspect-[3/4] overflow-hidden rounded-t-full fx-arch">
+              <img src={NOVEDADES_ARTICLE_IMGS[i]} alt={a.title} className="absolute inset-0 size-full object-cover" />
+            </div>
+            <p className="f-label mt-7 text-gold">{a.tag}</p>
+            <h3 className="f-h3 mt-3">{a.title}</h3>
+            <p className="f-small mt-3 text-bone/60">{a.desc}</p>
+            <button className="b-link mt-6 self-start">
+              <LinkArrow>{t.novedades.readNote}</LinkArrow>
+            </button>
+          </article>
+        ))}
       </section>
     </div>
   );
@@ -1117,67 +1247,56 @@ function Contacto() {
     { name: 'country', label: t.contacto.fields[2], type: 'text', span: 'sm:col-span-2', auto: 'country-name' },
   ];
   return (
-    <div className="w-full bg-surface">
-      <section className="grid lg:min-h-[calc(100dvh_-_var(--header))] lg:grid-cols-2">
-        <div className="flex flex-col px-[var(--gutter)] py-[clamp(64px,9vw,130px)] lg:pr-16">
-          <Chapter className="in-fade">{t.contacto.eyebrow}</Chapter>
-          <h1 className="t-h1 mt-8">
-            <span className="in-rise">
-              <span className="d1">{t.contacto.title}</span>
-            </span>
-          </h1>
-          <p className="t-lead mt-8 max-w-[36ch] text-ink/72 in-fade d2">
-            {t.contacto.intro1} {t.contacto.intro2}
-          </p>
-          <form onSubmit={send} className="mt-14 grid max-w-[640px] gap-x-10 gap-y-9 sm:grid-cols-2 in-fade d3">
-            {fields.map((field) => (
-              <label key={field.name} className={`field ${field.span}`}>
-                <span className="t-label text-ink/50">{field.label}</span>
-                <input name={field.name} type={field.type} required autoComplete={field.auto} className="field__input" />
-              </label>
-            ))}
-            <label className="field sm:col-span-2">
-              <span className="t-label text-ink/50">{t.contacto.messageLabel}</span>
-              <textarea name="message" required rows={3} className="field__input resize-none" />
-            </label>
-            <button type="submit" className="btn btn--solid mt-2 justify-self-start sm:col-span-2">
-              {t.contacto.submit}
-              <Arrow />
-            </button>
-          </form>
-        </div>
+    <div className="w-full">
+      <PageHead eyebrow={t.contacto.eyebrow} title={t.contacto.title} para={`${t.contacto.intro1} ${t.contacto.intro2}`} />
 
-        <div className="relative min-h-[500px] overflow-hidden text-on-dark">
-          <img src={IMG.cellar} alt="" className="absolute inset-0 size-full object-cover" />
-          <div className="absolute inset-0 bg-[rgba(10,9,7,0.52)]" />
-          <Corners className="[--ci:20px] text-on-dark/75" />
-          <dl className="absolute inset-x-0 bottom-0 grid gap-x-10 gap-y-8 p-[clamp(36px,4.4vw,64px)] sm:grid-cols-2">
+      <section className="wrap grid gap-10 pb-[clamp(100px,12vw,170px)] lg:grid-cols-12">
+        <aside className="flex flex-col gap-10 lg:col-span-4">
+          <div className="relative h-[clamp(340px,40vw,460px)] overflow-hidden rounded-t-full fx-arch">
+            <img src={IMG.cellar} alt="" className="absolute inset-0 size-full object-cover" />
+          </div>
+          <dl className="flex flex-col gap-7">
             <div>
-              <dt className="t-label text-on-dark/55">{t.contacto.officeLabel}</dt>
-              <dd className="t-small mt-3">
-                Av. Colón 241
-                <br />
-                (5500) Mendoza, Argentina
-              </dd>
+              <dt className="f-label text-bone/40">{t.contacto.officeLabel}</dt>
+              <dd className="f-small mt-2 text-bone/85">Av. Colón 241 · (5500) Mendoza, Argentina</dd>
             </div>
             <div>
-              <dt className="t-label text-on-dark/55">{t.contacto.phoneLabel}</dt>
-              <dd className="t-small mt-3">
+              <dt className="f-label text-bone/40">{t.contacto.phoneLabel}</dt>
+              <dd className="f-small mt-2 text-bone/85">
                 Tel / Fax +54 261 4299962
                 <br />
                 Mobile USA +1 (305) 988 5992
               </dd>
             </div>
-            <div className="sm:col-span-2">
-              <dt className="t-label text-on-dark/55">{t.contacto.emailLabel}</dt>
-              <dd className="mt-3">
-                <a href={`mailto:${CONTACT_EMAIL}`} className="t-small border-b border-on-dark/40 pb-1 transition-colors hover:border-on-dark">
+            <div>
+              <dt className="f-label text-bone/40">{t.contacto.emailLabel}</dt>
+              <dd className="mt-2">
+                <a href={`mailto:${CONTACT_EMAIL}`} className="f-small text-gold-soft transition-colors hover:text-gold">
                   {CONTACT_EMAIL}
                 </a>
               </dd>
             </div>
           </dl>
-        </div>
+        </aside>
+
+        <form
+          onSubmit={send}
+          className="grid content-start gap-x-10 gap-y-10 rounded-[32px] border border-line bg-night-2 p-[clamp(28px,4.4vw,68px)] sm:grid-cols-2 lg:col-span-7 lg:col-start-6 fx-up"
+        >
+          {fields.map((field) => (
+            <label key={field.name} className={`field ${field.span}`}>
+              <span className="f-label text-bone/50">{field.label}</span>
+              <input name={field.name} type={field.type} required autoComplete={field.auto} className="field__input" />
+            </label>
+          ))}
+          <label className="field sm:col-span-2">
+            <span className="f-label text-bone/50">{t.contacto.messageLabel}</span>
+            <textarea name="message" required rows={4} className="field__input resize-none" />
+          </label>
+          <button type="submit" className="b-pill b-pill--solid justify-self-start sm:col-span-2">
+            {t.contacto.submit}
+          </button>
+        </form>
       </section>
     </div>
   );
@@ -1190,79 +1309,81 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
   const meta = WINE_META[wine.id];
   const others = t.wineCatalog.filter((w) => w.id !== wine.id).slice(0, 3);
   return (
-    <div className="w-full bg-surface">
-      <div className="border-b border-line">
-        <nav className="wrap flex items-center gap-3 py-4 t-data text-[10.5px] text-ink/50" aria-label="Breadcrumb">
-          <button onClick={() => onNav('vinos')} className="transition-colors hover:text-ink">
-            {t.nav.vinos}
-          </button>
-          <span aria-hidden="true">/</span>
-          <span className="text-ink/80">{wine.region}</span>
-        </nav>
+    <div className="w-full">
+      <div className="wrap pt-[clamp(28px,4vw,52px)]">
+        <button onClick={() => onNav('vinos')} className="b-link">
+          <span className="ring">
+            <Arrow flip />
+          </span>
+          <span>{t.nav.vinos}</span>
+        </button>
       </div>
 
-      <section className="grid lg:grid-cols-12">
-        {/* Bottle on a stage, under the horizon */}
-        <div className="relative flex min-h-[560px] items-end justify-center overflow-hidden bg-panel pb-16 text-on-dark lg:col-span-6 lg:min-h-[calc(100dvh_-_var(--header)_-_50px)]">
-          <Horizon className="absolute inset-x-0 top-[30%] h-[140px] w-full text-on-dark/15" />
-          <Corners className="[--ci:20px] text-on-dark/60" />
-          <p className="absolute left-[38px] top-[36px] t-data text-[10.5px] text-on-dark/60">{meta.tag}</p>
-          <span className="absolute inset-x-[14%] bottom-16 h-px bg-on-dark/20" aria-hidden="true" />
-          <img
-            key={wine.id}
-            src={meta.img}
-            alt={`${wine.title1} ${wine.title2}`}
-            className="relative h-[clamp(380px,62vh,640px)] w-auto object-contain in-fade"
-          />
-        </div>
-
-        <div className="flex flex-col justify-center px-[var(--gutter)] py-[clamp(56px,7vw,110px)] lg:col-span-6 lg:px-[clamp(40px,5.4vw,96px)]">
-          <p className="t-data text-[10.5px] text-accent">{wine.region}</p>
-          <h1 className="mt-6">
-            <span className="block t-name text-[clamp(42px,4.8vw,72px)]">{wine.title1}</span>
-            <span className="block t-h1 text-[clamp(38px,4.3vw,64px)]">{wine.title2}</span>
+      <section className="wrap grid items-center gap-x-12 gap-y-12 py-[clamp(40px,6vw,90px)] lg:grid-cols-[1fr_minmax(0,0.95fr)_1fr]">
+        <div className="order-2 lg:order-1">
+          <p className="f-label text-gold in-up">{wine.region}</p>
+          <h1 className="f-display mt-6 text-[clamp(52px,5.6vw,92px)] leading-[0.98] fx-words">
+            <Words parts={[{ t: wine.title1 + ' ' }, { t: wine.title2, cls: 'text-gold-soft' }]} />
           </h1>
-          <p className="t-lead mt-8 max-w-[44ch] text-ink/78">{wine.desc}</p>
-
-          <div className="mt-10 flex items-end gap-6 border-t border-line pt-6">
-            <span className="t-num text-[64px] text-accent">{wine.score.value}</span>
-            <span className="flex flex-col gap-1 pb-2">
-              <span className="t-label">{wine.score.critic}</span>
-              <span className="t-data text-ink/50">{wine.score.year}</span>
+          <p className="f-lead mt-8 text-bone/75 in-up" style={v({ '--d': '300ms' })}>
+            {wine.desc}
+          </p>
+          <div className="mt-10 flex items-center gap-5 in-up" style={v({ '--d': '400ms' })}>
+            <span className="f-display grid size-[84px] place-items-center rounded-full border border-gold/50 text-[34px] text-gold">
+              {wine.score.value}
+            </span>
+            <span className="flex flex-col">
+              <span className="f-label">{wine.score.critic}</span>
+              <span className="f-label text-bone/45">
+                {wine.score.year} · {t.ui.points}
+              </span>
             </span>
           </div>
+          <div className="mt-10 flex flex-wrap gap-3 in-up" style={v({ '--d': '500ms' })}>
+            <button onClick={() => onNav('contacto')} className="b-pill b-pill--solid">
+              {t.wineDetail.ctaInfo}
+            </button>
+            <button className="b-pill">{t.wineDetail.downloadPdf}</button>
+          </div>
+        </div>
 
-          <p className="t-label mt-12 text-ink/50">{t.wineDetail.fichaLabel}</p>
-          <dl className="mt-4 border-t border-line">
-            {wine.ficha.map((s) => (
-              <div key={s.label} className="flex items-baseline justify-between gap-6 border-b border-line py-3.5">
-                <dt className="t-label text-[10px] text-ink/50">{s.label}</dt>
-                <dd className="text-right text-[15px]">{s.value}</dd>
+        <div className="relative order-1 mx-auto flex h-[clamp(480px,74vh,760px)] w-full max-w-[460px] items-end justify-center overflow-hidden rounded-t-full border border-line bg-night-2 lg:order-2">
+          <span
+            className="absolute bottom-0 left-1/2 h-[64%] w-[74%] -translate-x-1/2 rounded-t-full border border-gold/15 bg-night-3/70"
+            aria-hidden="true"
+          />
+          <img src={meta.img} alt={`${wine.title1} ${wine.title2}`} className="relative mb-[6%] h-[84%] w-auto object-contain sc-bottle" />
+        </div>
+
+        <div className="order-3">
+          <p className="f-label text-gold">{t.wineDetail.fichaLabel}</p>
+          <dl className="mt-5">
+            {wine.ficha.map((s, k) => (
+              <div
+                key={s.label}
+                className="flex items-baseline justify-between gap-6 border-b border-line py-4 in-up"
+                style={v({ '--d': `${200 + k * 70}ms` })}
+              >
+                <dt className="f-label text-[9.5px] text-bone/45">{s.label}</dt>
+                <dd className="f-small text-right text-bone/90">{s.value}</dd>
               </div>
             ))}
           </dl>
-
-          <div className="mt-10 flex flex-wrap gap-4">
-            <button onClick={() => onNav('contacto')} className="btn btn--solid">
-              {t.wineDetail.ctaInfo}
-              <Arrow />
-            </button>
-            <button className="btn">{t.wineDetail.downloadPdf}</button>
-          </div>
         </div>
       </section>
 
       {/* Tasting notes */}
-      <section className="bg-surface-2 py-[clamp(90px,11vw,150px)]">
+      <section className="mt-[clamp(40px,6vw,90px)] rounded-t-[clamp(28px,4vw,64px)] bg-night-2 py-[clamp(90px,11vw,150px)]">
         <div className="wrap">
-          <Chapter>{t.wineDetail.notesLabel}</Chapter>
-          <div className="mt-12 grid gap-x-12 gap-y-12 md:grid-cols-3">
+          <div className="flex justify-center">
+            <Eyebrow center>{t.wineDetail.notesLabel}</Eyebrow>
+          </div>
+          <div className="mt-16 grid gap-12 text-center md:grid-cols-3">
             {wine.notes.map((note, i) => (
-              <div key={note.label} className="border-t border-line pt-6 reveal">
-                <p className="t-data text-[10.5px] text-accent">
-                  {String(i + 1).padStart(2, '0')} — {note.label}
-                </p>
-                <p className="t-name mt-5 text-[clamp(22px,2vw,28px)] leading-[1.38]">{note.text}</p>
+              <div key={note.label} className="flex flex-col items-center fx-up" style={v({ '--d': `${i * 120}ms` })}>
+                <span className="f-display text-[72px] leading-none text-gold/40">{pad2(i + 1)}</span>
+                <p className="f-label mt-5 text-gold">{note.label}</p>
+                <p className="f-lead mt-4 max-w-[30ch] text-bone/80">{note.text}</p>
               </div>
             ))}
           </div>
@@ -1270,54 +1391,49 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
       </section>
 
       {/* Origin */}
-      <section className="relative overflow-hidden bg-panel text-on-dark">
-        <div className="pointer-events-none absolute inset-0 text-on-dark">
-          <Contours className="h-full w-full" lines={9} seed={3} opacity={0.06} />
-        </div>
-        <div className="wrap relative grid items-end gap-10 py-[clamp(90px,11vw,150px)] lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <Chapter className="text-accent-light">{t.wineDetail.vyEyebrow}</Chapter>
-            <h2 className="t-h2 mt-8 reveal">{t.wineDetail.vyTitle}</h2>
+      <section className="wrap py-[clamp(90px,11vw,150px)]">
+        <div className="relative overflow-hidden rounded-[32px]">
+          <div className="absolute inset-x-0 -bottom-[16%] -top-[16%]" data-speed="0.1">
+            <img src={`${A}/andes-real.jpg`} alt="" className="size-full object-cover object-[50%_25%]" />
           </div>
-          <div className="lg:col-span-4 lg:col-start-9">
-            <p className="t-body text-on-dark/70 reveal">{t.wineDetail.vyDesc}</p>
-            <button onClick={() => onNav('vinedos')} className="btn btn--light mt-8">
+          <div className="absolute inset-0 bg-night/65" />
+          <div className="relative flex flex-col items-start gap-6 p-[clamp(32px,6vw,96px)] lg:max-w-[760px]">
+            <Eyebrow>{t.wineDetail.vyEyebrow}</Eyebrow>
+            <h2 className="f-title fx-words">
+              <Words text={t.wineDetail.vyTitle} />
+            </h2>
+            <p className="f-body max-w-[48ch] text-bone/75">{t.wineDetail.vyDesc}</p>
+            <button onClick={() => onNav('vinedos')} className="b-pill mt-2">
               {t.wineDetail.vyBtn}
-              <Arrow />
             </button>
           </div>
         </div>
       </section>
 
       {/* Other wines */}
-      <section className="wrap py-[clamp(90px,11vw,150px)]">
+      <section className="wrap pb-[clamp(90px,11vw,150px)]">
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <h2 className="t-h2">{t.wineDetail.otherWines}</h2>
-          <button onClick={() => onNav('vinos')} className="tlink">
-            {t.wineDetail.seeAllWines}
-            <Arrow />
+          <h2 className="f-title fx-words">
+            <Words text={t.wineDetail.otherWines} />
+          </h2>
+          <button onClick={() => onNav('vinos')} className="b-link">
+            <LinkArrow>{t.wineDetail.seeAllWines}</LinkArrow>
           </button>
         </div>
-        <ul className="mt-12 border-t border-line">
-          {others.map((w) => (
-            <li key={w.id}>
-              <button
-                onClick={() => onNav('wine-detail', w.id)}
-                className="group grid w-full grid-cols-[52px_1fr_auto] items-center gap-6 border-b border-line py-5 text-left"
-              >
-                <img src={WINE_META[w.id].img} alt={w.name} className="h-[86px] w-[52px] object-contain" />
-                <span className="flex flex-col gap-1">
-                  <span className="t-data text-[10.5px] text-ink/45">{WINE_META[w.id].tag}</span>
-                  <span className="t-name text-[clamp(23px,2vw,29px)] transition-colors group-hover:text-accent">
-                    {w.name}
-                  </span>
-                  <span className="t-label text-[10px] text-ink/50">{w.sub}</span>
-                </span>
-                <Arrow className="text-ink/50" />
-              </button>
-            </li>
+        <div className="mt-14 grid gap-x-10 gap-y-16 sm:grid-cols-3">
+          {others.map((w, i) => (
+            <Niche
+              key={w.id}
+              id={w.id}
+              name={w.name}
+              sub={w.sub}
+              tag={WINE_META[w.id].tag}
+              cta={t.vinos.fullInfo}
+              delay={i * 120}
+              onClick={() => onNav('wine-detail', w.id)}
+            />
           ))}
-        </ul>
+        </div>
       </section>
     </div>
   );
@@ -1325,7 +1441,8 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 const PAGES: Page[] = ['home', 'vinos', 'vinedos', 'novedades', 'contacto', 'wine-detail'];
-const REVEAL_SEL = '.reveal:not(.visible), .unveil:not(.visible), .draw:not(.visible)';
+const REVEAL_SEL =
+  '.fx-up:not(.in), .fx-words:not(.in), .fx-img:not(.in), .fx-arch:not(.in), .fx-line:not(.in), .odo:not(.in)';
 
 function parseHash(): { page: Page; wineId?: string } {
   if (typeof window === 'undefined') return { page: 'home' };
@@ -1359,42 +1476,65 @@ function Site() {
       const s = parseHash();
       setPage(s.page);
       if (s.wineId) setActiveWine(s.wineId);
-      window.scrollTo({ top: 0 });
+      window.scrollTo({ top: 0, behavior: 'instant' });
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  // Arm the scroll reveals before first paint (CSS only hides content under .js-reveal).
+  // Arm scroll reveals before first paint (CSS only hides content under .js-reveal).
   useLayoutEffect(() => {
     document.documentElement.classList.add('js-reveal');
   }, []);
 
-  // One observer for every scroll reveal on any page; a mutation watcher picks
-  // up content that mounts later (page changes, filters, language switches).
+  // One observer for every reveal on any page, plus scroll parallax for [data-speed].
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            e.target.classList.add('visible');
+            e.target.classList.add('in');
             io.unobserve(e.target);
           }
         }),
-      { threshold: 0.06, rootMargin: '0px 0px -6% 0px' }
+      { threshold: 0.08, rootMargin: '0px 0px -6% 0px' }
     );
-    let raf = 0;
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let scanRaf = 0;
+    let pxRaf = 0;
+    const parallax = () => {
+      pxRaf = 0;
+      if (still) return;
+      const vh = window.innerHeight;
+      document.querySelectorAll<HTMLElement>('[data-speed]').forEach((el) => {
+        const box = (el.parentElement ?? el).getBoundingClientRect();
+        if (box.bottom < -200 || box.top > vh + 200) return;
+        const y = (box.top + box.height / 2 - vh / 2) * Number(el.dataset.speed);
+        el.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+      });
+    };
+    const onScroll = () => {
+      if (!pxRaf) pxRaf = requestAnimationFrame(parallax);
+    };
     const scan = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => document.querySelectorAll(REVEAL_SEL).forEach((el) => io.observe(el)));
+      cancelAnimationFrame(scanRaf);
+      scanRaf = requestAnimationFrame(() => {
+        document.querySelectorAll(REVEAL_SEL).forEach((el) => io.observe(el));
+        parallax();
+      });
     };
     scan();
     const mo = new MutationObserver(scan);
-    mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    mo.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
     return () => {
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(scanRaf);
+      cancelAnimationFrame(pxRaf);
       io.disconnect();
       mo.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
     };
   }, []);
 
@@ -1412,20 +1552,20 @@ function Site() {
     if (typeof window !== 'undefined' && window.location.hash !== url) {
       window.history.pushState({ p, wineId }, '', url);
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
   return (
-    <div className="min-h-screen w-full bg-surface">
+    <div className="min-h-screen w-full bg-night">
       {!entered && <AgeGate onEnter={enter} />}
       <Header page={page} onNav={navigate} />
-      <main>
+      <main className={page === 'home' ? '' : 'pt-[var(--header)]'}>
         {page === 'home' && <Home onNav={navigate} />}
         {page === 'vinos' && <Vinos onNav={navigate} />}
         {page === 'vinedos' && <Vinedos />}
         {page === 'novedades' && <Novedades />}
         {page === 'contacto' && <Contacto />}
-        {page === 'wine-detail' && <WineDetail onNav={navigate} wineId={activeWine} />}
+        {page === 'wine-detail' && <WineDetail key={activeWine} onNav={navigate} wineId={activeWine} />}
       </main>
       <Footer onNav={navigate} />
     </div>

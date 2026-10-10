@@ -7,6 +7,7 @@ export const LANGS: Lang[] = ['es', 'en', 'pt'];
 const es = {
   nav: { home: 'Inicio', vinos: 'Nuestros Vinos', vinedos: 'Viñedos', novedades: 'Novedades', contacto: 'Contacto' },
   a11y: { toDark: 'Activar modo oscuro', toLight: 'Activar modo claro', dark: 'Modo oscuro', light: 'Modo claro', langOf: (l: string) => `Ver el sitio en ${l}` },
+  ui: { prev: 'Anterior', next: 'Siguiente', scroll: 'Descubrir', menu: 'Menú', close: 'Cerrar', points: 'pts' },
   gate: {
     line1: 'Vinos de altura del Valle de Uco,',
     line2: 'a 1.077 metros sobre el nivel del mar.',
@@ -245,6 +246,7 @@ export type Copy = typeof es;
 const en: Copy = {
   nav: { home: 'Home', vinos: 'Our Wines', vinedos: 'Vineyards', novedades: 'News', contacto: 'Contact' },
   a11y: { toDark: 'Switch to dark mode', toLight: 'Switch to light mode', dark: 'Dark mode', light: 'Light mode', langOf: (l: string) => `View the site in ${l}` },
+  ui: { prev: 'Previous', next: 'Next', scroll: 'Discover', menu: 'Menu', close: 'Close', points: 'pts' },
   gate: {
     line1: 'High-altitude wines from the Uco Valley,',
     line2: '1,077 metres above sea level.',
@@ -481,6 +483,7 @@ const en: Copy = {
 const pt: Copy = {
   nav: { home: 'Início', vinos: 'Nossos Vinhos', vinedos: 'Vinhedos', novedades: 'Novidades', contacto: 'Contato' },
   a11y: { toDark: 'Ativar modo escuro', toLight: 'Ativar modo claro', dark: 'Modo escuro', light: 'Modo claro', langOf: (l: string) => `Ver o site em ${l}` },
+  ui: { prev: 'Anterior', next: 'Próximo', scroll: 'Descobrir', menu: 'Menu', close: 'Fechar', points: 'pts' },
   gate: {
     line1: 'Vinhos de altitude do Vale de Uco,',
     line2: 'a 1.077 metros acima do nível do mar.',
