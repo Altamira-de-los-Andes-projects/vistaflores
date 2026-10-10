@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type FormEvent, type ReactNode } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
@@ -8,10 +8,8 @@ type Nav = (p: Page, wineId?: string) => void;
 
 const A = `${import.meta.env.BASE_URL}assets`;
 
-// Themed replacements for stock images that didn't reference wine/vineyards
+// Editorial images still served remotely (News page).
 const IMG = {
-  vinedosHero:
-    'https://images.unsplash.com/photo-1665254369274-4b459f3ce48c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920',
   vinexpo:
     'https://images.unsplash.com/photo-1641830879467-e22004141bcb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
   prowein:
@@ -20,65 +18,70 @@ const IMG = {
     'https://images.unsplash.com/photo-1472352327492-9765783b74e1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
   catas:
     'https://images.unsplash.com/photo-1610065333275-b3e5c63fc872?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-  vinedoAltamira:
-    'https://images.unsplash.com/photo-1502285254372-2cb4d1b0993b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-  vinedoVistaFlores:
-    'https://images.unsplash.com/photo-1632990957844-fe2635be13e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-  vinedoLaConsulta:
-    'https://images.unsplash.com/photo-1542384517060-2b41144f12a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-  vinedoMapa:
-    'https://images.unsplash.com/photo-1660311967571-3a12801f7ae4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1600',
+  cellar:
+    'https://images.unsplash.com/photo-1765850257843-aa029ab7769c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
 };
 
-// Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
+// Language-neutral scaffolding (images / data) — text comes from the i18n copy.
 const HOME_VY_IMGS = [`${A}/mza-altamira.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/mza-laconsulta.jpg`];
-const HOME_WINE_IMGS = [`${A}/73a8f.png`, `${A}/941aa.png`, `${A}/4600e.png`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `${A}/5b74e.png`, `${A}/fb3eb.png`, `${A}/36671.png`];
 const VINEDOS_IMGS = [`${A}/mza-estate.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/mza-altamira.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
+const CONTACT_EMAIL = 'facundo@vistafloresestate.com';
+
+// Vineyard positions, in the same order as the copy: Altamira · Altamira de los Andes · La Consulta.
+const VY_COORDS: [number, number][] = [
+  [-33.79, -69.13],
+  [-33.68, -69.13],
+  [-33.76, -69.07],
+];
+const ESTATE_COORD = VY_COORDS[1];
 
 // Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
 const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; blend: boolean }> = {
   dama: { img: `${A}/5c918.png`, tag: 'ALTAMIRA', blend: true },
   navigato: { img: `${A}/3d3ec.png`, tag: 'ALTAMIRA', blend: true },
-  'reserva-malbec': { img: `${A}/4600e.png`, tag: 'ALTAMIRA', blend: false },
+  'reserva-malbec': { img: `${A}/36069.png`, tag: 'ALTAMIRA', blend: false },
   'reserva-cf': { img: `${A}/42976.png`, tag: 'ALTAMIRA', blend: false },
-  'vav-malbec': { img: `${A}/36069.png`, tag: 'VAV', blend: false },
+  'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', blend: false },
   'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', blend: true },
 };
 const HOME_WINE_IDS = ['dama', 'navigato', 'reserva-malbec'];
 const HOME_ESTATE_IDS = ['navigato', 'dama', 'reserva-malbec', 'vav-malbec'];
 
-// ─── Scroll reveal hook ───────────────────────────────────────────────────────
-function useReveal() {
+// ─── Instrument helpers: coordinates and the live hour in Mendoza ─────────────
+function dms(v: number, pos: string, neg: string) {
+  const a = Math.abs(v);
+  const d = Math.floor(a);
+  const mf = (a - d) * 60;
+  const m = Math.floor(mf);
+  const s = Math.round((mf - m) * 60);
+  return `${d}°${String(m).padStart(2, '0')}′${String(s).padStart(2, '0')}″${v < 0 ? neg : pos}`;
+}
+function useCoords() {
+  const { lang } = useLang();
+  const west = lang === 'en' ? 'W' : 'O';
+  return (c: [number, number]) => `${dms(c[0], 'N', 'S')}  ${dms(c[1], 'E', west)}`;
+}
+function mendozaTime() {
+  try {
+    return new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Argentina/Mendoza',
+    }).format(new Date());
+  } catch (e) {
+    return '';
+  }
+}
+function useMendozaTime() {
+  const [time, setTime] = useState(mendozaTime);
   useEffect(() => {
-    let io: IntersectionObserver | null = null;
-
-    const timer = setTimeout(() => {
-      const els = document.querySelectorAll<Element>('.reveal:not(.visible)');
-      if (!els.length) return;
-
-      io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              e.target.classList.add('visible');
-              io?.unobserve(e.target);
-            }
-          });
-        },
-        { threshold: 0.05, rootMargin: '0px 0px -40px 0px' }
-      );
-
-      els.forEach((el) => io!.observe(el));
-    }, 80);
-
-    return () => {
-      clearTimeout(timer);
-      io?.disconnect();
-    };
+    const id = setInterval(() => setTime(mendozaTime()), 15000);
+    return () => clearInterval(id);
   }, []);
+  return time;
 }
 
 // ─── Theme (light / dark) ─────────────────────────────────────────────────────
@@ -102,31 +105,89 @@ function useTheme() {
   return { theme, toggle };
 }
 
-const SunIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-    <circle cx="12" cy="12" r="4.1" />
-    <path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.05 5.05l1.55 1.55M17.4 17.4l1.55 1.55M18.95 5.05L17.4 6.6M6.6 17.4l-1.55 1.55" />
-  </svg>
-);
-const MoonIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 14.6A8 8 0 0 1 9.4 4 6.6 6.6 0 1 0 20 14.6z" />
+// ─── Icons & brand marks ──────────────────────────────────────────────────────
+const ThemeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+    <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.1" />
+    <path d="M8 1.6a6.4 6.4 0 0 1 0 12.8z" fill="currentColor" />
   </svg>
 );
 const MenuIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-    <path d="M4 7h16M4 12h16M4 17h16" />
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+    <path d="M3 9h18M3 15h18" />
   </svg>
 );
 const CloseIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-    <path d="M6 6l12 12M18 6L6 18" />
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+    <path d="M5 5l14 14M19 5L5 19" />
+  </svg>
+);
+const Arrow = ({ className = '' }: { className?: string }) => (
+  <svg className={`arrow ${className}`} width="16" height="10" viewBox="0 0 16 10" fill="none" aria-hidden="true">
+    <path d="M0 5h14.5M10.5 1l4 4-4 4" stroke="currentColor" strokeWidth="1.1" />
   </svg>
 );
 
-// ─── Signature motif: altitude / topographic contour lines ────────────────────
-// Generated smooth elevation curves — the quiet visual thread unique to the
-// estate (1.077 m s.n.m.). Uses currentColor so it adapts to light/dark.
+// The estate's own mark, as printed on the labels: a fine "A" crossed by the horizon.
+function Mark({ className = '', stroke = 1.4 }: { className?: string; stroke?: number }) {
+  return (
+    <svg className={className} viewBox="0 0 64 52" fill="none" aria-hidden="true">
+      <path
+        d="M18.5 50 L32 3.5 L45.5 50"
+        stroke="currentColor"
+        strokeWidth={stroke}
+        vectorEffect="non-scaling-stroke"
+        strokeLinejoin="miter"
+      />
+      <path d="M1 39 Q32 21 63 39 Q32 26.5 1 39 Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+// Lockup: mark + ALTAMIRA / DE LOS ANDES, stacked like the label.
+function Lockup({ className = '' }: { className?: string }) {
+  return (
+    <span className={`flex items-center gap-3 leading-none ${className}`}>
+      <Mark className="w-[30px] h-auto text-accent-solid" />
+      <span className="flex flex-col items-start">
+        <span className="text-[16px] sm:text-[17px] font-normal tracking-[0.28em]">ALTAMIRA</span>
+        <span className="mt-[6px] text-[8.5px] font-medium tracking-[0.46em] opacity-75">DE LOS ANDES</span>
+      </span>
+    </span>
+  );
+}
+
+// The curve of the horizon seen from altitude — the signature line.
+function Horizon({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 1000 100" preserveAspectRatio="none" fill="none" aria-hidden="true">
+      <path d="M0 99 Q500 1 1000 99" stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+function Corners({ className = '' }: { className?: string }) {
+  return (
+    <span className={`corners ${className}`} aria-hidden="true">
+      <i />
+      <i />
+      <i />
+      <i />
+    </span>
+  );
+}
+
+function Chapter({ n, children, className = '' }: { n?: string; children: ReactNode; className?: string }) {
+  return (
+    <p className={`chapter t-label ${className}`}>
+      {n && <span className="chapter__n">{n}</span>}
+      <span className="chapter__rule" aria-hidden="true" />
+      <span>{children}</span>
+    </p>
+  );
+}
+
+// ─── Topographic contour lines (altitude texture for dark chapters) ───────────
 function Contours({
   className = '',
   lines = 9,
@@ -172,17 +233,17 @@ function Contours({
   );
 }
 
-// ─── Age gate — sober, branded first impression ───────────────────────────────
+// ─── Age gate ─────────────────────────────────────────────────────────────────
 function AgeGate({ onEnter }: { onEnter: () => void }) {
   const t = useT();
   const [leaving, setLeaving] = useState(false);
   const enter = () => {
     setLeaving(true);
-    setTimeout(onEnter, 600);
+    setTimeout(onEnter, 700);
   };
   return (
     <div
-      className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-panel px-6 text-on-dark`}
+      className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-panel px-6 text-on-dark`}
     >
       <img
         src={`${A}/mza-altamira.jpg`}
@@ -190,80 +251,51 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 size-full object-cover kenburns"
       />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            'linear-gradient(180deg, rgba(15,13,11,0.64) 0%, rgba(15,13,11,0.40) 42%, rgba(15,13,11,0.78) 100%)',
-        }}
-      />
-      <div className="relative flex max-w-[560px] flex-col items-center gap-8 text-center">
-        <div className="flex flex-col items-center leading-none">
-          <span className="font-['Cormorant_Garamond:Regular'] text-[clamp(26px,5.4vw,44px)] tracking-[0.1em] leading-[1.08]">
-            ALTAMIRA DE LOS ANDES
-          </span>
-          <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.5em] text-on-dark/70">
-            ESTATE · MENDOZA
-          </span>
-        </div>
-        <span className="h-px w-14 bg-on-dark/30" />
-        <p className="font-['Cormorant_Garamond:Light_Italic'] text-[clamp(20px,2.6vw,30px)] italic leading-[1.4] text-on-dark/90">
+      <div className="absolute inset-0 bg-[rgba(10,9,7,0.58)]" />
+      <Corners className="[--ci:clamp(14px,2.6vw,30px)] [--cs:22px] text-on-dark/70" />
+
+      <div className="relative flex max-w-[560px] flex-col items-center text-center">
+        <Mark className="w-[60px] h-auto text-accent-light in-fade" />
+        <p className="t-mega mt-7 text-[clamp(36px,6.6vw,66px)] in-fade d1" style={{ paddingLeft: '0.1em' }}>
+          ALTAMIRA
+        </p>
+        <p
+          className="mt-4 text-[clamp(10px,1.35vw,13.5px)] font-normal tracking-[0.5em] text-on-dark/85 in-fade d1"
+          style={{ paddingLeft: '0.5em' }}
+        >
+          DE LOS ANDES
+        </p>
+        <p className="t-name mt-12 text-[clamp(20px,2.3vw,27px)] text-on-dark/90 in-fade d2">
           {t.gate.line1}
           <br />
           {t.gate.line2}
         </p>
-        <p
-          className="max-w-[380px] font-['Archivo:Light'] text-[13px] leading-[1.7] text-on-dark/60"
-          style={{ fontVariationSettings: '"wdth" 100' }}
-        >
-          {t.gate.confirm}
-        </p>
-        <button
-          onClick={enter}
-          className="mt-1 border border-on-dark/45 px-11 py-4 font-['Archivo:Regular'] text-[11px] uppercase tracking-[2px] text-on-dark transition-colors hover:bg-on-dark hover:text-panel"
-          style={{ fontVariationSettings: '"wdth" 100' }}
-        >
+        <p className="t-small mt-6 max-w-[40ch] text-on-dark/65 in-fade d3">{t.gate.confirm}</p>
+        <button onClick={enter} className="btn btn--light mt-10 in-fade d4">
           {t.gate.enter}
+          <Arrow />
         </button>
-        <p className="mt-1 font-['IBM_Plex_Mono:Regular'] text-[9px] tracking-[1.5px] text-on-dark/45">
-          {t.gate.warning}
-        </p>
+        <p className="t-data mt-9 text-[10px] text-on-dark/45 in-fade d5">{t.gate.warning}</p>
       </div>
     </div>
   );
 }
 
-// ─── Editorial "breath" — a centered statement with air around it ─────────────
-function Breath({ label, pre, em, post }: { label: string; pre: string; em: string; post: string }) {
-  useReveal();
-  return (
-    <section className="relative overflow-hidden bg-surface px-5 sm:px-8 lg:px-12 py-[clamp(84px,13vh,158px)]">
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-ink">
-        <Contours className="h-full w-full" lines={8} seed={5} opacity={0.06} />
-      </div>
-      <div className="reveal relative mx-auto flex max-w-[880px] flex-col items-center gap-8 text-center">
-        <span className="flex items-center gap-3 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[2.4px] text-accent">
-          <span className="h-px w-8 bg-accent/60" />
-          {label}
-          <span className="h-px w-8 bg-accent/60" />
-        </span>
-        <p className="font-['Cormorant_Garamond:Light_Italic'] text-[clamp(27px,3.5vw,46px)] italic leading-[1.3] text-ink">
-          {pre}
-          <em className="text-accent">{em}</em>
-          {post}
-        </p>
-      </div>
-    </section>
-  );
-}
-
-// ─── Shared header ────────────────────────────────────────────────────────────
+// ─── Header ───────────────────────────────────────────────────────────────────
 function Header({ page, onNav }: { page: Page; onNav: Nav }) {
   const isHome = page === 'home';
   const { theme, toggle } = useTheme();
   const { lang, setLang } = useLang();
   const t = useT();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
   const go = (p: Page) => {
     setMenuOpen(false);
     onNav(p);
@@ -275,141 +307,106 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     ['novedades', t.nav.novedades],
     ['contacto', t.nav.contacto],
   ];
+  const isActive = (p: Page) => page === p || (page === 'wine-detail' && p === 'vinos');
+  const tone = isHome && !menuOpen ? 'text-on-dark' : 'text-ink';
+
   return (
     <header
-      className={`z-50 flex items-center justify-between px-5 sm:px-8 lg:px-12 py-5 ${
+      className={`z-50 ${
         isHome
-          ? 'absolute top-0 left-0 right-0 bg-gradient-to-b from-[rgba(20,18,15,0.55)] via-[rgba(20,18,15,0.18)] to-transparent'
-          : 'sticky top-0 bg-surface border-b border-ink/[0.09]'
+          ? `absolute inset-x-0 top-0 ${menuOpen ? 'bg-surface' : ''}`
+          : 'sticky top-0 bg-surface/95 backdrop-blur-md border-b border-line'
       }`}
     >
-      <button
-        onClick={() => onNav('home')}
-        aria-label="Altamira de los Andes Estate"
-        className={`group flex flex-col items-start shrink-0 leading-none ${isHome ? 'text-white' : 'text-ink'}`}
-      >
-        <span className="font-['Cormorant_Garamond:Regular'] text-[15px] sm:text-[18px] lg:text-[22px] leading-[1] tracking-[0.09em] lg:tracking-[0.12em] whitespace-nowrap">
-          ALTAMIRA DE LOS ANDES
-        </span>
-        <span
-          className={`font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.44em] mt-[7px] pl-px transition-opacity group-hover:opacity-100 ${
-            isHome ? 'text-white/70' : 'text-ink/[0.55]'
-          }`}
-        >
-          ESTATE · MENDOZA
-        </span>
-      </button>
+      <div className={`wrap flex h-[var(--header)] items-center justify-between gap-6 ${tone}`}>
+        <button onClick={() => go('home')} aria-label="Altamira de los Andes Estate" className="shrink-0">
+          <Lockup />
+        </button>
 
-      <nav className="hidden lg:flex gap-[30px] items-center">
-        {navItems.map(([p, label]) => {
-          const active = page === p || (page === 'wine-detail' && p === 'vinos');
-          return (
+        <nav className="hidden lg:flex items-center gap-9" aria-label="Main">
+          {navItems.map(([p, label]) => (
             <button
               key={p}
-              onClick={() => onNav(p)}
-              className={`font-['Archivo:Regular'] text-[11.5px] pb-[3px] transition-opacity ${
-                active
-                  ? isHome
-                    ? 'text-white border-b border-white'
-                    : 'text-ink border-b border-ink'
-                  : isHome
-                  ? 'text-white/80 hover:text-white'
-                  : 'text-ink/[0.75] hover:text-ink'
+              onClick={() => go(p)}
+              aria-current={isActive(p) ? 'page' : undefined}
+              className={`t-label relative py-2 transition-opacity ${
+                isActive(p) ? 'opacity-100' : 'opacity-60 hover:opacity-100'
               }`}
-              style={{ fontVariationSettings: '"wdth" 100' }}
             >
               {label}
+              {isActive(p) && <span className="absolute left-0 right-[0.22em] -bottom-[3px] h-px bg-accent-solid" />}
             </button>
-          );
-        })}
-      </nav>
+          ))}
+        </nav>
 
-      <div className="flex items-center gap-3 sm:gap-4">
-        <div className="hidden lg:flex gap-0.5 items-center">
-          {LANGS.map((code, i) => {
-            const activeLang = code === lang;
-            return (
-              <span key={code} className="flex items-center">
-                {i > 0 && (
-                  <span className={`w-px h-[11px] ${isHome ? 'bg-white/50' : 'bg-ink/[0.2]'}`} />
-                )}
+        <div className="flex items-center gap-5">
+          <div className="hidden lg:flex items-center gap-3 t-label">
+            {LANGS.map((code, i) => (
+              <span key={code} className="flex items-center gap-3">
+                {i > 0 && <span className="h-[10px] w-px bg-current opacity-25" />}
                 <button
                   onClick={() => setLang(code as Lang)}
-                  aria-current={activeLang ? 'true' : undefined}
+                  aria-current={code === lang ? 'true' : undefined}
                   aria-label={t.a11y.langOf(code.toUpperCase())}
-                  className={`font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[1px] px-[9px] py-[7px] transition-opacity ${
-                    activeLang
-                      ? isHome
-                        ? 'text-white'
-                        : 'text-ink'
-                      : isHome
-                      ? 'text-white/50 hover:text-white/80'
-                      : 'text-ink/[0.4] hover:text-ink/[0.7]'
-                  }`}
+                  className={`py-2 transition-opacity ${code === lang ? 'opacity-100' : 'opacity-45 hover:opacity-80'}`}
                 >
                   {code.toUpperCase()}
                 </button>
               </span>
-            );
-          })}
+            ))}
+          </div>
+
+          <button
+            onClick={toggle}
+            aria-label={theme === 'dark' ? t.a11y.toLight : t.a11y.toDark}
+            title={theme === 'dark' ? t.a11y.light : t.a11y.dark}
+            className="grid size-[36px] place-items-center rounded-full border border-current/25 transition-colors hover:border-current/70"
+          >
+            <ThemeIcon />
+          </button>
+
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={menuOpen}
+            className="lg:hidden grid size-[36px] place-items-center"
+          >
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
         </div>
-
-        <span className={`hidden lg:block w-px h-[16px] ${isHome ? 'bg-white/30' : 'bg-ink/[0.15]'}`} />
-
-        <button
-          onClick={toggle}
-          aria-label={theme === 'dark' ? t.a11y.toLight : t.a11y.toDark}
-          title={theme === 'dark' ? t.a11y.light : t.a11y.dark}
-          className={`grid place-items-center size-[34px] rounded-full border transition-colors ${
-            isHome
-              ? 'border-white/30 text-white hover:border-white/70'
-              : 'border-ink/[0.2] text-ink hover:border-ink/[0.5]'
-          }`}
-        >
-          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-        </button>
-
-        <button
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-          aria-expanded={menuOpen}
-          className={`lg:hidden grid place-items-center size-[34px] ${isHome ? 'text-white' : 'text-ink'}`}
-        >
-          {menuOpen ? <CloseIcon /> : <MenuIcon />}
-        </button>
       </div>
 
       {menuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-surface border-t border-b border-ink/[0.1] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.45)] px-5 sm:px-8 pt-2 pb-5 flex flex-col">
-          {navItems.map(([p, label]) => {
-            const active = page === p || (page === 'wine-detail' && p === 'vinos');
-            return (
+        <div className="lg:hidden fixed inset-x-0 top-[var(--header)] bottom-0 overflow-y-auto bg-surface text-ink border-t border-line">
+          <nav className="wrap flex flex-col pt-4 pb-10" aria-label="Main">
+            {navItems.map(([p, label], i) => (
               <button
                 key={p}
                 onClick={() => go(p)}
-                className={`text-left font-['Cormorant_Garamond:Regular'] text-[24px] py-3 border-b border-ink/[0.08] transition-colors ${
-                  active ? 'text-ink' : 'text-ink/[0.65]'
-                }`}
+                className="group flex items-baseline gap-5 border-b border-line py-5 text-left"
               >
-                {label}
-              </button>
-            );
-          })}
-          <div className="flex gap-1.5 items-center pt-4">
-            {LANGS.map((code) => (
-              <button
-                key={code}
-                onClick={() => setLang(code as Lang)}
-                aria-current={code === lang ? 'true' : undefined}
-                aria-label={t.a11y.langOf(code.toUpperCase())}
-                className={`font-['IBM_Plex_Mono:Medium'] text-[11px] tracking-[1px] px-3 py-2 rounded transition-colors ${
-                  code === lang ? 'text-ink border border-ink/[0.3]' : 'text-ink/[0.45] border border-transparent'
-                }`}
-              >
-                {code.toUpperCase()}
+                <span className="t-data text-accent">{String(i + 1).padStart(2, '0')}</span>
+                <span className={`text-[30px] font-light tracking-[-0.02em] ${isActive(p) ? 'text-ink' : 'text-ink/60'}`}>
+                  {label}
+                </span>
               </button>
             ))}
-          </div>
+            <div className="mt-8 flex items-center gap-2">
+              {LANGS.map((code) => (
+                <button
+                  key={code}
+                  onClick={() => setLang(code as Lang)}
+                  aria-current={code === lang ? 'true' : undefined}
+                  aria-label={t.a11y.langOf(code.toUpperCase())}
+                  className={`t-label px-4 py-3 border ${
+                    code === lang ? 'border-ink text-ink' : 'border-transparent text-ink/45'
+                  }`}
+                >
+                  {code.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </nav>
         </div>
       )}
     </header>
@@ -419,97 +416,82 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer({ onNav }: { onNav: Nav }) {
   const t = useT();
+  const pages: [Page, string][] = [
+    ['vinos', t.nav.vinos],
+    ['vinedos', t.nav.vinedos],
+    ['novedades', t.nav.novedades],
+    ['contacto', t.nav.contacto],
+  ];
   return (
-    <footer className="bg-accent-solid">
-      <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-[50px] px-5 sm:px-8 lg:px-12 pt-20 pb-10">
-        <div className="flex flex-col gap-[19px]">
-          <div className="flex flex-col items-start leading-none text-on-dark">
-            <span className="font-['Cormorant_Garamond:Regular'] text-[26px] sm:text-[30px] leading-[1.05] tracking-[0.06em]">
-              ALTAMIRA DE LOS ANDES
-            </span>
-            <span className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.42em] mt-[10px] pl-px text-on-dark/[0.7]">
-              ESTATE · MENDOZA
-            </span>
+    <footer className="bg-panel text-on-dark overflow-hidden">
+      <div className="wrap pt-[clamp(80px,10vw,140px)]">
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-4 flex flex-col gap-7">
+            <Lockup />
+            <p className="t-small max-w-[36ch] text-on-dark/65">
+              {t.footer.tagline1} {t.footer.tagline2}
+            </p>
           </div>
-          <p
-            className="font-['Archivo:Light'] text-[12.5px] text-on-dark/[0.7] leading-[23px]"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.footer.tagline1}
-            <br />
-            {t.footer.tagline2}
-          </p>
-        </div>
 
-        <div className="flex flex-col gap-[25px]">
-          <div className="flex flex-col gap-[9px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.55]">
-              {t.footer.officeLabel}
-            </p>
-            <p
-              className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]"
-              style={{ fontVariationSettings: '"wdth" 100' }}
-            >
-              Av. Colón 241
-              <br />
-              (5500) Mendoza, Argentina
-            </p>
-          </div>
-          <div className="flex flex-col gap-[9px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.55]">
-              {t.footer.phoneLabel}
-            </p>
-            <p
-              className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]"
-              style={{ fontVariationSettings: '"wdth" 100' }}
-            >
-              Tel / Fax +54 261 4299962
-              <br />
-              Mobile USA +1 (305) 988 5992
-            </p>
-          </div>
-        </div>
+          <nav className="lg:col-span-2 lg:col-start-6 flex flex-col items-start gap-3" aria-label="Footer">
+            {pages.map(([p, label]) => (
+              <button key={p} onClick={() => onNav(p)} className="t-small text-on-dark/80 hover:text-on-dark transition-colors">
+                {label}
+              </button>
+            ))}
+          </nav>
 
-        <div className="flex flex-col gap-[25px]">
-          <div className="flex flex-col gap-[14px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.55]">
-              {t.footer.contactLabel}
-            </p>
-            <button
-              onClick={() => onNav('contacto')}
-              className="border-b border-on-dark/[0.35] pb-[5px] font-['Archivo:Light'] text-[13.5px] text-on-dark text-left leading-[24.3px] hover:border-white/60 transition-colors self-start"
-              style={{ fontVariationSettings: '"wdth" 100' }}
-            >
-              facundo@vistafloresestate.com
-            </button>
+          <div className="lg:col-span-3 flex flex-col gap-8">
+            <div>
+              <p className="t-label text-on-dark/45">{t.footer.officeLabel}</p>
+              <p className="t-small mt-3 text-on-dark/85">
+                Av. Colón 241
+                <br />
+                (5500) Mendoza, Argentina
+              </p>
+            </div>
+            <div>
+              <p className="t-label text-on-dark/45">{t.footer.phoneLabel}</p>
+              <p className="t-small mt-3 text-on-dark/85">
+                Tel / Fax +54 261 4299962
+                <br />
+                Mobile USA +1 (305) 988 5992
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col gap-[10px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.55]">
-              {t.footer.followLabel}
-            </p>
-            <div className="flex gap-[10px]">
-              {['IG', 'FB', 'LI'].map((s) => (
-                <div
-                  key={s}
-                  className="border border-on-dark/[0.35] flex items-center justify-center size-[34px] cursor-pointer hover:border-white/60 transition-colors"
-                >
-                  <span className="font-['IBM_Plex_Mono:Medium'] text-[7px] text-on-dark/[0.6]">
-                    {s}
-                  </span>
-                </div>
-              ))}
+
+          <div className="lg:col-span-3 flex flex-col gap-8">
+            <div>
+              <p className="t-label text-on-dark/45">{t.footer.contactLabel}</p>
+              <a href={`mailto:${CONTACT_EMAIL}`} className="t-small mt-3 inline-block text-on-dark/85 border-b border-on-dark/30 pb-1 hover:border-on-dark transition-colors">
+                {CONTACT_EMAIL}
+              </a>
+            </div>
+            <div>
+              <p className="t-label text-on-dark/45">{t.footer.followLabel}</p>
+              <p className="t-small mt-3 flex flex-wrap gap-x-5 text-on-dark/85">
+                <span>Instagram</span>
+                <span>Facebook</span>
+                <span>LinkedIn</span>
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="border-t border-on-dark/[0.2] flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 pt-[23px] pb-[34px]">
-        <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
-          {t.footer.copyright}
-        </span>
-        <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
-          {t.footer.warning}
-        </span>
+        <Horizon className="draw mt-[clamp(64px,8vw,110px)] h-[34px] w-full text-accent-solid" />
+        <p
+          aria-hidden="true"
+          className="t-mega -mt-[0.04em] select-none text-center text-[clamp(56px,15vw,236px)] leading-[0.8] text-on-dark/[0.92]"
+          style={{ paddingLeft: '0.1em' }}
+        >
+          ALTAMIRA
+        </p>
+      </div>
+      <div className="mt-10 border-t border-line-dark">
+        <div className="wrap flex flex-col gap-2 py-7 t-data text-[10.5px] text-on-dark/50 md:flex-row md:justify-between">
+          <span>{t.footer.copyright}</span>
+          <span>{t.footer.warning}</span>
+        </div>
       </div>
     </footer>
   );
@@ -517,325 +499,315 @@ function Footer({ onNav }: { onNav: Nav }) {
 
 // ─── HOME ─────────────────────────────────────────────────────────────────────
 function Home({ onNav }: { onNav: Nav }) {
-  useReveal();
   const t = useT();
+  const coords = useCoords();
+  const time = useMendozaTime();
   const reduceMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const altitude = t.home.stats[0];
+  const statBorders = ['', 'border-l border-line-dark pl-6 lg:pl-8', 'lg:border-l lg:border-line-dark lg:pl-8', 'border-l border-line-dark pl-6 lg:pl-8'];
+
   return (
-    <div className="bg-surface w-full">
-      {/* HERO — vineyard film (Valle de Uco) with a poster fallback */}
-      <section className="relative h-screen min-h-[695px] overflow-hidden bg-surface-3">
-        <div className="absolute inset-0">
-          {reduceMotion ? (
-            <img
-              src={`${A}/hero-andes.jpg`}
-              alt={t.home.heroEyebrow}
-              className="absolute inset-0 size-full object-cover"
-            />
-          ) : (
-            <video
-              className="absolute inset-0 size-full object-cover hero-fade"
-              autoPlay
-              muted
-              loop
-              playsInline
-              poster={`${A}/hero-andes.jpg`}
-            >
-              <source src={`${A}/hero-andes.mp4`} type="video/mp4" />
-            </video>
-          )}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                'linear-gradient(180deg, rgba(20,18,15,0.56) 0%, rgba(20,18,15,0.18) 26%, rgba(20,18,15,0.44) 62%, rgba(20,18,15,0.82) 100%)',
-            }}
-          />
-        </div>
-        <div className="absolute bottom-[103px] left-5 sm:left-8 lg:left-12 max-w-[760px]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-white/80 hero-line-1">
-            {t.home.heroEyebrow}
-          </p>
-          <div className="mt-5">
-            <h1 className="font-['Cormorant_Garamond:Regular'] text-[clamp(52px,11vw,116px)] text-on-dark leading-[0.92] tracking-[0.02em] hero-line-2">
-              {t.home.heroTitle1}
-            </h1>
-            <p className="font-['Cormorant_Garamond:Light'] text-[clamp(19px,3.3vw,34px)] text-on-dark/90 leading-[1.1] tracking-[0.34em] mt-2 hero-line-3">
-              {t.home.heroTitle2}
-            </p>
-          </div>
-          <p
-            className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.82] mt-6 mb-8 leading-[25.5px] hero-line-4 max-w-[450px]"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.heroSubtitle}
-          </p>
-          <button
-            onClick={() => onNav('vinedos')}
-            className="border border-on-dark/[0.6] px-[33px] py-[16px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:border-white transition-colors hero-line-4"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.heroCta}
-          </button>
-        </div>
-        <div className="absolute bottom-[38px] left-5 sm:left-8 lg:left-12 flex items-center gap-4">
-          <div className="border border-on-dark/[0.5] rounded-full size-[32px] flex items-center justify-center">
-            <span className="text-on-dark/[0.85] text-[12px]">↓</span>
-          </div>
-          <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-on-dark/[0.7]">
-            {t.home.discover}
-          </span>
-        </div>
-      </section>
-
-      {/* Editorial breath — the place */}
-      <Breath label={t.home.breathLabel} pre={t.home.breathPre} em={t.home.breathEm} post={t.home.breathPost} />
-
-      {/* "Vinos únicos" split section */}
-      <section className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-[70px] px-5 sm:px-8 lg:px-12 py-16 lg:py-[110px]">
-        <div className="flex flex-col gap-[22px]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">
-            {t.home.estateEyebrow}
-          </p>
-          <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,40px)] text-ink leading-[1.16] reveal reveal-d1">
-            {t.home.estateTitle1}
-            <br />
-            {t.home.estateTitle2}
-          </h2>
-          <div className="overflow-hidden h-[min(55vw,664px)] reveal reveal-d2">
-            <img src={`${A}/mza-estate.jpg`} alt={t.home.estateEyebrow} className="w-full h-full object-cover" />
-          </div>
-        </div>
-        <div className="flex flex-col justify-center lg:pt-[147px]">
-          <p
-            className="font-['Archivo:Light'] text-[clamp(16px,1.5vw,20px)] text-ink/[0.86] leading-[1.72] reveal reveal-d1"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.estatePara1}
-          </p>
-          <p
-            className="font-['Archivo:Light'] text-[14.5px] text-ink/[0.66] leading-[26.8px] mt-8 reveal reveal-d2"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.estatePara2}
-          </p>
-          <div className="mt-10 grid grid-cols-2 gap-px bg-ink/[0.14] reveal reveal-d3">
-            {t.home.estateWines.map((w, i) => (
-              <button
-                key={w.name}
-                className="bg-surface p-[22px] flex flex-col gap-[8px] cursor-pointer hover:bg-surface-2 transition-colors text-left"
-                onClick={() => onNav('wine-detail', HOME_ESTATE_IDS[i])}
+    <div className="w-full bg-surface">
+      {/* HERO — a viewfinder onto the Andes: "alta mira", the view from above. */}
+      <section className="relative flex min-h-[100dvh] flex-col bg-panel pt-[var(--header)] text-on-dark">
+        <div className="wrap flex flex-1 flex-col pb-7">
+          <div className="relative min-h-[440px] flex-1 overflow-hidden in-frame">
+            {reduceMotion ? (
+              <img src={`${A}/hero-andes.jpg`} alt={t.home.heroEyebrow} className="absolute inset-0 size-full object-cover" />
+            ) : (
+              <video
+                className="absolute inset-0 size-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster={`${A}/hero-andes.jpg`}
               >
-                <p className="font-['Cormorant_Garamond:Regular'] text-[22px] text-ink leading-[27.5px]">
-                  {w.name}
-                </p>
-                <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.19px] text-ink/[0.5]">
-                  {w.sub}
-                </p>
+                <source src={`${A}/hero-andes.mp4`} type="video/mp4" />
+              </video>
+            )}
+            <div className="absolute inset-0 bg-[rgba(10,9,7,0.34)]" />
+            <Corners className="[--ci:16px] text-on-dark/80" />
+
+            {/* Instrument readouts */}
+            <p className="absolute left-[38px] top-[34px] t-data text-[10.5px] text-on-dark/80 in-fade d4">
+              {coords(ESTATE_COORD)}
+            </p>
+            <p className="absolute right-[38px] top-[34px] hidden t-data text-[10.5px] text-on-dark/80 sm:block in-fade d4">
+              {altitude.num} m · {altitude.unit}
+            </p>
+            <p className="absolute bottom-[34px] left-[38px] flex items-center gap-3 t-data text-[10.5px] text-on-dark/80 in-fade d5">
+              <span className="live" aria-hidden="true" />
+              Mendoza {time}
+            </p>
+            <p className="absolute bottom-[34px] right-[38px] hidden t-data text-[10.5px] text-on-dark/80 sm:block in-fade d5">
+              {t.vinedos.mapPlace1}
+            </p>
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+              <Mark className="w-[clamp(44px,5.4vw,84px)] h-auto text-on-dark in-fade d1" />
+              <h1 className="t-mega mt-[clamp(16px,2.2vw,30px)] text-[clamp(44px,12.4vw,190px)]">
+                <span className="in-rise">
+                  <span className="d2" style={{ paddingLeft: '0.1em' }}>
+                    {t.home.heroTitle1}
+                  </span>
+                </span>
+                <span className="in-rise mt-[0.42em] text-[0.27em] font-normal tracking-[0.46em]">
+                  <span className="d3" style={{ paddingLeft: '0.46em' }}>
+                    {t.home.heroTitle2}
+                  </span>
+                </span>
+              </h1>
+            </div>
+          </div>
+
+          <div className="grid items-end gap-6 pt-8 lg:grid-cols-[1fr_auto_1fr]">
+            <p className="t-label hidden text-on-dark/55 lg:block in-fade d4">{t.home.heroEyebrow}</p>
+            <p className="t-lead mx-auto max-w-[34ch] text-center text-on-dark/90 in-fade d4">{t.home.heroSubtitle}</p>
+            <div className="flex justify-center lg:justify-end in-fade d5">
+              <button onClick={() => onNav('vinedos')} className="btn btn--light">
+                {t.home.heroCta}
+                <Arrow />
               </button>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Vineyards dark section */}
-      <section className="bg-panel">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:gap-[60px] justify-center px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[100px] pb-16">
-          <div className="flex flex-col gap-[21px] max-w-[562px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5] reveal">
+      {/* 01 — The place */}
+      <section className="py-[clamp(110px,15vw,210px)]">
+        <div className="wrap flex max-w-[1120px] flex-col items-center text-center">
+          <Chapter n="01">{t.home.breathLabel}</Chapter>
+          <p className="t-statement mt-10 reveal">
+            {t.home.breathPre}
+            <em>{t.home.breathEm}</em>
+            {t.home.breathPost}
+          </p>
+          <Horizon className="draw mt-16 h-[44px] w-[min(760px,92%)] text-accent-solid" />
+        </div>
+      </section>
+
+      {/* 02 — The estate */}
+      <section className="wrap grid grid-cols-1 gap-x-12 gap-y-14 pb-[clamp(110px,13vw,190px)] lg:grid-cols-12">
+        <figure className="relative aspect-[4/5] overflow-hidden lg:col-span-7 lg:aspect-[6/7] unveil">
+          <img src={`${A}/mza-estate.jpg`} alt={t.home.estateEyebrow} className="absolute inset-0 size-full object-cover" />
+          <Corners className="text-on-dark/85" />
+          <figcaption className="absolute bottom-[32px] left-[38px] t-data text-[10.5px] text-on-dark/85">
+            {coords(VY_COORDS[0])}
+          </figcaption>
+        </figure>
+        <div className="flex flex-col lg:col-span-5 lg:pt-[16%]">
+          <Chapter n="02">{t.home.estateEyebrow}</Chapter>
+          <h2 className="t-h2 mt-8 reveal">
+            {t.home.estateTitle1} {t.home.estateTitle2}
+          </h2>
+          <p className="t-lead mt-8 text-ink/80 reveal">{t.home.estatePara1}</p>
+          <p className="t-body mt-6 text-ink/62 reveal">{t.home.estatePara2}</p>
+          <ul className="mt-12 border-t border-line reveal">
+            {t.home.estateWines.map((w, i) => (
+              <li key={w.name}>
+                <button
+                  onClick={() => onNav('wine-detail', HOME_ESTATE_IDS[i])}
+                  className="group flex w-full items-center justify-between gap-6 border-b border-line py-5 text-left"
+                >
+                  <span className="flex flex-col gap-1">
+                    <span className="t-name text-[clamp(23px,2vw,29px)] transition-colors group-hover:text-accent">
+                      {w.name}
+                    </span>
+                    <span className="t-label text-[10px] text-ink/45">{w.sub}</span>
+                  </span>
+                  <Arrow className="text-ink/50" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* 03 — The vineyards (dark chapter) */}
+      <section className="bg-panel text-on-dark">
+        <div className="wrap grid items-end gap-10 pb-[clamp(56px,7vw,96px)] pt-[clamp(100px,12vw,170px)] lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <Chapter n="03" className="text-accent-light">
               {t.home.vyEyebrow}
-            </p>
-            <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.5vw,44px)] text-on-dark leading-[1.12] reveal reveal-d1">
+            </Chapter>
+            <h2 className="t-h2 mt-8 reveal">
               {t.home.vyTitle1} {t.home.vyTitle2}
             </h2>
           </div>
-          <p
-            className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.7] leading-[27px] max-w-[440px] reveal reveal-d2"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.vyIntro}
-          </p>
+          <p className="t-body text-on-dark/68 lg:col-span-4 lg:col-start-9 reveal">{t.home.vyIntro}</p>
         </div>
 
-        {/* Vineyard rows */}
         {t.home.vyRows.map((vyd, idx) => {
-          const imgLeft = idx % 2 === 0;
-          const img = HOME_VY_IMGS[idx];
+          const flip = idx % 2 === 1;
           return (
-            <div
-              key={vyd.num}
-              className={`border-t border-on-dark/[0.14] grid ${imgLeft ? 'grid-cols-1 lg:grid-cols-[1.12fr_1fr]' : 'grid-cols-1 lg:grid-cols-[1fr_1.12fr]'}`}
-            >
-              {imgLeft && (
-                <div className="overflow-hidden" style={{ aspectRatio: '676/520' }}>
-                  <img src={img} alt={vyd.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-                </div>
-              )}
-              <div className={`flex flex-col gap-6 justify-center py-14 px-6 lg:py-[98px] lg:px-[55px] reveal ${imgLeft ? 'border-l border-on-dark/[0.14]' : ''}`}>
-                <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{vyd.num}</p>
-                <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[38px] text-on-dark leading-[42.56px]">
-                  {vyd.name}
-                </h3>
-                <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.72] leading-[25.2px] max-w-[380px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                  {vyd.desc}
-                </p>
-                <div className="border-t border-on-dark/[0.2] pt-5 flex gap-[38px]">
-                  {vyd.stats.map((s) => (
-                    <div key={s.l} className="flex flex-col gap-2">
-                      <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.28px] text-on-dark/[0.45]">{s.l}</p>
-                      <p className="font-['Cormorant_Garamond:Regular'] text-[23px] text-on-dark">{s.v}</p>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => onNav('vinedos')}
-                  className="self-start border border-on-dark/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-on-dark hover:border-white/70 transition-colors"
-                  style={{ fontVariationSettings: '"wdth" 100' }}
+            <article key={vyd.num} className="border-t border-line-dark">
+              <div className="wrap grid items-center gap-x-12 gap-y-10 py-[clamp(48px,6vw,88px)] lg:grid-cols-12">
+                <figure
+                  className={`relative aspect-[4/3] overflow-hidden lg:row-start-1 lg:col-span-7 unveil ${
+                    flip ? 'lg:col-start-6' : 'lg:col-start-1'
+                  }`}
                 >
-                  {t.home.vyBtn}
-                </button>
-              </div>
-              {!imgLeft && (
-                <div className="overflow-hidden" style={{ aspectRatio: '676/520' }}>
-                  <img src={img} alt={vyd.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  <img src={HOME_VY_IMGS[idx]} alt={vyd.name} className="absolute inset-0 size-full object-cover" />
+                  <Corners className="text-on-dark/80" />
+                </figure>
+                <div className={`flex flex-col lg:row-start-1 lg:col-span-4 ${flip ? 'lg:col-start-1' : 'lg:col-start-9'}`}>
+                  <p className="t-data text-accent-light">{vyd.num}</p>
+                  <h3 className="t-name mt-4 text-[clamp(32px,3.3vw,50px)] reveal">{vyd.name}</h3>
+                  <p className="t-data mt-4 text-[10.5px] text-on-dark/50">{coords(VY_COORDS[idx])}</p>
+                  <p className="t-body mt-6 text-on-dark/72 reveal">{vyd.desc}</p>
+                  <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-line-dark pt-5">
+                    {vyd.stats.map((s) => (
+                      <div key={s.l}>
+                        <dt className="t-label text-[10px] text-on-dark/45">{s.l}</dt>
+                        <dd className="mt-2 text-[21px] font-light">{s.v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <button onClick={() => onNav('vinedos')} className="tlink mt-9 self-start">
+                    {t.home.vyBtn}
+                    <Arrow />
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
+            </article>
           );
         })}
 
-        {/* Stats band — oversized serif numerals over the altitude motif */}
-        <div className="relative overflow-hidden border-t border-on-dark/[0.14] px-5 sm:px-8 lg:px-12 pt-[84px] pb-16 lg:pb-[100px]">
+        {/* Altitude, in numbers */}
+        <div className="relative overflow-hidden border-t border-line-dark">
           <div className="pointer-events-none absolute inset-0 text-on-dark">
-            <Contours className="h-full w-full" lines={10} seed={7} opacity={0.07} />
+            <Contours className="h-full w-full" lines={10} seed={7} opacity={0.06} />
           </div>
-          <p
-            className="relative max-w-[720px] font-['Archivo:Light'] text-[19px] text-on-dark/[0.78] leading-[1.75] reveal"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.statsIntro}
-          </p>
-          <div className="relative mt-[68px] grid grid-cols-2 md:grid-cols-4 reveal reveal-d1">
-            {t.home.stats.map((s, i) => (
-              <div
-                key={s.label}
-                className={`flex flex-col gap-[18px] px-4 sm:px-9 ${i > 0 ? 'border-l border-on-dark/[0.16]' : 'pl-0'}`}
-              >
-                <span className="flex items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.6px] text-on-dark/[0.55]">
-                  <span className="h-px w-4 bg-accent" />
-                  {s.label}
-                </span>
-                <span className="font-['Cormorant_Garamond:Light'] text-[clamp(38px,8vw,80px)] leading-[0.86] tracking-[-0.01em] text-on-dark">
-                  {s.num}
-                </span>
-                <span className="font-['Cormorant_Garamond:Italic'] italic text-[15px] text-on-dark/[0.6]">
-                  {s.unit}
-                </span>
-              </div>
-            ))}
+          <div className="wrap relative py-[clamp(90px,11vw,150px)]">
+            <p className="t-lead max-w-[46ch] text-on-dark/78 reveal">{t.home.statsIntro}</p>
+            <dl className="mt-16 grid grid-cols-2 gap-y-14 lg:grid-cols-4 reveal">
+              {t.home.stats.map((s, i) => (
+                <div key={s.label} className={`flex flex-col gap-4 ${statBorders[i]}`}>
+                  <dt className="t-label text-accent-light">{s.label}</dt>
+                  <dd className="t-num text-[clamp(54px,7.2vw,112px)]">{s.num}</dd>
+                  <dd className="t-small text-on-dark/55">{s.unit}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
       </section>
 
-      {/* Wines section */}
-      <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-11">
-          <div className="flex flex-col gap-[19px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.home.winesEyebrow}</p>
-            <h2 className="font-['Cormorant_Garamond:Light'] text-[30px] sm:text-[38px] lg:text-[44px] text-ink leading-[1.12] lg:leading-[49.28px] reveal reveal-d1">{t.home.winesTitle}</h2>
+      {/* 04 — The wines: bottles stand on a shelf, no boxes */}
+      <section className="py-[clamp(110px,13vw,190px)]">
+        <div className="wrap grid items-end gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-6">
+            <Chapter n="04">{t.home.winesEyebrow}</Chapter>
+            <h2 className="t-h2 mt-8 reveal">{t.home.winesTitle}</h2>
           </div>
-          <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[25.2px] max-w-[380px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.home.winesPara}
-          </p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-px bg-ink/[0.13] border-t border-b border-ink/[0.13]">
-          {t.home.wines.map((wine, i) => (
-            <button
-              key={wine.name}
-              className={`bg-surface flex-1 flex flex-col gap-[17px] items-start px-8 py-10 reveal reveal-d${i + 1} hover:bg-surface-2 transition-colors text-left`}
-              onClick={() => onNav('wine-detail', HOME_WINE_IDS[i])}
-            >
-              <div className="h-[428px] w-full flex items-center justify-center overflow-hidden">
-                <img src={HOME_WINE_IMGS[i]} alt={wine.name} className="h-full object-contain hover:scale-105 transition-transform duration-500" />
-              </div>
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{wine.region}</p>
-              <div>
-                <p className="font-['Cormorant_Garamond:Regular'] text-[24px] text-ink leading-[28.8px]">{wine.name}</p>
-                <p className="font-['Cormorant_Garamond:Italic'] italic text-[24px] text-ink leading-[28.8px]">{wine.sub}</p>
-              </div>
-              <p className="font-['Archivo:Light'] text-[12.5px] text-ink/[0.68] leading-[21.88px]" style={{ fontVariationSettings: '"wdth" 100' }}>{wine.desc}</p>
-              <span className="border-b border-accent/[0.35] pb-[5px] font-['Archivo:Regular'] text-[11px] text-accent">{t.home.fullInfo}</span>
+          <div className="flex flex-col items-start gap-7 lg:col-span-4 lg:col-start-9">
+            <p className="t-body text-ink/62 reveal">{t.home.winesPara}</p>
+            <button onClick={() => onNav('vinos')} className="tlink">
+              {t.home.seeAllWines}
+              <Arrow />
             </button>
-          ))}
-        </div>
-
-        <div className="flex justify-center mt-11">
-          <button
-            onClick={() => onNav('vinos')}
-            className="border border-ink/[0.42] px-[35px] py-[16px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-ink hover:bg-ink/[0.05] transition-colors"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.seeAllWines}
-          </button>
-        </div>
-      </section>
-
-      {/* Quote section */}
-      <section className="relative h-[480px] overflow-hidden flex items-center justify-center mt-16">
-        <div className="absolute inset-0">
-          <img src={`${A}/mza-valley.jpg`} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
-        </div>
-        <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[860px] reveal">
-          <p className="font-['Playfair_Display:Bold_Italic'] font-bold italic text-[34px] text-on-dark leading-[48.28px]">
-            {t.home.quote}
-          </p>
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-on-dark/[0.7] mt-5">
-            {t.home.quoteSub}
-          </p>
-        </div>
-      </section>
-
-      {/* Awards */}
-      <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
-        <div className="flex flex-col gap-[23px] items-center text-center mb-[27px] reveal">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.awardsEyebrow}</p>
-          <h2 className="font-['Cormorant_Garamond:Light'] text-[28px] sm:text-[34px] lg:text-[40px] text-ink leading-[1.14] lg:leading-[45.6px]">{t.home.awardsTitle}</h2>
-        </div>
-        <div className="flex gap-6 justify-center flex-wrap">
-          {HOME_AWARD_IMGS.map((src, i) => (
-            <div key={i} className={`border border-ink/[0.16] rounded-full size-[130px] sm:size-[177px] flex items-center justify-center reveal reveal-d${(i % 5) + 1}`}>
-              <img src={src} alt={t.home.awardAlt} className="size-[88px] sm:size-[120px] object-contain" />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* News section */}
-      <section className="bg-surface-2 border-t border-ink/[0.1] px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[101px] pb-16 lg:pb-[100px] mt-16">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
-          <div className="flex flex-col gap-[18px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.home.newsEyebrow}</p>
-            <h2 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[30px] sm:text-[38px] lg:text-[44px] text-ink leading-[1.12] lg:leading-[49.28px] reveal reveal-d1">{t.home.newsTitle}</h2>
-            <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.68] leading-[25.2px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
-              {t.home.newsPara}
-            </p>
           </div>
-          <button onClick={() => onNav('novedades')} className="border-b border-ink/[0.4] pb-[6px] font-['Archivo:Regular'] text-[11px] tracking-[1.1px] uppercase text-ink self-end" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.home.seeMoreNews}
-          </button>
         </div>
-        <div className="flex flex-col md:flex-row gap-10">
+
+        <div className="wrap mt-[clamp(56px,7vw,100px)]">
+          <div className="lineup -mx-[var(--gutter)] flex snap-x snap-mandatory gap-8 overflow-x-auto px-[var(--gutter)] lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-14 lg:overflow-visible lg:px-0">
+            {t.home.wines.map((wine, i) => {
+              const id = HOME_WINE_IDS[i];
+              return (
+                <button
+                  key={wine.name}
+                  onClick={() => onNav('wine-detail', id)}
+                  className="group flex w-[74%] shrink-0 snap-start flex-col text-left sm:w-[44%] lg:w-auto reveal"
+                >
+                  <span className="relative flex h-[clamp(340px,34vw,480px)] items-end justify-center border-b border-line">
+                    <img
+                      src={WINE_META[id].img}
+                      alt={`${wine.name} ${wine.sub}`}
+                      className="h-[92%] w-auto object-contain transition-transform duration-[900ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-3"
+                    />
+                  </span>
+                  <span className="mt-6 block t-data text-[10.5px] text-ink/45">
+                    {String(i + 1).padStart(2, '0')} — {wine.region}
+                  </span>
+                  <span className="mt-3 block t-name text-[clamp(27px,2.4vw,35px)] transition-colors group-hover:text-accent">
+                    {wine.name}
+                  </span>
+                  <span className="mt-2 block t-label text-ink/55">{wine.sub}</span>
+                  <span className="mt-5 block t-small max-w-[36ch] text-ink/62">{wine.desc}</span>
+                  <span className="tlink mt-7 self-start text-accent">
+                    {t.home.fullInfo}
+                    <Arrow />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Quote */}
+      <section className="relative overflow-hidden text-on-dark">
+        <img src={`${A}/mza-valley.jpg`} alt="" className="absolute inset-0 size-full object-cover" />
+        <div className="absolute inset-0 bg-[rgba(10,9,7,0.56)]" />
+        <Corners className="[--ci:22px] text-on-dark/70" />
+        <div className="wrap relative flex flex-col items-center py-[clamp(120px,15vw,220px)] text-center">
+          <Mark className="w-[46px] h-auto text-accent-light reveal" />
+          <blockquote className="t-display mt-10 max-w-[24ch] reveal">{t.home.quote}</blockquote>
+          <p className="t-label mt-10 text-on-dark/65 reveal">{t.home.quoteSub}</p>
+        </div>
+      </section>
+
+      {/* 05 — Recognition */}
+      <section className="bg-surface-2 py-[clamp(90px,11vw,150px)]">
+        <div className="wrap grid items-center gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <Chapter n="05">{t.home.awardsEyebrow}</Chapter>
+            <h2 className="t-h2 mt-8 reveal">{t.home.awardsTitle}</h2>
+          </div>
+          <ul className="grid grid-cols-3 border-l border-t border-line sm:grid-cols-6 lg:col-span-8 reveal">
+            {HOME_AWARD_IMGS.map((src, i) => (
+              <li key={i} className="flex aspect-square items-center justify-center border-b border-r border-line p-4">
+                <img src={src} alt={t.home.awardAlt} className="h-auto w-[74%] object-contain" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* 06 — News: asymmetric pair */}
+      <section className="py-[clamp(110px,13vw,190px)]">
+        <div className="wrap grid items-end gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-6">
+            <Chapter n="06">{t.home.newsEyebrow}</Chapter>
+            <h2 className="t-h2 mt-8 reveal">{t.home.newsTitle}</h2>
+          </div>
+          <div className="flex flex-col items-start gap-7 lg:col-span-4 lg:col-start-9">
+            <p className="t-body text-ink/62 reveal">{t.home.newsPara}</p>
+            <button onClick={() => onNav('novedades')} className="tlink">
+              {t.home.seeMoreNews}
+              <Arrow />
+            </button>
+          </div>
+        </div>
+        <div className="wrap mt-16 grid gap-x-12 gap-y-16 md:grid-cols-12">
           {t.home.news.map((article, i) => (
-            <button key={article.title} className={`flex-1 flex flex-col gap-[17px] cursor-pointer reveal reveal-d${i + 1} text-left`} onClick={() => onNav('novedades')}>
-              <div className="overflow-hidden h-[382px]">
-                <img src={HOME_NEWS_IMGS[i]} alt={article.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-              </div>
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{article.date}</p>
-              <h3 className="font-['Cormorant_Garamond:Regular'] text-[26px] text-ink leading-[32.24px]">{article.title}</h3>
-              <p className="font-['Archivo:Light'] text-[13px] text-ink/[0.68] leading-[23.4px]" style={{ fontVariationSettings: '"wdth" 100' }}>{article.desc}</p>
+            <button
+              key={article.title}
+              onClick={() => onNav('novedades')}
+              className={`group flex flex-col text-left ${i === 0 ? 'md:col-span-7' : 'md:col-span-5 md:mt-[22%]'}`}
+            >
+              <span className="relative block aspect-[4/3] overflow-hidden unveil">
+                <img
+                  src={HOME_NEWS_IMGS[i]}
+                  alt={article.title}
+                  className="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]"
+                />
+              </span>
+              <span className="mt-6 block t-data text-[10.5px] text-ink/45">{article.date}</span>
+              <span className="mt-3 block t-h3 transition-colors group-hover:text-accent">{article.title}</span>
+              <span className="mt-3 block t-small max-w-[50ch] text-ink/62">{article.desc}</span>
             </button>
           ))}
         </div>
@@ -844,67 +816,76 @@ function Home({ onNav }: { onNav: Nav }) {
   );
 }
 
+// ─── Shared page heading for inner pages ──────────────────────────────────────
+function PageHead({ eyebrow, title, para }: { eyebrow: string; title: string; para: string }) {
+  return (
+    <section className="wrap grid items-end gap-10 pb-[clamp(44px,6vw,80px)] pt-[clamp(64px,9vw,130px)] lg:grid-cols-12">
+      <div className="lg:col-span-7">
+        <Chapter className="in-fade">{eyebrow}</Chapter>
+        <h1 className="t-h1 mt-8">
+          <span className="in-rise">
+            <span className="d1">{title}</span>
+          </span>
+        </h1>
+      </div>
+      <p className="t-body text-ink/62 lg:col-span-4 lg:col-start-9 in-fade d2">{para}</p>
+    </section>
+  );
+}
+
 // ─── NUESTROS VINOS ───────────────────────────────────────────────────────────
 function Vinos({ onNav }: { onNav: Nav }) {
-  useReveal();
   const t = useT();
   const [filter, setFilter] = useState<'TODOS' | 'ALTAMIRA' | 'VAV' | 'BLENDS'>('TODOS');
   const wines = t.wineCatalog.map((w) => ({ ...w, ...WINE_META[w.id] }));
   const filtered =
-    filter === 'TODOS' ? wines
-    : filter === 'BLENDS' ? wines.filter((w) => w.blend)
-    : wines.filter((w) => w.tag === filter);
+    filter === 'TODOS' ? wines : filter === 'BLENDS' ? wines.filter((w) => w.blend) : wines.filter((w) => w.tag === filter);
 
   return (
-    <div className="bg-surface w-full">
-      <section className="relative h-[340px] overflow-hidden flex items-center">
-        <img src={`${A}/mza-altamira.jpg`} alt="" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-[rgba(20,18,15,0.5)]" />
-        <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.7] hero-line-1">{t.vinos.heroEyebrow}</p>
-          <h1 className="font-['Cormorant_Garamond:Light'] text-[34px] sm:text-[44px] lg:text-[52px] text-on-dark leading-[1.12] lg:leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
-          <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.8] leading-[25.2px] max-w-[520px] hero-line-3" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.vinos.heroPara}
-          </p>
-        </div>
-      </section>
+    <div className="w-full bg-surface">
+      <PageHead eyebrow={t.vinos.heroEyebrow} title={t.vinos.heroTitle} para={t.vinos.heroPara} />
 
-      <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-5 gap-y-3 px-5 sm:px-8 lg:px-12 py-5 lg:py-[26px]">
-        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.45]">{t.vinos.filterLabel}</span>
-        <div className="flex flex-wrap gap-2">
-          {(['TODOS', 'ALTAMIRA', 'VAV', 'BLENDS'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-[19px] py-[9px] font-['Archivo:Regular'] text-[10.5px] tracking-[0.84px] transition-colors ${
-                filter === f
-                  ? 'bg-panel text-on-dark border border-ink'
-                  : 'border border-ink/[0.25] text-ink hover:border-ink/[0.5]'
-              }`}
-              style={{ fontVariationSettings: '"wdth" 100' }}
-            >
-              {t.vinos.filterLabels[f]}
-            </button>
-          ))}
+      <div className="sticky top-[var(--header)] z-30 border-y border-line bg-surface/95 backdrop-blur-md">
+        <div className="wrap flex flex-wrap items-center gap-x-8 gap-y-2 py-3">
+          <span className="t-label text-ink/45">{t.vinos.filterLabel}</span>
+          <div role="tablist" className="flex flex-wrap gap-x-7">
+            {(['TODOS', 'ALTAMIRA', 'VAV', 'BLENDS'] as const).map((f) => (
+              <button
+                key={f}
+                role="tab"
+                aria-selected={filter === f}
+                onClick={() => setFilter(f)}
+                className={`t-label border-b py-3 transition-colors ${
+                  filter === f ? 'border-accent-solid text-ink' : 'border-transparent text-ink/45 hover:text-ink'
+                }`}
+              >
+                {t.vinos.filterLabels[f]}
+              </button>
+            ))}
+          </div>
+          <span className="ml-auto t-data text-ink/45">{filtered.length.toString().padStart(2, '0')}</span>
         </div>
-        <span className="ml-auto font-['IBM_Plex_Mono:Regular'] text-[10.5px] text-ink/[0.45]">{filtered.length.toString().padStart(2, '0')}</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-ink/[0.13]">
-        {filtered.map((wine, i) => (
-          <button
-            key={wine.id}
-            className={`bg-surface relative h-[547px] cursor-pointer hover:bg-surface-2 transition-colors reveal reveal-d${(i % 3) + 1} text-left`}
-            onClick={() => onNav('wine-detail', wine.id)}
-          >
-            <div className="absolute left-[34px] right-[34px] top-[44px] h-[365px] flex items-end justify-center overflow-hidden">
-              <img src={wine.img} alt={wine.name} className="h-full object-contain hover:scale-105 transition-transform duration-500" />
-            </div>
-            <p className="absolute left-[34px] right-[34px] top-[417px] font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{wine.gridRegion}</p>
-            <p className="absolute left-[34px] right-[34px] top-[442px] font-['Cormorant_Garamond:Regular'] text-[23px] text-ink leading-[28px]">
-              {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
-            </p>
-            <span className="absolute left-[34px] top-[487px] border-b border-accent/[0.35] pb-[5px] font-['Archivo:Regular'] text-[11px] text-accent">{t.vinos.fullInfo}</span>
+      <div className="wrap grid grid-cols-1 gap-x-14 gap-y-20 py-[clamp(64px,8vw,120px)] sm:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((wine) => (
+          <button key={wine.id} onClick={() => onNav('wine-detail', wine.id)} className="group flex flex-col text-left reveal">
+            <span className="relative flex h-[clamp(360px,32vw,470px)] items-end justify-center border-b border-line">
+              <img
+                src={wine.img}
+                alt={`${wine.name} ${wine.sub}`}
+                className="h-[90%] w-auto object-contain transition-transform duration-[900ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-3"
+              />
+            </span>
+            <span className="mt-6 block t-data text-[10.5px] text-ink/45">{wine.gridRegion}</span>
+            <span className="mt-3 block t-name text-[clamp(27px,2.3vw,34px)] transition-colors group-hover:text-accent">
+              {wine.name}
+            </span>
+            <span className="mt-2 block t-label text-ink/55">{wine.sub}</span>
+            <span className="tlink mt-7 self-start text-accent">
+              {t.vinos.fullInfo}
+              <Arrow />
+            </span>
           </button>
         ))}
       </div>
@@ -912,7 +893,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
   );
 }
 
-// ─── Terrain map — real relief tiles (Leaflet + OpenTopoMap) ──────────────────
+// ─── Terrain map — real satellite imagery (Leaflet + Esri) ────────────────────
 function TerrainMap() {
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -931,13 +912,12 @@ function TerrainMap() {
       maxZoom: 16,
     });
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-    // Real satellite imagery — the irrigated vineyards read as green against the
-    // arid Andes foothills (a cultivated oasis, not an empty desert).
-    L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { attribution: 'Imagery © Esri · Maxar · Earthstar Geographics', maxZoom: 18 }
-    ).addTo(map);
-    // Subtle place/road labels for orientation (towns, routes — shows it is farmland).
+    // Satellite imagery — the irrigated vineyards read as green against the arid
+    // Andes foothills (a cultivated oasis, not an empty desert).
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Imagery © Esri · Maxar · Earthstar Geographics',
+      maxZoom: 18,
+    }).addTo(map);
     L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
       { attribution: '', maxZoom: 18, opacity: 0.9 }
@@ -951,8 +931,6 @@ function TerrainMap() {
       });
       L.marker([p.lat, p.lon], { icon }).addTo(map);
     });
-    // Frame the cultivated valley so the geometric green vineyard parcels fill the
-    // view (clearly farmland, not desert) with the three estates spread across it.
     map.fitBounds(
       L.latLngBounds([
         [-33.61, -69.2],
@@ -966,93 +944,101 @@ function TerrainMap() {
       map.remove();
     };
   }, []);
-  return <div ref={ref} className="vf-map h-[clamp(380px,46vw,560px)] w-full" />;
+  return <div ref={ref} className="vf-map h-[clamp(380px,46vw,580px)] w-full" />;
 }
 
 // ─── VIÑEDOS ──────────────────────────────────────────────────────────────────
 function Vinedos() {
-  useReveal();
   const t = useT();
+  const coords = useCoords();
+  const offsets = ['', 'md:mt-28', 'md:mt-14'];
   return (
-    <div className="bg-surface w-full">
-      <section className="relative h-[clamp(440px,56vh,580px)] overflow-hidden flex items-end">
-        <div className="absolute inset-0">
-          <img
-            src={`${A}/andes-real.jpg`}
-            alt={t.vinedos.heroTitle1 + ' ' + t.vinedos.heroTitle2}
-            className="absolute inset-0 size-full object-cover object-[50%_20%]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.28)] via-transparent to-[rgba(20,18,15,0.72)]" />
-        </div>
-        <div className="relative px-5 sm:px-8 lg:px-12 pb-14 flex flex-col gap-[18px]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.72] hero-line-1">{t.vinedos.heroEyebrow}</p>
-          <h1 className="font-['Cormorant_Garamond:Light'] text-[36px] sm:text-[44px] lg:text-[54px] text-on-dark leading-[1.1] lg:leading-[59.4px] max-w-[760px] hero-line-2">
-            {t.vinedos.heroTitle1} {t.vinedos.heroTitle2}
-          </h1>
+    <div className="w-full bg-surface">
+      {/* The estate's own photograph, framed */}
+      <section className="relative flex h-[clamp(500px,76vh,780px)] items-end overflow-hidden text-on-dark">
+        <img
+          src={`${A}/andes-real.jpg`}
+          alt={t.vinedos.heroTitle1 + ' ' + t.vinedos.heroTitle2}
+          className="absolute inset-0 size-full object-cover object-[50%_20%] kenburns"
+        />
+        <div className="absolute inset-0 bg-[rgba(10,9,7,0.36)]" />
+        <Corners className="[--ci:20px] text-on-dark/80" />
+        <div className="wrap relative grid w-full items-end gap-6 pb-[clamp(44px,6vw,84px)] lg:grid-cols-12">
+          <div className="lg:col-span-9">
+            <p className="t-label text-on-dark/80 in-fade">{t.vinedos.heroEyebrow}</p>
+            <h1 className="t-h1 mt-6 max-w-[16ch]">
+              <span className="in-rise">
+                <span className="d1">
+                  {t.vinedos.heroTitle1} {t.vinedos.heroTitle2}
+                </span>
+              </span>
+            </h1>
+          </div>
+          <p className="t-data text-[10.5px] text-on-dark/75 lg:col-span-3 lg:text-right in-fade d2">{coords(ESTATE_COORD)}</p>
         </div>
       </section>
 
-      <section className="border-b border-ink/[0.12] grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-[60px] px-5 sm:px-8 lg:px-12 py-20">
-        <p className="font-['Archivo:Light'] text-[22px] text-ink/[0.84] leading-[37.84px] reveal" style={{ fontVariationSettings: '"wdth" 100' }}>
-          {t.vinedos.intro1}
-        </p>
-        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[25.9px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
-          {t.vinedos.intro2}
-        </p>
+      <section className="wrap grid gap-10 py-[clamp(90px,11vw,160px)] lg:grid-cols-12">
+        <p className="t-lead text-ink/85 lg:col-span-7 reveal">{t.vinedos.intro1}</p>
+        <p className="t-body text-ink/62 lg:col-span-4 lg:col-start-9 reveal">{t.vinedos.intro2}</p>
       </section>
 
-      <section className="flex flex-col lg:flex-row gap-px bg-ink/[0.13]">
-        {t.vinedos.cards.map((v, i) => (
-          <article key={v.num} className={`bg-surface flex-1 flex flex-col reveal reveal-d${i + 1}`}>
-            <div className="overflow-hidden" style={{ aspectRatio: '426/532' }}>
-              <img src={VINEDOS_IMGS[i]} alt={v.name + v.italic} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-            </div>
-            <div className="flex flex-col gap-4 px-[30px] pt-[31px] pb-[38px]">
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.53px] text-ink/[0.5]">{v.num}</p>
-              <h3 className="font-['Cormorant_Garamond:Italic'] italic text-[27px] text-ink leading-[31.32px]">
-                {v.name}<span className="font-['Cormorant_Garamond:Regular'] not-italic">{v.italic}</span>
+      {/* Three terroirs — a staggered triptych */}
+      <section className="wrap pb-[clamp(110px,13vw,190px)]">
+        <div className="grid gap-x-12 gap-y-20 md:grid-cols-3">
+          {t.vinedos.cards.map((v, i) => (
+            <article key={v.num} className={`flex flex-col ${offsets[i]}`}>
+              <figure className="relative aspect-[4/5] overflow-hidden unveil">
+                <img src={VINEDOS_IMGS[i]} alt={v.name + v.italic} className="absolute inset-0 size-full object-cover" />
+                <Corners className="text-on-dark/80" />
+              </figure>
+              <p className="t-data mt-7 text-accent">{v.num}</p>
+              <h3 className="t-name mt-3 text-[clamp(29px,2.6vw,38px)]">
+                {v.name}
+                {v.italic}
               </h3>
-              <p className="font-['Archivo:Light'] text-[12.5px] text-ink/[0.68] leading-[22.5px]" style={{ fontVariationSettings: '"wdth" 100' }}>{v.desc}</p>
-              <div className="mt-2">
-                {v.specs.map((s, j) => (
-                  <div key={s.l} className={`flex justify-between py-[10px] border-t border-ink/[0.14] ${j === v.specs.length - 1 ? 'border-b' : ''}`}>
-                    <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-ink/[0.5]">{s.l}</span>
-                    <span className="font-['Cormorant_Garamond:Regular'] text-[13px] text-ink">{s.v}</span>
+              <p className="t-data mt-3 text-[10.5px] text-ink/45">{coords(VY_COORDS[i])}</p>
+              <p className="t-small mt-5 text-ink/70">{v.desc}</p>
+              <dl className="mt-7 border-t border-line">
+                {v.specs.map((s) => (
+                  <div key={s.l} className="flex items-baseline justify-between gap-4 border-b border-line py-3">
+                    <dt className="t-label text-[10px] text-ink/45">{s.l}</dt>
+                    <dd className="text-[15px]">{s.v}</dd>
                   </div>
                 ))}
-              </div>
-            </div>
-          </article>
-        ))}
+              </dl>
+            </article>
+          ))}
+        </div>
       </section>
 
-      {/* Map — bespoke location illustration (Argentina + Uco Valley inset) */}
-      <section className="relative overflow-hidden bg-panel px-5 sm:px-8 lg:px-12 py-[clamp(70px,9vw,120px)]">
+      {/* Location — satellite map in a viewfinder */}
+      <section className="relative overflow-hidden bg-panel py-[clamp(90px,11vw,160px)] text-on-dark">
         <div className="pointer-events-none absolute inset-0 text-on-dark">
           <Contours className="h-full w-full" lines={9} seed={4} opacity={0.05} />
         </div>
-        <div className="relative mx-auto grid max-w-[1180px] grid-cols-1 lg:grid-cols-[0.82fr_1.18fr] gap-[50px] items-center">
-          <div className="flex flex-col gap-5 reveal">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.vinedos.mapLabel}</p>
-            <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(30px,3.4vw,44px)] text-on-dark leading-[1.1]">
+        <div className="wrap relative grid items-center gap-14 lg:grid-cols-12">
+          <div className="flex flex-col lg:col-span-4 reveal">
+            <Chapter className="text-accent-light">{t.vinedos.mapLabel}</Chapter>
+            <h2 className="t-h2 mt-8">
               {t.vinedos.mapPlace1}
-              <br />
-              <span className="font-['Cormorant_Garamond:Light_Italic'] italic">{t.vinedos.mapPlace2}</span>
+              <span className="t-name block">{t.vinedos.mapPlace2}</span>
             </h2>
-            <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.7] leading-[25.9px] max-w-[360px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-              {t.vinedos.mapDesc}
-            </p>
-            <div className="flex flex-col gap-[10px] pt-2">
-              {t.vinedos.mapArt.vineyards.map((name) => (
-                <div key={name} className="flex items-center gap-[10px]">
-                  <div className="bg-on-dark rounded-full size-[7px] shrink-0" />
-                  <span className="font-['Archivo:Light'] text-[12.5px] text-on-dark/[0.82]" style={{ fontVariationSettings: '"wdth" 100' }}>{name}</span>
-                </div>
+            <p className="t-body mt-6 max-w-[40ch] text-on-dark/70">{t.vinedos.mapDesc}</p>
+            <ol className="mt-10 border-t border-line-dark">
+              {t.vinedos.mapArt.vineyards.map((name, i) => (
+                <li key={name} className="flex items-baseline gap-5 border-b border-line-dark py-4">
+                  <span className="t-data text-accent-light">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="t-small text-on-dark/85">{name}</span>
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
-          <div className="reveal reveal-d1 overflow-hidden rounded-[14px] border border-on-dark/[0.14] shadow-[0_20px_60px_-24px_rgba(0,0,0,0.7)]">
-            <TerrainMap />
+          <div className="relative lg:col-span-8 reveal">
+            <div className="border border-line-dark">
+              <TerrainMap />
+            </div>
+            <Corners className="[--ci:-12px] [--cs:20px] text-accent-light" />
           </div>
         </div>
       </section>
@@ -1062,52 +1048,51 @@ function Vinedos() {
 
 // ─── NOVEDADES ────────────────────────────────────────────────────────────────
 function Novedades() {
-  useReveal();
   const t = useT();
+  const f = t.novedades.featured;
   return (
-    <div className="bg-surface w-full">
-      <section className="border-b border-ink/[0.12] flex flex-col md:flex-row md:items-end md:justify-between gap-5 px-5 sm:px-8 lg:px-12 pt-20 pb-[51px]">
-        <div className="flex flex-col gap-[18px]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.novedades.eyebrow}</p>
-          <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[34px] sm:text-[42px] lg:text-[50px] text-ink leading-[1.1] lg:leading-[55px] reveal reveal-d1">{t.novedades.title}</h1>
-        </div>
-        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.68] leading-[25.2px] max-w-[420px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
-          {t.novedades.para}
-        </p>
-      </section>
+    <div className="w-full bg-surface">
+      <PageHead eyebrow={t.novedades.eyebrow} title={t.novedades.title} para={t.novedades.para} />
 
-      <section className="border-b border-ink/[0.12] grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-[50px] px-5 sm:px-8 lg:px-12 pt-[60px] pb-[41px]">
-        <div className="overflow-hidden reveal" style={{ aspectRatio: '630/394' }}>
-          <img src={IMG.vinexpo} alt={t.novedades.featured.title1} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-        </div>
-        <div className="flex flex-col gap-[19px] justify-center reveal reveal-d2">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.novedades.featured.tag}</p>
-          <h2 className="font-['Cormorant_Garamond:Regular'] text-[34px] text-ink leading-[40.8px]">
-            {t.novedades.featured.title1}<br />{t.novedades.featured.title2}
+      <section className="wrap grid items-center gap-12 border-t border-line py-[clamp(56px,7vw,110px)] lg:grid-cols-12">
+        <figure className="relative aspect-[16/10] overflow-hidden lg:col-span-7 unveil">
+          <img src={IMG.vinexpo} alt={f.title1 + ' ' + f.title2} className="absolute inset-0 size-full object-cover" />
+          <Corners className="text-on-dark/80" />
+        </figure>
+        <div className="flex flex-col lg:col-span-4 lg:col-start-9">
+          <p className="t-data text-[10.5px] text-accent">{f.tag}</p>
+          <h2 className="t-h2 mt-6 reveal">
+            {f.title1} {f.title2}
           </h2>
-          <p className="font-['Archivo:Light'] text-[13.5px] text-ink/[0.7] leading-[25px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.novedades.featured.desc}
-          </p>
-          <button className="self-start border-b border-accent/[0.4] pb-[6px] font-['Archivo:Regular'] text-[11px] tracking-[1.1px] uppercase text-accent">
+          <p className="t-body mt-6 text-ink/68 reveal">{f.desc}</p>
+          <button className="tlink mt-9 self-start">
             {t.novedades.readNote}
+            <Arrow />
           </button>
         </div>
       </section>
 
-      <section className="flex flex-col md:flex-row gap-[34px] px-5 sm:px-8 lg:px-12 pt-10 pb-[90px]">
-        {t.novedades.articles.map((a, i) => (
-          <article key={a.title} className={`flex-1 flex flex-col gap-[15px] cursor-pointer reveal reveal-d${i + 1}`}>
-            <div className="overflow-hidden" style={{ aspectRatio: '372/248' }}>
-              <img src={NOVEDADES_ARTICLE_IMGS[i]} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-            </div>
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5] mt-1">{a.tag}</p>
-            <h3 className="font-['Cormorant_Garamond:Regular'] text-[23px] text-ink leading-[28.75px]">{a.title}</h3>
-            <p className="font-['Archivo:Light'] text-[12.5px] text-ink/[0.68] leading-[22.5px]" style={{ fontVariationSettings: '"wdth" 100' }}>{a.desc}</p>
-            <button className="self-start border-b border-accent/[0.35] pb-[5px] font-['Archivo:Regular'] text-[10.5px] text-accent mt-2">
-              {t.novedades.readNote}
-            </button>
-          </article>
-        ))}
+      <section className="wrap pb-[clamp(90px,11vw,160px)]">
+        <ul className="border-t border-line">
+          {t.novedades.articles.map((a, i) => (
+            <li key={a.title} className="reveal">
+              <article className="grid items-center gap-x-12 gap-y-5 border-b border-line py-10 md:grid-cols-12">
+                <p className="t-data text-[10.5px] text-ink/50 md:col-span-3">{a.tag}</p>
+                <div className="md:col-span-5">
+                  <h3 className="t-h3">{a.title}</h3>
+                  <p className="t-small mt-3 text-ink/62">{a.desc}</p>
+                  <button className="tlink mt-5">
+                    {t.novedades.readNote}
+                    <Arrow />
+                  </button>
+                </div>
+                <div className="relative aspect-[3/2] overflow-hidden md:col-span-3 md:col-start-10">
+                  <img src={NOVEDADES_ARTICLE_IMGS[i]} alt={a.title} className="absolute inset-0 size-full object-cover" />
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );
@@ -1115,235 +1100,224 @@ function Novedades() {
 
 // ─── CONTACTO ─────────────────────────────────────────────────────────────────
 function Contacto() {
-  useReveal();
   const t = useT();
-  const CELLAR =
-    'https://images.unsplash.com/photo-1765850257843-aa029ab7769c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aW5lcnklMjJjZWxsYXIlMjJBcmdlbnRpbmElMjB2aW5leWFyZCUyMG1vdW50YWluJTIwQW5kZXN8ZW58MXx8fHwxNzg5OTE3MTUzfDA&ixlib=rb-4.1.0&q=80&w=1080';
+  // No backend: hand the message to the visitor's mail app, addressed to the estate.
+  const send = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const d = new FormData(e.currentTarget);
+    const name = String(d.get('name') || '');
+    const body = `${name}\n${d.get('email') || ''}\n${d.get('country') || ''}\n\n${d.get('message') || ''}`;
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+      'Altamira de los Andes — ' + name
+    )}&body=${encodeURIComponent(body)}`;
+  };
   const fields = [
-    { label: t.contacto.fields[0], type: 'text' },
-    { label: t.contacto.fields[1], type: 'email' },
-    { label: t.contacto.fields[2], type: 'text' },
+    { name: 'name', label: t.contacto.fields[0], type: 'text', span: '', auto: 'name' },
+    { name: 'email', label: t.contacto.fields[1], type: 'email', span: '', auto: 'email' },
+    { name: 'country', label: t.contacto.fields[2], type: 'text', span: 'sm:col-span-2', auto: 'country-name' },
   ];
   return (
-    <div className="bg-surface w-full">
-      <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-72px)]">
-        {/* Form left */}
-        <div className="flex-1 py-20 px-5 sm:px-9 lg:px-14 flex flex-col">
-          <div className="flex flex-col gap-[18px] mb-[25px] reveal">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.contacto.eyebrow}</p>
-            <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[46px] text-ink leading-[1.1] lg:leading-[50.6px]">{t.contacto.title}</h1>
-          </div>
-          <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.7] leading-[25.9px] mb-8 reveal reveal-d1" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.contacto.intro1}<br />
-            {t.contacto.intro2}
+    <div className="w-full bg-surface">
+      <section className="grid lg:min-h-[calc(100dvh_-_var(--header))] lg:grid-cols-2">
+        <div className="flex flex-col px-[var(--gutter)] py-[clamp(64px,9vw,130px)] lg:pr-16">
+          <Chapter className="in-fade">{t.contacto.eyebrow}</Chapter>
+          <h1 className="t-h1 mt-8">
+            <span className="in-rise">
+              <span className="d1">{t.contacto.title}</span>
+            </span>
+          </h1>
+          <p className="t-lead mt-8 max-w-[36ch] text-ink/72 in-fade d2">
+            {t.contacto.intro1} {t.contacto.intro2}
           </p>
-          <form className="flex flex-col gap-0 reveal reveal-d2">
+          <form onSubmit={send} className="mt-14 grid max-w-[640px] gap-x-10 gap-y-9 sm:grid-cols-2 in-fade d3">
             {fields.map((field) => (
-              <div key={field.label} className="flex flex-col gap-[9px] mb-9">
-                <label className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{field.label}</label>
-                <input
-                  type={field.type}
-                  className="border-b border-ink/[0.28] bg-transparent outline-none font-['Archivo:Light'] text-[14px] text-ink py-2 focus:border-ink transition-colors"
-                  style={{ fontVariationSettings: '"wdth" 100' }}
-                />
-              </div>
+              <label key={field.name} className={`field ${field.span}`}>
+                <span className="t-label text-ink/50">{field.label}</span>
+                <input name={field.name} type={field.type} required autoComplete={field.auto} className="field__input" />
+              </label>
             ))}
-            <div className="flex flex-col gap-[9px] mb-12">
-              <label className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.contacto.messageLabel}</label>
-              <textarea
-                className="border-b border-ink/[0.28] bg-transparent outline-none font-['Archivo:Light'] text-[14px] text-ink py-2 resize-none h-[80px] focus:border-ink transition-colors"
-                style={{ fontVariationSettings: '"wdth" 100' }}
-              />
-            </div>
-            <button
-              type="submit"
-              className="self-start bg-panel px-[34px] py-[15px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:bg-panel-2 transition-colors"
-              style={{ fontVariationSettings: '"wdth" 100' }}
-            >
+            <label className="field sm:col-span-2">
+              <span className="t-label text-ink/50">{t.contacto.messageLabel}</span>
+              <textarea name="message" required rows={3} className="field__input resize-none" />
+            </label>
+            <button type="submit" className="btn btn--solid mt-2 justify-self-start sm:col-span-2">
               {t.contacto.submit}
+              <Arrow />
             </button>
           </form>
         </div>
 
-        {/* Image right */}
-        <div className="flex-1 relative overflow-hidden min-h-[440px] lg:min-h-0">
-          <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.1)] to-[rgba(20,18,15,0.6)]" />
-          <div className="absolute bottom-0 left-0 right-0 grid grid-cols-2 gap-x-[26px] gap-y-8 p-11">
-            <div className="flex flex-col gap-[9px]">
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.officeLabel}</p>
-              <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                Av. Colón 241<br />
+        <div className="relative min-h-[500px] overflow-hidden text-on-dark">
+          <img src={IMG.cellar} alt="" className="absolute inset-0 size-full object-cover" />
+          <div className="absolute inset-0 bg-[rgba(10,9,7,0.52)]" />
+          <Corners className="[--ci:20px] text-on-dark/75" />
+          <dl className="absolute inset-x-0 bottom-0 grid gap-x-10 gap-y-8 p-[clamp(36px,4.4vw,64px)] sm:grid-cols-2">
+            <div>
+              <dt className="t-label text-on-dark/55">{t.contacto.officeLabel}</dt>
+              <dd className="t-small mt-3">
+                Av. Colón 241
+                <br />
                 (5500) Mendoza, Argentina
-              </p>
+              </dd>
             </div>
-            <div className="flex flex-col gap-[9px]">
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.phoneLabel}</p>
-              <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                Tel / Fax +54 261 4299962<br />
+            <div>
+              <dt className="t-label text-on-dark/55">{t.contacto.phoneLabel}</dt>
+              <dd className="t-small mt-3">
+                Tel / Fax +54 261 4299962
+                <br />
                 Mobile USA +1 (305) 988 5992
-              </p>
+              </dd>
             </div>
-            <div className="col-span-2 flex flex-col gap-[9px]">
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.emailLabel}</p>
-              <a
-                href="mailto:facundo@vistafloresestate.com"
-                className="self-start border-b border-on-dark/[0.4] pb-[5px] font-['Archivo:Light'] text-[13.5px] text-on-dark hover:border-white/70 transition-colors"
-                style={{ fontVariationSettings: '"wdth" 100' }}
-              >
-                facundo@vistafloresestate.com
-              </a>
+            <div className="sm:col-span-2">
+              <dt className="t-label text-on-dark/55">{t.contacto.emailLabel}</dt>
+              <dd className="mt-3">
+                <a href={`mailto:${CONTACT_EMAIL}`} className="t-small border-b border-on-dark/40 pb-1 transition-colors hover:border-on-dark">
+                  {CONTACT_EMAIL}
+                </a>
+              </dd>
             </div>
-          </div>
+          </dl>
         </div>
-      </div>
-
-      <div className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
-        <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>
-        <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>
-      </div>
+      </section>
     </div>
   );
 }
 
 // ─── WINE DETAIL ──────────────────────────────────────────────────────────────
 function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
-  useReveal();
   const t = useT();
   const wine = t.wineCatalog.find((w) => w.id === wineId) ?? t.wineCatalog[0];
+  const meta = WINE_META[wine.id];
   const others = t.wineCatalog.filter((w) => w.id !== wine.id).slice(0, 3);
   return (
-    <div className="bg-surface w-full">
-      {/* Breadcrumb */}
-      <div className="border-b border-ink/[0.09] px-5 sm:px-8 lg:px-12 py-[18px]">
-        <p className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1px] text-ink/[0.45]">
-          <button onClick={() => onNav('vinos')} className="hover:text-ink transition-colors">
+    <div className="w-full bg-surface">
+      <div className="border-b border-line">
+        <nav className="wrap flex items-center gap-3 py-4 t-data text-[10.5px] text-ink/50" aria-label="Breadcrumb">
+          <button onClick={() => onNav('vinos')} className="transition-colors hover:text-ink">
             {t.nav.vinos}
-          </button>{' '}
-          › {wine.region}
-        </p>
+          </button>
+          <span aria-hidden="true">/</span>
+          <span className="text-ink/80">{wine.region}</span>
+        </nav>
       </div>
 
-      {/* Split: dark left / light right */}
-      <section className="flex flex-col lg:flex-row lg:min-h-[700px]">
-        <div className="bg-panel w-full lg:w-[45%] flex items-center justify-center relative overflow-hidden min-h-[420px] lg:min-h-0">
-          <div className="absolute inset-0 opacity-[0.32]">
-            <img src={`${A}/e17ef.png`} alt="" className="size-full object-cover" />
-          </div>
-          <div className="relative py-16 reveal">
-            <img src={WINE_META[wine.id].img} alt={`${wine.title1} ${wine.title2}`} className="h-[420px] lg:h-[620px] object-contain hover:scale-105 transition-transform duration-700" />
-          </div>
+      <section className="grid lg:grid-cols-12">
+        {/* Bottle on a stage, under the horizon */}
+        <div className="relative flex min-h-[560px] items-end justify-center overflow-hidden bg-panel pb-16 text-on-dark lg:col-span-6 lg:min-h-[calc(100dvh_-_var(--header)_-_50px)]">
+          <Horizon className="absolute inset-x-0 top-[30%] h-[140px] w-full text-on-dark/15" />
+          <Corners className="[--ci:20px] text-on-dark/60" />
+          <p className="absolute left-[38px] top-[36px] t-data text-[10.5px] text-on-dark/60">{meta.tag}</p>
+          <span className="absolute inset-x-[14%] bottom-16 h-px bg-on-dark/20" aria-hidden="true" />
+          <img
+            key={wine.id}
+            src={meta.img}
+            alt={`${wine.title1} ${wine.title2}`}
+            className="relative h-[clamp(380px,62vh,640px)] w-auto object-contain in-fade"
+          />
         </div>
 
-        <div className="flex-1 py-12 px-6 lg:py-[60px] lg:px-[60px] flex flex-col justify-center reveal reveal-d1">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] mb-5">{wine.region}</p>
-          <div className="mb-8">
-            <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[48px] text-ink leading-[1.1] lg:leading-[52.8px]">{wine.title1}</p>
-            <p className="font-['Cormorant_Garamond:Light'] text-[32px] sm:text-[40px] lg:text-[48px] text-ink leading-[1.1] lg:leading-[52.8px]">{wine.title2}</p>
-          </div>
-          <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[27.75px] max-w-prose mb-8" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {wine.desc}
-          </p>
-          <div className="flex items-center gap-[18px] mb-10">
-            <div className="border border-accent/[0.5] rounded-full size-[46px] flex items-center justify-center shrink-0">
-              <span className="font-['Cormorant_Garamond:Regular'] text-[15px] text-accent">{wine.score.value}</span>
-            </div>
-            <div>
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.19px] text-ink/[0.5]">{wine.score.critic}</p>
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.19px] text-ink/[0.5]">{wine.score.year}</p>
-            </div>
+        <div className="flex flex-col justify-center px-[var(--gutter)] py-[clamp(56px,7vw,110px)] lg:col-span-6 lg:px-[clamp(40px,5.4vw,96px)]">
+          <p className="t-data text-[10.5px] text-accent">{wine.region}</p>
+          <h1 className="mt-6">
+            <span className="block t-name text-[clamp(42px,4.8vw,72px)]">{wine.title1}</span>
+            <span className="block t-h1 text-[clamp(38px,4.3vw,64px)]">{wine.title2}</span>
+          </h1>
+          <p className="t-lead mt-8 max-w-[44ch] text-ink/78">{wine.desc}</p>
+
+          <div className="mt-10 flex items-end gap-6 border-t border-line pt-6">
+            <span className="t-num text-[64px] text-accent">{wine.score.value}</span>
+            <span className="flex flex-col gap-1 pb-2">
+              <span className="t-label">{wine.score.critic}</span>
+              <span className="t-data text-ink/50">{wine.score.year}</span>
+            </span>
           </div>
 
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.53px] text-ink/[0.5] mb-4">{t.wineDetail.fichaLabel}</p>
-          <div className="flex flex-col">
-            {wine.ficha.map((s, i) => (
-              <div key={s.label} className={`flex justify-between py-[13px] border-t border-ink/[0.16] ${i === wine.ficha.length - 1 ? 'border-b' : ''}`}>
-                <span className="font-['IBM_Plex_Mono:Regular'] text-[11px] text-ink/[0.5]">{s.label}</span>
-                <span className="font-['Cormorant_Garamond:Regular'] text-[15px] text-ink">{s.value}</span>
+          <p className="t-label mt-12 text-ink/50">{t.wineDetail.fichaLabel}</p>
+          <dl className="mt-4 border-t border-line">
+            {wine.ficha.map((s) => (
+              <div key={s.label} className="flex items-baseline justify-between gap-6 border-b border-line py-3.5">
+                <dt className="t-label text-[10px] text-ink/50">{s.label}</dt>
+                <dd className="text-right text-[15px]">{s.value}</dd>
               </div>
             ))}
-          </div>
+          </dl>
 
-          <div className="flex gap-[14px] mt-8">
-            <button
-              onClick={() => onNav('contacto')}
-              className="bg-panel px-[30px] py-[15px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:bg-panel-2 transition-colors"
-              style={{ fontVariationSettings: '"wdth" 100' }}
-            >
+          <div className="mt-10 flex flex-wrap gap-4">
+            <button onClick={() => onNav('contacto')} className="btn btn--solid">
               {t.wineDetail.ctaInfo}
+              <Arrow />
             </button>
-            <button
-              className="border border-ink/[0.4] px-[31px] py-[16px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-ink hover:border-ink transition-colors"
-              style={{ fontVariationSettings: '"wdth" 100' }}
-            >
-              {t.wineDetail.downloadPdf}
-            </button>
+            <button className="btn">{t.wineDetail.downloadPdf}</button>
           </div>
         </div>
       </section>
 
       {/* Tasting notes */}
-      <section className="bg-surface-2 px-5 sm:px-8 lg:px-12 py-[90px]">
-        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] text-center mb-11 reveal">{t.wineDetail.notesLabel}</p>
-        <div className="flex flex-col md:flex-row gap-px bg-ink/[0.14] reveal reveal-d1">
-          {wine.notes.map((note) => (
-            <div key={note.label} className="bg-surface-2 flex-1 flex flex-col gap-4 px-[30px] pt-[33px] pb-[66px]">
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.53px] text-ink/[0.5]">{note.label}</p>
-              <p className="font-['Cormorant_Garamond:Light'] text-[20px] text-ink leading-[32px]">{note.text}</p>
-            </div>
-          ))}
+      <section className="bg-surface-2 py-[clamp(90px,11vw,150px)]">
+        <div className="wrap">
+          <Chapter>{t.wineDetail.notesLabel}</Chapter>
+          <div className="mt-12 grid gap-x-12 gap-y-12 md:grid-cols-3">
+            {wine.notes.map((note, i) => (
+              <div key={note.label} className="border-t border-line pt-6 reveal">
+                <p className="t-data text-[10.5px] text-accent">
+                  {String(i + 1).padStart(2, '0')} — {note.label}
+                </p>
+                <p className="t-name mt-5 text-[clamp(22px,2vw,28px)] leading-[1.38]">{note.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Vineyard CTA */}
-      <section className="bg-panel flex items-center min-h-[400px] px-6 py-14 lg:px-[60px] lg:py-[60px] reveal">
-        <div className="flex flex-col gap-6 max-w-[600px]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.wineDetail.vyEyebrow}</p>
-          <h3 className="font-['Cormorant_Garamond:Light'] text-[34px] text-on-dark leading-[38.76px]">{t.wineDetail.vyTitle}</h3>
-          <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.72] leading-[25.2px] max-w-[400px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.wineDetail.vyDesc}
-          </p>
-          <button
-            onClick={() => onNav('vinedos')}
-            className="self-start border border-on-dark/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-on-dark hover:border-white/70 transition-colors"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.wineDetail.vyBtn}
-          </button>
+      {/* Origin */}
+      <section className="relative overflow-hidden bg-panel text-on-dark">
+        <div className="pointer-events-none absolute inset-0 text-on-dark">
+          <Contours className="h-full w-full" lines={9} seed={3} opacity={0.06} />
+        </div>
+        <div className="wrap relative grid items-end gap-10 py-[clamp(90px,11vw,150px)] lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <Chapter className="text-accent-light">{t.wineDetail.vyEyebrow}</Chapter>
+            <h2 className="t-h2 mt-8 reveal">{t.wineDetail.vyTitle}</h2>
+          </div>
+          <div className="lg:col-span-4 lg:col-start-9">
+            <p className="t-body text-on-dark/70 reveal">{t.wineDetail.vyDesc}</p>
+            <button onClick={() => onNav('vinedos')} className="btn btn--light mt-8">
+              {t.wineDetail.vyBtn}
+              <Arrow />
+            </button>
+          </div>
         </div>
       </section>
 
       {/* Other wines */}
-      <section className="px-5 sm:px-8 lg:px-12 pt-20 pb-[90px]">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-[34px]">
-          <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] text-ink leading-[35.2px] reveal">{t.wineDetail.otherWines}</h3>
-          <button
-            onClick={() => onNav('vinos')}
-            className="border-b border-ink/[0.4] pb-[5px] font-['Archivo:Regular'] text-[11px] text-ink hover:border-ink transition-colors"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
+      <section className="wrap py-[clamp(90px,11vw,150px)]">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <h2 className="t-h2">{t.wineDetail.otherWines}</h2>
+          <button onClick={() => onNav('vinos')} className="tlink">
             {t.wineDetail.seeAllWines}
+            <Arrow />
           </button>
         </div>
-        <div className="flex flex-col md:flex-row gap-[30px]">
-          {others.map((w, i) => (
-            <button
-              key={w.id}
-              className={`border border-ink/[0.13] flex gap-5 items-center p-[23px] flex-1 cursor-pointer hover:bg-ink/[0.03] transition-colors reveal reveal-d${i + 1} text-left`}
-              onClick={() => onNav('wine-detail', w.id)}
-            >
-              <div className="shrink-0 h-[90px] w-[52px] overflow-hidden">
-                <img src={WINE_META[w.id].img} alt={w.name} className="h-full w-full object-contain" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.12px] text-ink/[0.5]">{WINE_META[w.id].tag}</p>
-                <p className="font-['Cormorant_Garamond:Regular'] text-[19px] text-ink leading-[23.75px]">
-                  {w.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{w.sub}</span>
-                </p>
-              </div>
-            </button>
+        <ul className="mt-12 border-t border-line">
+          {others.map((w) => (
+            <li key={w.id}>
+              <button
+                onClick={() => onNav('wine-detail', w.id)}
+                className="group grid w-full grid-cols-[52px_1fr_auto] items-center gap-6 border-b border-line py-5 text-left"
+              >
+                <img src={WINE_META[w.id].img} alt={w.name} className="h-[86px] w-[52px] object-contain" />
+                <span className="flex flex-col gap-1">
+                  <span className="t-data text-[10.5px] text-ink/45">{WINE_META[w.id].tag}</span>
+                  <span className="t-name text-[clamp(23px,2vw,29px)] transition-colors group-hover:text-accent">
+                    {w.name}
+                  </span>
+                  <span className="t-label text-[10px] text-ink/50">{w.sub}</span>
+                </span>
+                <Arrow className="text-ink/50" />
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
     </div>
   );
@@ -1351,6 +1325,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 const PAGES: Page[] = ['home', 'vinos', 'vinedos', 'novedades', 'contacto', 'wine-detail'];
+const REVEAL_SEL = '.reveal:not(.visible), .unveil:not(.visible), .draw:not(.visible)';
 
 function parseHash(): { page: Page; wineId?: string } {
   if (typeof window === 'undefined') return { page: 'home' };
@@ -1390,6 +1365,34 @@ function Site() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
+  // One observer for every scroll reveal on any page; a mutation watcher picks
+  // up content that mounts later (page changes, filters, language switches).
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.06, rootMargin: '0px 0px -6% 0px' }
+    );
+    let raf = 0;
+    const scan = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => document.querySelectorAll(REVEAL_SEL).forEach((el) => io.observe(el)));
+    };
+    scan();
+    const mo = new MutationObserver(scan);
+    mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+      mo.disconnect();
+    };
+  }, []);
+
   const enter = () => {
     try {
       localStorage.setItem('vf-age-ok', '1');
@@ -1407,43 +1410,20 @@ function Site() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  const showFullFooter = page !== 'contacto' && page !== 'vinos' && page !== 'novedades' && page !== 'vinedos';
-
   return (
     <div className="min-h-screen w-full bg-surface">
       {!entered && <AgeGate onEnter={enter} />}
-      {page === 'home' ? (
-        <>
-          <Header page={page} onNav={navigate} />
-          <Home onNav={navigate} />
-          <Footer onNav={navigate} />
-        </>
-      ) : (
-        <>
-          <Header page={page} onNav={navigate} />
-          {page === 'vinos' && <Vinos onNav={navigate} />}
-          {page === 'vinedos' && <Vinedos />}
-          {page === 'novedades' && <Novedades />}
-          {page === 'contacto' && <Contacto />}
-          {page === 'wine-detail' && <WineDetail onNav={navigate} wineId={activeWine} />}
-          {showFullFooter ? (
-            <Footer onNav={navigate} />
-          ) : (
-            <FooterBar />
-          )}
-        </>
-      )}
+      <Header page={page} onNav={navigate} />
+      <main>
+        {page === 'home' && <Home onNav={navigate} />}
+        {page === 'vinos' && <Vinos onNav={navigate} />}
+        {page === 'vinedos' && <Vinedos />}
+        {page === 'novedades' && <Novedades />}
+        {page === 'contacto' && <Contacto />}
+        {page === 'wine-detail' && <WineDetail onNav={navigate} wineId={activeWine} />}
+      </main>
+      <Footer onNav={navigate} />
     </div>
-  );
-}
-
-function FooterBar() {
-  const t = useT();
-  return (
-    <footer className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
-      <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>
-      <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>
-    </footer>
   );
 }
 
