@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FormEvent, type ReactNode } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, type FormEvent, type ReactNode } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
@@ -1363,6 +1363,11 @@ function Site() {
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  // Arm the scroll reveals before first paint (CSS only hides content under .js-reveal).
+  useLayoutEffect(() => {
+    document.documentElement.classList.add('js-reveal');
   }, []);
 
   // One observer for every scroll reveal on any page; a mutation watcher picks

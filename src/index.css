@@ -400,23 +400,26 @@
 .d5 { animation-delay: 0.85s; }
 .kenburns { animation: kenburns 24s ease-out both; }
 
-/* On scroll (the observer in <Site> adds .visible) */
-.reveal {
+/* On scroll (the observer in <Site> adds .visible). Only armed once <Site> has
+   mounted (.js-reveal on <html>), so content is never hidden without JS.
+   Clip-paths go on the children, never on the observed element: a fully
+   clipped target has no visible area, so it would never report as on screen. */
+.js-reveal .reveal {
   opacity: 0;
   transform: translateY(22px);
   transition: opacity 1s var(--ease), transform 1s var(--ease);
 }
-.reveal.visible { opacity: 1; transform: none; }
-.unveil {
+.js-reveal .reveal.visible { opacity: 1; transform: none; }
+.js-reveal .unveil > * {
   clip-path: inset(100% 0 0 0);
   transition: clip-path 1.4s var(--ease);
 }
-.unveil.visible { clip-path: inset(0 0 0 0); }
-.draw {
+.js-reveal .unveil.visible > * { clip-path: inset(0 0 0 0); }
+.js-reveal .draw > * {
   clip-path: inset(0 100% 0 0);
   transition: clip-path 2.4s var(--ease) 0.15s;
 }
-.draw.visible { clip-path: inset(0 0 0 0); }
+.js-reveal .draw.visible > * { clip-path: inset(0 0 0 0); }
 
 /* Age-gate cover cross-fade */
 .gate { animation: fadeIn 0.6s ease both; }
@@ -424,7 +427,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .reveal, .unveil, .draw { opacity: 1; transform: none; clip-path: none; transition: none; }
+  .js-reveal .reveal,
+  .js-reveal .unveil > *,
+  .js-reveal .draw > * { opacity: 1; transform: none; clip-path: none; transition: none; }
   .in-rise > span, .in-fade, .in-frame, .kenburns, .live { animation: none; }
 }
 
