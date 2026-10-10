@@ -232,7 +232,7 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
           </div>
         </div>
         <Mark className="mt-10 h-auto w-[44px] text-gold in-up" />
-        <p className="f-display mt-5 text-[clamp(44px,7vw,76px)] tracking-[0.08em]" aria-label="ALTAMIRA">
+        <p className="f-display mt-5 whitespace-nowrap text-[clamp(40px,7vw,76px)] tracking-[0.08em]" aria-label="ALTAMIRA">
           <Letters text="ALTAMIRA" />
         </p>
         <p className="f-label mt-3 tracking-[0.5em] text-gold in-up" style={v({ '--d': '700ms' })}>
@@ -690,11 +690,12 @@ function Home({ onNav }: { onNav: Nav }) {
       {/* HERO — the name on the left, the Andes through a cellar vault on the right */}
       <section className="relative overflow-hidden pt-[var(--header)]">
         <div className="wrap grid min-h-[calc(100dvh_-_var(--header))] items-center gap-14 pb-24 pt-10 lg:grid-cols-12 lg:pt-0">
-          <div className="relative z-10 flex flex-col lg:col-span-6">
+          <div className="@container relative z-10 flex flex-col lg:col-span-6">
             <Eyebrow className="in-up">{t.home.heroEyebrow}</Eyebrow>
             <h1 className="mt-9">
+              {/* Sized to the column (≈4.75em wide), so the name always sits on one line. */}
               <span
-                className="f-display block whitespace-nowrap text-[clamp(56px,8.6vw,152px)] tracking-[0.02em]"
+                className="f-display block whitespace-nowrap text-[clamp(40px,20cqw,168px)] tracking-[0.02em]"
                 aria-label={t.home.heroTitle1}
               >
                 <Letters text={t.home.heroTitle1} />
