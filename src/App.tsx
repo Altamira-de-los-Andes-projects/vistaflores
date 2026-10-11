@@ -857,6 +857,19 @@ function Vinos({ onNav }: { onNav: Nav }) {
   const wines = t.wineCatalog.map((w) => ({ ...w, ...WINE_META[w.id] }));
   const filtered = filter === 'ALL' ? wines : wines.filter((w) => w.line === filter);
 
+  // The scroll-reveal observer only runs once on mount, so cards that mount
+  // when the filter changes would stay hidden (opacity 0). Reveal them instantly
+  // on every filter change after the first render.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    gridRef.current?.querySelectorAll('.reveal:not(.visible)').forEach((el) => el.classList.add('visible'));
+  }, [filter]);
+
   return (
     <div className="bg-surface w-full">
       <section className="relative h-[340px] overflow-hidden flex items-center">
@@ -895,7 +908,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
         <span className="ml-auto font-['IBM_Plex_Mono:Regular'] text-[10.5px] text-ink/[0.45]">{filtered.length.toString().padStart(2, '0')}</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-ink/[0.13]">
+      <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-ink/[0.13]">
         {filtered.map((wine, i) => (
           <button
             key={wine.id}
