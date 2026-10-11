@@ -39,13 +39,14 @@ const VINEDOS_IMGS = [`${A}/mza-estate.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/m
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 
 // Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
-const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; blend: boolean }> = {
-  dama: { img: `${A}/5c918.png`, tag: 'ALTAMIRA', blend: true },
-  navigato: { img: `${A}/3d3ec.png`, tag: 'ALTAMIRA', blend: true },
-  'reserva-malbec': { img: `${A}/4600e.png`, tag: 'ALTAMIRA', blend: false },
-  'reserva-cf': { img: `${A}/42976.png`, tag: 'ALTAMIRA', blend: false },
-  'vav-malbec': { img: `${A}/36069.png`, tag: 'VAV', blend: false },
-  'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', blend: true },
+type WineLine = 'RESERVA' | 'VAV' | 'DAMA' | 'NAVIGATO';
+const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; line: WineLine }> = {
+  dama: { img: `${A}/5c918.png`, tag: 'ALTAMIRA', line: 'DAMA' },
+  navigato: { img: `${A}/3d3ec.png`, tag: 'ALTAMIRA', line: 'NAVIGATO' },
+  'reserva-malbec': { img: `${A}/36069.png`, tag: 'ALTAMIRA', line: 'RESERVA' },
+  'reserva-cf': { img: `${A}/42976.png`, tag: 'ALTAMIRA', line: 'RESERVA' },
+  'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', line: 'VAV' },
+  'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', line: 'VAV' },
 };
 const HOME_WINE_IDS = ['dama', 'navigato', 'reserva-malbec'];
 const HOME_ESTATE_IDS = ['navigato', 'dama', 'reserva-malbec', 'vav-malbec'];
@@ -203,7 +204,7 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
             ALTAMIRA DE LOS ANDES
           </span>
           <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.5em] text-on-dark/70">
-            ESTATE · MENDOZA
+            UCO VALLEY, MENDOZA
           </span>
         </div>
         <span className="h-px w-14 bg-on-dark/30" />
@@ -225,9 +226,11 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
         >
           {t.gate.enter}
         </button>
-        <p className="mt-1 font-['IBM_Plex_Mono:Regular'] text-[9px] tracking-[1.5px] text-on-dark/45">
-          {t.gate.warning}
-        </p>
+        {t.gate.warning && (
+          <p className="mt-1 font-['IBM_Plex_Mono:Regular'] text-[9px] tracking-[1.5px] text-on-dark/45">
+            {t.gate.warning}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -285,7 +288,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     >
       <button
         onClick={() => onNav('home')}
-        aria-label="Altamira de los Andes Estate"
+        aria-label="Altamira de los Andes"
         className={`group flex flex-col items-start shrink-0 leading-none ${isHome ? 'text-white' : 'text-ink'}`}
       >
         <span className="font-['Cormorant_Garamond:Regular'] text-[15px] sm:text-[18px] lg:text-[22px] leading-[1] tracking-[0.09em] lg:tracking-[0.12em] whitespace-nowrap">
@@ -296,7 +299,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
             isHome ? 'text-white/70' : 'text-ink/[0.55]'
           }`}
         >
-          ESTATE · MENDOZA
+          UCO VALLEY, MENDOZA
         </span>
       </button>
 
@@ -428,7 +431,7 @@ function Footer({ onNav }: { onNav: Nav }) {
               ALTAMIRA DE LOS ANDES
             </span>
             <span className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.42em] mt-[10px] pl-px text-on-dark/[0.7]">
-              ESTATE · MENDOZA
+              UCO VALLEY, MENDOZA
             </span>
           </div>
           <p
@@ -507,9 +510,11 @@ function Footer({ onNav }: { onNav: Nav }) {
         <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
           {t.footer.copyright}
         </span>
-        <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
-          {t.footer.warning}
-        </span>
+        {t.footer.warning && (
+          <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
+            {t.footer.warning}
+          </span>
+        )}
       </div>
     </footer>
   );
@@ -848,18 +853,18 @@ function Home({ onNav }: { onNav: Nav }) {
 function Vinos({ onNav }: { onNav: Nav }) {
   useReveal();
   const t = useT();
-  const [filter, setFilter] = useState<'TODOS' | 'ALTAMIRA' | 'VAV' | 'BLENDS'>('TODOS');
+  const [filter, setFilter] = useState<'ALL' | WineLine>('ALL');
   const wines = t.wineCatalog.map((w) => ({ ...w, ...WINE_META[w.id] }));
-  const filtered =
-    filter === 'TODOS' ? wines
-    : filter === 'BLENDS' ? wines.filter((w) => w.blend)
-    : wines.filter((w) => w.tag === filter);
+  const filtered = filter === 'ALL' ? wines : wines.filter((w) => w.line === filter);
 
   return (
     <div className="bg-surface w-full">
       <section className="relative h-[340px] overflow-hidden flex items-center">
-        <img src={`${A}/mza-altamira.jpg`} alt="" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-[rgba(20,18,15,0.5)]" />
+        <img src={`${A}/mza-altamira.jpg`} alt="" className="absolute inset-0 size-full object-cover" style={{ filter: 'brightness(1.12)' }} />
+        <div
+          className="absolute inset-0"
+          style={{ backgroundImage: 'linear-gradient(90deg, rgba(20,18,15,0.62) 0%, rgba(20,18,15,0.3) 46%, rgba(20,18,15,0.08) 100%)' }}
+        />
         <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.7] hero-line-1">{t.vinos.heroEyebrow}</p>
           <h1 className="font-['Cormorant_Garamond:Light'] text-[34px] sm:text-[44px] lg:text-[52px] text-on-dark leading-[1.12] lg:leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
@@ -872,7 +877,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
       <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-5 gap-y-3 px-5 sm:px-8 lg:px-12 py-5 lg:py-[26px]">
         <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.45]">{t.vinos.filterLabel}</span>
         <div className="flex flex-wrap gap-2">
-          {(['TODOS', 'ALTAMIRA', 'VAV', 'BLENDS'] as const).map((f) => (
+          {(['ALL', 'RESERVA', 'VAV', 'DAMA', 'NAVIGATO'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -919,7 +924,7 @@ function TerrainMap() {
     const el = ref.current;
     if (!el) return;
     const pins = [
-      { name: 'Altamira de los Andes', lat: -33.68, lon: -69.13 },
+      { name: 'Vista Flores', lat: -33.68, lon: -69.13 },
       { name: 'La Consulta', lat: -33.76, lon: -69.07 },
       { name: 'Altamira', lat: -33.79, lon: -69.13 },
     ];
@@ -1122,7 +1127,8 @@ function Contacto() {
   const fields = [
     { label: t.contacto.fields[0], type: 'text' },
     { label: t.contacto.fields[1], type: 'email' },
-    { label: t.contacto.fields[2], type: 'text' },
+    { label: t.contacto.fields[2], type: 'tel' },
+    { label: t.contacto.fields[3], type: 'text' },
   ];
   return (
     <div className="bg-surface w-full">
@@ -1200,7 +1206,7 @@ function Contacto() {
 
       <div className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
         <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>
-        <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>
+        {t.footer.warning && <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>}
       </div>
     </div>
   );
@@ -1442,7 +1448,7 @@ function FooterBar() {
   return (
     <footer className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
       <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>
-      <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>
+      {t.footer.warning && <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>}
     </footer>
   );
 }
