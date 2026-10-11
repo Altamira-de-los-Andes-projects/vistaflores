@@ -43,8 +43,8 @@ type WineLine = 'RESERVA' | 'VAV' | 'DAMA' | 'NAVIGATO';
 const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; line: WineLine }> = {
   dama: { img: `${A}/5c918.png`, tag: 'ALTAMIRA', line: 'DAMA' },
   navigato: { img: `${A}/3d3ec.png`, tag: 'ALTAMIRA', line: 'NAVIGATO' },
-  'reserva-malbec': { img: `${A}/36069.png`, tag: 'ALTAMIRA', line: 'RESERVA' },
-  'reserva-cf': { img: `${A}/42976.png`, tag: 'ALTAMIRA', line: 'RESERVA' },
+  'reserva-malbec': { img: `${A}/reserva-malbec.png`, tag: 'ALTAMIRA', line: 'RESERVA' },
+  'reserva-cf': { img: `${A}/reserva-cf.png`, tag: 'ALTAMIRA', line: 'RESERVA' },
   'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', line: 'VAV' },
   'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', line: 'VAV' },
 };
