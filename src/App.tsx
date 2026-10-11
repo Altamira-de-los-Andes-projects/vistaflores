@@ -1131,6 +1131,125 @@ function Novedades() {
   );
 }
 
+// ─── Stylized location map (Argentina → Uco Valley) ───────────────────────────
+// A hand-drawn, editorial counterpart to the satellite map on the Vineyards page:
+// the southern cone locating Mendoza, and a warm valley inset with the three
+// vineyards. Labels come from the localized mapArt copy.
+function LocationMap() {
+  const t = useT();
+  const art = t.vinedos.mapArt;
+  const names = art.vineyards; // [Altamira, Vista Flores, La Consulta]
+  // Vineyard positions inside the valley inset (viewBox 0 0 520 400).
+  const pts = [
+    { x: 300, y: 118 }, // Altamira (north)
+    { x: 250, y: 212 }, // Vista Flores (centre)
+    { x: 326, y: 300 }, // La Consulta (south)
+  ];
+  return (
+    <section className="relative overflow-hidden border-t border-on-dark/[0.12] bg-panel text-on-dark">
+      <div className="relative mx-auto grid max-w-[1180px] items-center gap-x-12 gap-y-10 px-5 sm:px-8 lg:px-12 py-[clamp(64px,8vw,112px)] lg:grid-cols-[0.78fr_1.22fr]">
+        {/* Country locator */}
+        <div className="flex flex-col gap-5 reveal">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-accent">{t.vinedos.mapLabel}</p>
+          <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.1vw,40px)] leading-[1.08]">
+            {art.valley}
+            <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-on-dark/70">{art.mendoza}</span>
+          </h2>
+          <p className="max-w-[320px] font-['Archivo:Light'] text-[13.5px] leading-[24px] text-on-dark/70" style={{ fontVariationSettings: '"wdth" 100' }}>
+            {t.vinedos.mapDesc}
+          </p>
+
+          <svg viewBox="0 0 260 430" className="mt-3 w-[min(100%,290px)] h-auto" fill="none" role="img" aria-label={`${art.argentina}, ${art.mendoza}`}>
+            {/* oceans */}
+            <text x="20" y="150" transform="rotate(-90 20 150)" className="fill-on-dark/30" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 9, letterSpacing: '0.18em' }}>
+              {art.pacific.toUpperCase()}
+            </text>
+            <text x="238" y="250" transform="rotate(-90 238 250)" className="fill-on-dark/30" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 9, letterSpacing: '0.18em' }}>
+              {art.atlantic.toUpperCase()}
+            </text>
+            {/* Chile */}
+            <path
+              d="M98 42 C92 84 88 146 94 232 C97 302 99 356 96 398 C92 400 89 398 86 394 C80 352 76 292 76 222 C76 142 82 82 90 44 C92 40 96 40 98 42 Z"
+              className="fill-on-dark/[0.06] stroke-on-dark/25"
+              strokeWidth="1"
+            />
+            {/* Argentina */}
+            <path
+              d="M112 36 C140 30 168 34 180 52 C190 78 184 104 178 128 C190 150 182 172 168 186 C160 210 150 236 146 266 C142 300 132 336 120 366 C112 388 106 402 100 410 C97 404 94 398 92 392 C98 360 100 330 100 300 C101 258 96 214 98 176 C100 140 104 92 100 56 C100 48 106 40 112 36 Z"
+              className="fill-accent/[0.14] stroke-accent/70"
+              strokeWidth="1.3"
+            />
+            {/* Andes ridge */}
+            <path d="M99 48 C96 112 95 182 98 252 C100 312 101 360 99 400" className="stroke-on-dark/45" strokeWidth="1" strokeDasharray="2 4" />
+            {/* labels */}
+            <text x="88" y="120" transform="rotate(86 88 120)" className="fill-on-dark/45" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 7.5, letterSpacing: '0.2em' }}>
+              {art.chile.toUpperCase()}
+            </text>
+            <text x="150" y="250" className="fill-on-dark/55" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 9, letterSpacing: '0.22em' }}>
+              {art.argentina.toUpperCase()}
+            </text>
+            {/* Mendoza marker */}
+            <circle cx="104" cy="150" r="4.5" className="fill-accent" />
+            <circle cx="104" cy="150" r="9" className="stroke-accent/60" strokeWidth="1" />
+            <line x1="113" y1="150" x2="150" y2="150" className="stroke-accent/50" strokeWidth="1" />
+            <text x="155" y="147" className="fill-on-dark" style={{ fontFamily: 'Georgia, serif', fontSize: 12 }}>
+              {art.mendoza}
+            </text>
+            <text x="155" y="160" className="fill-on-dark/55" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 7.5, letterSpacing: '0.16em' }}>
+              {art.valley.toUpperCase()}
+            </text>
+          </svg>
+        </div>
+
+        {/* Valley inset: the three vineyards */}
+        <div className="relative overflow-hidden rounded-[16px] border border-on-dark/[0.14] reveal reveal-d1" style={{ backgroundColor: 'color-mix(in srgb, var(--accent-solid) 14%, var(--panel))' }}>
+          <div className="pointer-events-none absolute inset-0 text-on-dark">
+            <Contours className="h-full w-full" lines={9} seed={6} opacity={0.12} />
+          </div>
+          <svg viewBox="0 0 520 400" className="relative block h-auto w-full" fill="none" aria-hidden="true">
+            {/* Andes ridge sweeping down the left */}
+            <path d="M30 40 C120 70 150 150 150 220 C150 300 120 350 60 388" className="stroke-on-dark/25" strokeWidth="1.2" strokeDasharray="3 5" />
+            <text x="40" y="34" className="fill-on-dark/40" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 9, letterSpacing: '0.22em' }}>
+              {art.andes.toUpperCase()}
+            </text>
+            {/* the valley thread connecting the three estates */}
+            <path
+              d={`M${pts[0].x} ${pts[0].y} L${pts[1].x} ${pts[1].y} L${pts[2].x} ${pts[2].y}`}
+              className="stroke-accent/50"
+              strokeWidth="1.2"
+              strokeDasharray="1 5"
+              strokeLinecap="round"
+            />
+            {pts.map((p, i) => (
+              <g key={i}>
+                <circle cx={p.x} cy={p.y} r="12" className="fill-accent/15" />
+                <circle cx={p.x} cy={p.y} r="4.5" className="fill-accent" />
+                <circle cx={p.x} cy={p.y} r="4.5" className="fill-none stroke-on-dark/70" strokeWidth="1" />
+                <text x={p.x + 18} y={p.y - 4} className="fill-on-dark" style={{ fontFamily: 'Georgia, serif', fontSize: 15 }}>
+                  {names[i]}
+                </text>
+                <text x={p.x + 18} y={p.y + 11} className="fill-on-dark/55" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 8, letterSpacing: '0.14em' }}>
+                  {String(i + 1).padStart(2, '0')} / 03
+                </text>
+              </g>
+            ))}
+            {/* altitude note */}
+            <g>
+              <line x1="40" y1="366" x2="88" y2="366" className="stroke-accent" strokeWidth="1" />
+              <text x="40" y="358" className="fill-on-dark" style={{ fontFamily: 'Georgia, serif', fontSize: 20 }}>
+                {t.home.stats[0].num} m
+              </text>
+              <text x="96" y="364" className="fill-on-dark/55" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 8, letterSpacing: '0.16em' }}>
+                {art.asl.toUpperCase()}
+              </text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── CONTACTO ─────────────────────────────────────────────────────────────────
 function Contacto() {
   useReveal();
@@ -1216,6 +1335,8 @@ function Contacto() {
           </div>
         </div>
       </div>
+
+      <LocationMap />
 
       <div className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
         <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>

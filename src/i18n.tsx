@@ -127,6 +127,8 @@ const es = {
       mendoza: 'MENDOZA',
       valley: 'Valle de Uco',
       vineyards: ['Viñedo Altamira', 'Viñedo Vista Flores', 'Viñedo La Consulta'],
+      andes: 'Cordillera de los Andes',
+      asl: 'sobre el nivel del mar',
     },
   },
   novedades: {
@@ -365,6 +367,8 @@ const en: Copy = {
       mendoza: 'MENDOZA',
       valley: 'Uco Valley',
       vineyards: ['Altamira Vineyard', 'Vista Flores Vineyard', 'La Consulta Vineyard'],
+      andes: 'Andes Range',
+      asl: 'above sea level',
     },
   },
   novedades: {
@@ -601,6 +605,8 @@ const pt: Copy = {
       mendoza: 'MENDOZA',
       valley: 'Vale de Uco',
       vineyards: ['Vinhedo Altamira', 'Vinhedo Vista Flores', 'Vinhedo La Consulta'],
+      andes: 'Cordilheira dos Andes',
+      asl: 'acima do nível do mar',
     },
   },
   novedades: {
