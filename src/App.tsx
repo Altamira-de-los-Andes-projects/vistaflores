@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
+import { MAP_W, MAP_H, MAGNIFIER, ARG_REST, ARG_MENDOZA, CHILE, ZOOM_NEIGHBOURS, ZOOM_MENDOZA, ZOOM_UCO, PT } from './mapdata';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail';
 type Nav = (p: Page, wineId?: string) => void;
@@ -31,7 +32,7 @@ const IMG = {
 };
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
-const HOME_VY_IMGS = [`${A}/mza-altamira.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/mza-laconsulta.jpg`];
+const HOME_VY_IMGS = [`${A}/mza-altamira.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/la-consulta-real.jpg`];
 const HOME_WINE_IMGS = [`${A}/73a8f.png`, `${A}/941aa.png`, `${A}/4600e.png`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `${A}/5b74e.png`, `${A}/fb3eb.png`, `${A}/36671.png`];
@@ -1131,26 +1132,142 @@ function Novedades() {
   );
 }
 
-// ─── Stylized location map (Argentina → Uco Valley) ───────────────────────────
-// A hand-drawn, editorial counterpart to the satellite map on the Vineyards page:
-// the southern cone locating Mendoza, and a warm valley inset with the three
-// vineyards. Labels come from the localized mapArt copy.
+// ─── Location map (Argentina → Uco Valley magnifier) ──────────────────────────
+// Editorial counterpart to the satellite map on the Vineyards page, following the
+// estate's original site: the country with Mendoza highlighted, and a circular
+// magnifier on the Uco Valley with the three vineyards. Real province geometry
+// (see mapdata.ts), localized labels from the mapArt copy.
+const MAP = {
+  country: '#d9cbb0', // Argentina
+  mendoza: '#b04a5f', // Mendoza province — burgundy, lifted for the dark panel
+  ucoValley: '#8fae68', // Uco Valley — vine green
+  chileLand: '#26343d', // beyond the Andes (inside the magnifier)
+  line: '#14120f',
+  text: '#eadfcb',
+};
+
+function MapArt({ view, uid }: { view: 'full' | 'lens' | 'country'; uid: string }) {
+  const t = useT();
+  const art = t.vinedos.mapArt;
+  const short = t.vinedos.cards.map((c) => c.italic.trim()); // Altamira · Vista Flores · La Consulta
+  const { cx, cy, r } = MAGNIFIER;
+  const clip = `lens-${uid}`;
+  const viewBox = view === 'lens' ? '20 120 440 480' : view === 'country' ? '438 14 372 600' : `0 0 ${MAP_W} ${MAP_H}`;
+  const serif = "'Cormorant Garamond:Regular', Georgia, serif";
+  const sans = "'Archivo:Regular', Archivo, system-ui, sans-serif";
+  const [mx, my] = PT.mendozaCity;
+  const [rx, ry] = PT.rim;
+  const [zx, zy] = PT.mendozaCityZ;
+  const [vx, vy] = PT.vistaFlores;
+  const [lx, ly] = PT.laConsulta;
+  const [ax, ay] = PT.altamira;
+  const showLens = view !== 'country';
+  const showCountry = view !== 'lens';
+  return (
+    <svg
+      viewBox={viewBox}
+      className="block h-auto w-full"
+      role="img"
+      aria-label={`${art.argentina} · ${art.mendoza} · ${art.valley}`}
+    >
+      <defs>
+        <clipPath id={clip}>
+          <circle cx={cx} cy={cy} r={r} />
+        </clipPath>
+        <path id={`pac-${uid}`} d="M 500 214 Q 470 372 512 540" />
+        <path id={`atl-${uid}`} d="M 776 292 Q 812 410 742 536" />
+      </defs>
+
+      {showCountry && (
+        <g>
+          {/* Chile (outline only, like the original) */}
+          <path d={CHILE} fill="none" stroke={MAP.text} strokeOpacity="0.5" strokeWidth="0.9" strokeLinejoin="round" />
+          {/* Argentina */}
+          <path d={ARG_REST} fill={MAP.country} stroke={MAP.country} strokeWidth="0.8" strokeLinejoin="round" />
+          <path d={ARG_MENDOZA} fill={MAP.mendoza} stroke={MAP.mendoza} strokeWidth="0.8" strokeLinejoin="round" />
+          {/* labels */}
+          <text x="520" y="150" textAnchor="end" fill={MAP.text} fillOpacity="0.85" style={{ fontFamily: serif, fontSize: 19, letterSpacing: '0.04em' }}>
+            {art.chile}
+          </text>
+          <text x="666" y="118" textAnchor="middle" fill="#14120f" fillOpacity="0.78" style={{ fontFamily: serif, fontSize: 21, letterSpacing: '0.05em' }}>
+            {art.argentina}
+          </text>
+          <text fill={MAP.text} fillOpacity="0.8" style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 19, letterSpacing: '0.18em' }}>
+            <textPath href={`#pac-${uid}`} startOffset="50%" textAnchor="middle">{art.pacific}</textPath>
+          </text>
+          <text fill={MAP.text} fillOpacity="0.8" style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 19, letterSpacing: '0.18em' }}>
+            <textPath href={`#atl-${uid}`} startOffset="50%" textAnchor="middle">{art.atlantic}</textPath>
+          </text>
+          <circle cx={mx} cy={my} r="9" fill="none" stroke={MAP.text} strokeOpacity="0.7" strokeWidth="1" />
+          <circle cx={mx} cy={my} r="4.2" fill={MAP.text} />
+        </g>
+      )}
+
+      {showLens && view === 'full' && (
+        <line x1={mx - 10} y1={my + 2} x2={rx} y2={ry} stroke={MAP.text} strokeOpacity="0.55" strokeWidth="1" />
+      )}
+
+      {showLens && (
+        <g>
+          <circle cx={cx} cy={cy} r={r + 9} fill="none" stroke={MAP.text} strokeOpacity="0.16" strokeWidth="1" />
+          <g clipPath={`url(#${clip})`}>
+            <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} fill={MAP.chileLand} />
+            <path d={ZOOM_NEIGHBOURS} fill={MAP.country} stroke={MAP.country} strokeWidth="0.8" strokeLinejoin="round" />
+            <path d={ZOOM_MENDOZA} fill={MAP.mendoza} stroke={MAP.country} strokeWidth="1.1" strokeLinejoin="round" />
+            <path d={ZOOM_UCO} fill={MAP.ucoValley} fillOpacity="0.92" stroke={MAP.line} strokeWidth="0.6" strokeLinejoin="round" />
+          </g>
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={MAP.text} strokeOpacity="0.85" strokeWidth="1.4" />
+
+          {/* Mendoza city */}
+          <circle cx={zx} cy={zy} r="6" fill={MAP.text} />
+          <text x={zx + 14} y={zy - 8} fill={MAP.text} style={{ fontFamily: serif, fontSize: 25, letterSpacing: '0.06em' }}>
+            {art.mendoza.toUpperCase()}
+          </text>
+          <text x={zx + 14} y={zy + 30} fill={MAP.text} style={{ fontFamily: serif, fontSize: 21 }}>
+            {art.valley}
+          </text>
+
+          {/* three vineyards */}
+          {[
+            { p: [vx, vy], label: short[1], side: -1, dy: -4 },
+            { p: [lx, ly], label: short[2], side: 1, dy: -2 },
+            { p: [ax, ay], label: short[0], side: 1, dy: 18 },
+          ].map(({ p, label, side, dy }) => (
+            <g key={label}>
+              <circle cx={p[0]} cy={p[1]} r="4.6" fill="#fff" stroke={MAP.line} strokeWidth="1" />
+              <line x1={p[0] + side * 7} y1={p[1]} x2={p[0] + side * 24} y2={p[1] + dy} stroke={MAP.text} strokeOpacity="0.7" strokeWidth="0.9" />
+              <text
+                x={p[0] + side * 29}
+                y={p[1] + dy + 4}
+                textAnchor={side < 0 ? 'end' : 'start'}
+                fill="#fff"
+                style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 19 }}
+              >
+                {label}
+              </text>
+            </g>
+          ))}
+          <text x={cx} y={cy + r + 34} textAnchor="middle" fill={MAP.text} fillOpacity="0.7" style={{ fontFamily: sans, fontSize: 11, letterSpacing: '0.2em' }}>
+            {t.home.stats[0].num} M · {art.asl.toUpperCase()}
+          </text>
+        </g>
+      )}
+    </svg>
+  );
+}
+
 function LocationMap() {
   const t = useT();
   const art = t.vinedos.mapArt;
-  const names = art.vineyards; // [Altamira, Vista Flores, La Consulta]
-  // Vineyard positions inside the valley inset (viewBox 0 0 520 400).
-  const pts = [
-    { x: 300, y: 118 }, // Altamira (north)
-    { x: 250, y: 212 }, // Vista Flores (centre)
-    { x: 326, y: 300 }, // La Consulta (south)
-  ];
+  const short = t.vinedos.cards.map((c) => c.italic.trim());
   return (
     <section className="relative overflow-hidden border-t border-on-dark/[0.12] bg-panel text-on-dark">
-      <div className="relative mx-auto grid max-w-[1180px] items-center gap-x-12 gap-y-10 px-5 sm:px-8 lg:px-12 py-[clamp(64px,8vw,112px)] lg:grid-cols-[0.78fr_1.22fr]">
-        {/* Country locator */}
+      <div className="pointer-events-none absolute inset-0 text-on-dark">
+        <Contours className="h-full w-full" lines={9} seed={6} opacity={0.05} />
+      </div>
+      <div className="relative mx-auto grid max-w-[1180px] items-center gap-x-10 gap-y-10 px-5 sm:px-8 lg:px-12 py-[clamp(64px,8vw,112px)] lg:grid-cols-[0.62fr_1.38fr]">
         <div className="flex flex-col gap-5 reveal">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-accent">{t.vinedos.mapLabel}</p>
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-[#d9a6b0]">{t.vinedos.mapLabel}</p>
           <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.1vw,40px)] leading-[1.08]">
             {art.valley}
             <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-on-dark/70">{art.mendoza}</span>
@@ -1158,92 +1275,29 @@ function LocationMap() {
           <p className="max-w-[320px] font-['Archivo:Light'] text-[13.5px] leading-[24px] text-on-dark/70" style={{ fontVariationSettings: '"wdth" 100' }}>
             {t.vinedos.mapDesc}
           </p>
-
-          <svg viewBox="0 0 260 430" className="mt-3 w-[min(100%,290px)] h-auto" fill="none" role="img" aria-label={`${art.argentina}, ${art.mendoza}`}>
-            {/* oceans */}
-            <text x="20" y="150" transform="rotate(-90 20 150)" className="fill-on-dark/30" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 9, letterSpacing: '0.18em' }}>
-              {art.pacific.toUpperCase()}
-            </text>
-            <text x="238" y="250" transform="rotate(-90 238 250)" className="fill-on-dark/30" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 9, letterSpacing: '0.18em' }}>
-              {art.atlantic.toUpperCase()}
-            </text>
-            {/* Chile */}
-            <path
-              d="M98 42 C92 84 88 146 94 232 C97 302 99 356 96 398 C92 400 89 398 86 394 C80 352 76 292 76 222 C76 142 82 82 90 44 C92 40 96 40 98 42 Z"
-              className="fill-on-dark/[0.06] stroke-on-dark/25"
-              strokeWidth="1"
-            />
-            {/* Argentina */}
-            <path
-              d="M112 36 C140 30 168 34 180 52 C190 78 184 104 178 128 C190 150 182 172 168 186 C160 210 150 236 146 266 C142 300 132 336 120 366 C112 388 106 402 100 410 C97 404 94 398 92 392 C98 360 100 330 100 300 C101 258 96 214 98 176 C100 140 104 92 100 56 C100 48 106 40 112 36 Z"
-              className="fill-accent/[0.14] stroke-accent/70"
-              strokeWidth="1.3"
-            />
-            {/* Andes ridge */}
-            <path d="M99 48 C96 112 95 182 98 252 C100 312 101 360 99 400" className="stroke-on-dark/45" strokeWidth="1" strokeDasharray="2 4" />
-            {/* labels */}
-            <text x="88" y="120" transform="rotate(86 88 120)" className="fill-on-dark/45" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 7.5, letterSpacing: '0.2em' }}>
-              {art.chile.toUpperCase()}
-            </text>
-            <text x="150" y="250" className="fill-on-dark/55" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 9, letterSpacing: '0.22em' }}>
-              {art.argentina.toUpperCase()}
-            </text>
-            {/* Mendoza marker */}
-            <circle cx="104" cy="150" r="4.5" className="fill-accent" />
-            <circle cx="104" cy="150" r="9" className="stroke-accent/60" strokeWidth="1" />
-            <line x1="113" y1="150" x2="150" y2="150" className="stroke-accent/50" strokeWidth="1" />
-            <text x="155" y="147" className="fill-on-dark" style={{ fontFamily: 'Georgia, serif', fontSize: 12 }}>
-              {art.mendoza}
-            </text>
-            <text x="155" y="160" className="fill-on-dark/55" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 7.5, letterSpacing: '0.16em' }}>
-              {art.valley.toUpperCase()}
-            </text>
-          </svg>
+          <ol className="mt-1 flex flex-col gap-[10px]">
+            {short.map((name) => (
+              <li key={name} className="flex items-center gap-[10px]">
+                <span className="size-[7px] shrink-0 rounded-full bg-white" />
+                <span className="font-['Archivo:Light'] text-[12.5px] text-on-dark/85" style={{ fontVariationSettings: '"wdth" 100' }}>
+                  {name}
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
 
-        {/* Valley inset: the three vineyards */}
-        <div className="relative overflow-hidden rounded-[16px] border border-on-dark/[0.14] reveal reveal-d1" style={{ backgroundColor: 'color-mix(in srgb, var(--accent-solid) 14%, var(--panel))' }}>
-          <div className="pointer-events-none absolute inset-0 text-on-dark">
-            <Contours className="h-full w-full" lines={9} seed={6} opacity={0.12} />
+        <div className="reveal reveal-d1">
+          {/* desktop: one composite, like the original; mobile: lens then country */}
+          <div className="hidden lg:block">
+            <MapArt view="full" uid="f" />
           </div>
-          <svg viewBox="0 0 520 400" className="relative block h-auto w-full" fill="none" aria-hidden="true">
-            {/* Andes ridge sweeping down the left */}
-            <path d="M30 40 C120 70 150 150 150 220 C150 300 120 350 60 388" className="stroke-on-dark/25" strokeWidth="1.2" strokeDasharray="3 5" />
-            <text x="40" y="34" className="fill-on-dark/40" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 9, letterSpacing: '0.22em' }}>
-              {art.andes.toUpperCase()}
-            </text>
-            {/* the valley thread connecting the three estates */}
-            <path
-              d={`M${pts[0].x} ${pts[0].y} L${pts[1].x} ${pts[1].y} L${pts[2].x} ${pts[2].y}`}
-              className="stroke-accent/50"
-              strokeWidth="1.2"
-              strokeDasharray="1 5"
-              strokeLinecap="round"
-            />
-            {pts.map((p, i) => (
-              <g key={i}>
-                <circle cx={p.x} cy={p.y} r="12" className="fill-accent/15" />
-                <circle cx={p.x} cy={p.y} r="4.5" className="fill-accent" />
-                <circle cx={p.x} cy={p.y} r="4.5" className="fill-none stroke-on-dark/70" strokeWidth="1" />
-                <text x={p.x + 18} y={p.y - 4} className="fill-on-dark" style={{ fontFamily: 'Georgia, serif', fontSize: 15 }}>
-                  {names[i]}
-                </text>
-                <text x={p.x + 18} y={p.y + 11} className="fill-on-dark/55" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 8, letterSpacing: '0.14em' }}>
-                  {String(i + 1).padStart(2, '0')} / 03
-                </text>
-              </g>
-            ))}
-            {/* altitude note */}
-            <g>
-              <line x1="40" y1="366" x2="88" y2="366" className="stroke-accent" strokeWidth="1" />
-              <text x="40" y="358" className="fill-on-dark" style={{ fontFamily: 'Georgia, serif', fontSize: 20 }}>
-                {t.home.stats[0].num} m
-              </text>
-              <text x="96" y="364" className="fill-on-dark/55" style={{ fontFamily: 'var(--sans, Archivo, sans-serif)', fontSize: 8, letterSpacing: '0.16em' }}>
-                {art.asl.toUpperCase()}
-              </text>
-            </g>
-          </svg>
+          <div className="mx-auto flex max-w-[460px] flex-col gap-6 lg:hidden">
+            <MapArt view="lens" uid="l" />
+            <div className="mx-auto w-[62%]">
+              <MapArt view="country" uid="c" />
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1337,11 +1391,6 @@ function Contacto() {
       </div>
 
       <LocationMap />
-
-      <div className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
-        <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>
-        {t.footer.warning && <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>}
-      </div>
     </div>
   );
 }
