@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
-import { MAP_W, MAP_H, MAGNIFIER, ARG_REST, ARG_MENDOZA, CHILE, ZOOM_NEIGHBOURS, ZOOM_MENDOZA, ZOOM_UCO, PT } from './mapdata';
+import { ARG_REST, ARG_MENDOZA, CHILE } from './mapdata';
+import { UCO_W, UCO_RIVER, UCO_TRIB_MAJOR, UCO_TRIB_MINOR, UCO_PT, UCO_KM10 } from './ucomap';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail';
 type Nav = (p: Page, wineId?: string) => void;
@@ -1137,174 +1138,314 @@ function Novedades() {
   );
 }
 
-// ─── Location map (Argentina → Uco Valley magnifier) ──────────────────────────
-// Editorial counterpart to the satellite map on the Vineyards page, following the
-// estate's original site: the country with Mendoza highlighted, and a circular
-// magnifier on the Uco Valley with the three vineyards. Real province geometry
-// (see mapdata.ts), localized labels from the mapArt copy.
-const MAP = {
-  country: '#d9cbb0', // Argentina
-  mendoza: '#b04a5f', // Mendoza province — burgundy, lifted for the dark panel
-  ucoValley: '#8fae68', // Uco Valley — vine green
-  chileLand: '#26343d', // beyond the Andes (inside the magnifier)
-  line: '#14120f',
-  text: '#eadfcb',
-};
+// ─── Location map — the Uco Valley in relief ──────────────────────────────────
+// Real terrain (shaded from an elevation model, see ucomap.ts) in the brand's copper
+// tones, the Tunuyán river, and the three vineyards side by side. Each vineyard opens
+// a card with its copy from the Vineyards page.
+const UCO_VB_DESKTOP = [0, 100, 2400, 1400] as const;
+const UCO_VB_MOBILE = [1040, 430, 1000, 1250] as const;
+const UCO_GOLD = '#f0d6a0';
+const UCO_WATER = '#c4dde2';
+// index ↔ t.vinedos.cards: Altamira, Vista Flores, La Consulta
+const UCO_VINEYARDS = [UCO_PT.altamira, UCO_PT.vistaFlores, UCO_PT.laConsulta];
 
-function MapArt({ view, uid }: { view: 'full' | 'lens' | 'country'; uid: string }) {
-  const t = useT();
-  const art = t.vinedos.mapArt;
-  const short = t.vinedos.cards.map((c) => c.italic.trim()); // Altamira · Vista Flores · La Consulta
-  const { cx, cy, r } = MAGNIFIER;
-  const clip = `lens-${uid}`;
-  const viewBox = view === 'lens' ? '20 120 440 480' : view === 'country' ? '438 14 372 600' : `0 0 ${MAP_W} ${MAP_H}`;
-  const serif = "'Cormorant Garamond:Regular', Georgia, serif";
-  const sans = "'Archivo:Regular', Archivo, system-ui, sans-serif";
-  const [mx, my] = PT.mendozaCity;
-  const [rx, ry] = PT.rim;
-  const [zx, zy] = PT.mendozaCityZ;
-  const [vx, vy] = PT.vistaFlores;
-  const [lx, ly] = PT.laConsulta;
-  const [ax, ay] = PT.altamira;
-  const showLens = view !== 'country';
-  const showCountry = view !== 'lens';
+function useMedia(query: string) {
+  const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setMatch(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [query]);
+  return match;
+}
+
+function UcoInset({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox={viewBox}
-      className="block h-auto w-full"
-      role="img"
-      aria-label={`${art.argentina} · ${art.mendoza} · ${art.valley}`}
-    >
-      <defs>
-        <clipPath id={clip}>
-          <circle cx={cx} cy={cy} r={r} />
-        </clipPath>
-        <path id={`pac-${uid}`} d="M 500 214 Q 470 372 512 540" />
-        <path id={`atl-${uid}`} d="M 776 292 Q 812 410 742 536" />
-      </defs>
-
-      {showCountry && (
-        <g>
-          {/* Chile (outline only, like the original) */}
-          <path d={CHILE} fill="none" stroke={MAP.text} strokeOpacity="0.5" strokeWidth="0.9" strokeLinejoin="round" />
-          {/* Argentina */}
-          <path d={ARG_REST} fill={MAP.country} stroke={MAP.country} strokeWidth="0.8" strokeLinejoin="round" />
-          <path d={ARG_MENDOZA} fill={MAP.mendoza} stroke={MAP.mendoza} strokeWidth="0.8" strokeLinejoin="round" />
-          {/* labels */}
-          <text x="520" y="150" textAnchor="end" fill={MAP.text} fillOpacity="0.85" style={{ fontFamily: serif, fontSize: 19, letterSpacing: '0.04em' }}>
-            {art.chile}
-          </text>
-          <text x="666" y="118" textAnchor="middle" fill="#14120f" fillOpacity="0.78" style={{ fontFamily: serif, fontSize: 21, letterSpacing: '0.05em' }}>
-            {art.argentina}
-          </text>
-          <text fill={MAP.text} fillOpacity="0.8" style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 19, letterSpacing: '0.18em' }}>
-            <textPath href={`#pac-${uid}`} startOffset="50%" textAnchor="middle">{art.pacific}</textPath>
-          </text>
-          <text fill={MAP.text} fillOpacity="0.8" style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 19, letterSpacing: '0.18em' }}>
-            <textPath href={`#atl-${uid}`} startOffset="50%" textAnchor="middle">{art.atlantic}</textPath>
-          </text>
-          <circle cx={mx} cy={my} r="9" fill="none" stroke={MAP.text} strokeOpacity="0.7" strokeWidth="1" />
-          <circle cx={mx} cy={my} r="4.2" fill={MAP.text} />
-        </g>
-      )}
-
-      {showLens && view === 'full' && (
-        <line x1={mx - 10} y1={my + 2} x2={rx} y2={ry} stroke={MAP.text} strokeOpacity="0.55" strokeWidth="1" />
-      )}
-
-      {showLens && (
-        <g>
-          <circle cx={cx} cy={cy} r={r + 9} fill="none" stroke={MAP.text} strokeOpacity="0.16" strokeWidth="1" />
-          <g clipPath={`url(#${clip})`}>
-            <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} fill={MAP.chileLand} />
-            <path d={ZOOM_NEIGHBOURS} fill={MAP.country} stroke={MAP.country} strokeWidth="0.8" strokeLinejoin="round" />
-            <path d={ZOOM_MENDOZA} fill={MAP.mendoza} stroke={MAP.country} strokeWidth="1.1" strokeLinejoin="round" />
-            <path d={ZOOM_UCO} fill={MAP.ucoValley} fillOpacity="0.92" stroke={MAP.line} strokeWidth="0.6" strokeLinejoin="round" />
-          </g>
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke={MAP.text} strokeOpacity="0.85" strokeWidth="1.4" />
-
-          {/* Mendoza city */}
-          <circle cx={zx} cy={zy} r="6" fill={MAP.text} />
-          <text x={zx + 14} y={zy - 8} fill={MAP.text} style={{ fontFamily: serif, fontSize: 25, letterSpacing: '0.06em' }}>
-            {art.mendoza.toUpperCase()}
-          </text>
-          <text x={zx + 14} y={zy + 30} fill={MAP.text} style={{ fontFamily: serif, fontSize: 21 }}>
-            {art.valley}
-          </text>
-
-          {/* three vineyards */}
-          {[
-            { p: [vx, vy], label: short[1], side: -1, dy: -4 },
-            { p: [lx, ly], label: short[2], side: 1, dy: -2 },
-            { p: [ax, ay], label: short[0], side: 1, dy: 18 },
-          ].map(({ p, label, side, dy }) => (
-            <g key={label}>
-              <circle cx={p[0]} cy={p[1]} r="4.6" fill="#fff" stroke={MAP.line} strokeWidth="1" />
-              <line x1={p[0] + side * 7} y1={p[1]} x2={p[0] + side * 24} y2={p[1] + dy} stroke={MAP.text} strokeOpacity="0.7" strokeWidth="0.9" />
-              <text
-                x={p[0] + side * 29}
-                y={p[1] + dy + 4}
-                textAnchor={side < 0 ? 'end' : 'start'}
-                fill="#fff"
-                style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 19 }}
-              >
-                {label}
-              </text>
-            </g>
-          ))}
-          <text x={cx} y={cy + r + 34} textAnchor="middle" fill={MAP.text} fillOpacity="0.7" style={{ fontFamily: sans, fontSize: 11, letterSpacing: '0.2em' }}>
-            {t.home.stats[0].num} M · {art.asl.toUpperCase()}
-          </text>
-        </g>
-      )}
+    <svg viewBox="438 14 372 600" className={className} aria-hidden="true">
+      <path d={CHILE} fill="none" stroke="#f2ede4" strokeOpacity="0.22" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d={ARG_REST} fill="#f2ede4" fillOpacity="0.1" stroke="#f2ede4" strokeOpacity="0.5" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d={ARG_MENDOZA} fill={UCO_GOLD} stroke={UCO_GOLD} strokeWidth="1.4" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function LocationMap() {
+function UcoAltitude({ className = '' }: { className?: string }) {
+  const t = useT();
+  return (
+    <div className={`flex flex-col ${className}`}>
+      <p className="font-['Cormorant_Garamond:Light'] text-[clamp(44px,4.6vw,68px)] leading-[0.9] text-on-dark">
+        {t.home.stats[0].num}
+        <span className="ml-1 font-['Cormorant_Garamond:Light_Italic'] italic text-[0.5em] text-[#f0d6a0]">m</span>
+      </p>
+      <p className="mt-2 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.22em] uppercase text-on-dark/60">{t.vinedos.mapArt.asl}</p>
+    </div>
+  );
+}
+
+function UcoScale({ vw }: { vw: number }) {
+  return (
+    <div className="flex items-end gap-4" aria-hidden="true">
+      <div className="flex flex-col gap-[6px]">
+        <div className="h-[5px] border-x border-b border-on-dark/60" style={{ width: `${(UCO_KM10 / vw) * 100}cqw` }} />
+        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/55">10 KM</span>
+      </div>
+      <div className="flex flex-col items-center gap-[2px] pb-[1px]">
+        <svg width="9" height="12" viewBox="0 0 9 12"><path d="M4.5 0 9 12 4.5 9 0 12Z" fill="#f2ede4" fillOpacity="0.7" /></svg>
+        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] text-on-dark/55">N</span>
+      </div>
+    </div>
+  );
+}
+
+function UcoMap() {
   const t = useT();
   const art = t.vinedos.mapArt;
-  const short = t.vinedos.cards.map((c) => c.italic.trim());
-  return (
-    <section className="relative overflow-hidden border-t border-on-dark/[0.12] bg-panel text-on-dark">
-      <div className="pointer-events-none absolute inset-0 text-on-dark">
-        <Contours className="h-full w-full" lines={9} seed={6} opacity={0.05} />
-      </div>
-      <div className="relative mx-auto grid max-w-[1180px] items-center gap-x-10 gap-y-10 px-5 sm:px-8 lg:px-12 py-[clamp(64px,8vw,112px)] lg:grid-cols-[0.62fr_1.38fr]">
-        <div className="flex flex-col gap-5 reveal">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-[#d9a6b0]">{t.vinedos.mapLabel}</p>
-          <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.1vw,40px)] leading-[1.08]">
-            {art.valley}
-            <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-on-dark/70">{art.mendoza}</span>
-          </h2>
-          <p className="max-w-[320px] font-['Archivo:Light'] text-[13.5px] leading-[24px] text-on-dark/70" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.vinedos.mapDesc}
-          </p>
-          <ol className="mt-1 flex flex-col gap-[10px]">
-            {short.map((name) => (
-              <li key={name} className="flex items-center gap-[10px]">
-                <span className="size-[7px] shrink-0 rounded-full bg-white" />
-                <span className="font-['Archivo:Light'] text-[12.5px] text-on-dark/85" style={{ fontVariationSettings: '"wdth" 100' }}>
-                  {name}
-                </span>
-              </li>
-            ))}
-          </ol>
-        </div>
+  const cards = t.vinedos.cards;
+  const mobile = useMedia('(max-width: 1023px)');
+  const [vx, vy, vw, vh] = mobile ? UCO_VB_MOBILE : UCO_VB_DESKTOP;
+  const [open, setOpen] = useState<number | null>(null);
+  const px = (v: number) => `${((v - vx) / vw) * 100}%`;
+  const py = (v: number) => `${((v - vy) / vh) * 100}%`;
 
-        <div className="reveal reveal-d1">
-          {/* desktop: one composite, like the original; mobile: lens then country */}
-          <div className="hidden lg:block">
-            <MapArt view="full" uid="f" />
-          </div>
-          <div className="mx-auto flex max-w-[460px] flex-col gap-6 lg:hidden">
-            <MapArt view="lens" uid="l" />
-            <div className="mx-auto w-[62%]">
-              <MapArt view="country" uid="c" />
+  useEffect(() => {
+    if (open === null) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(null);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  const towns: { p: readonly [number, number] | readonly number[]; name: string; desktopOnly?: boolean }[] = [
+    { p: UCO_PT.tunuyan, name: 'Tunuyán' },
+    { p: UCO_PT.sanCarlos, name: 'San Carlos' },
+    { p: UCO_PT.pareditas, name: 'Pareditas' },
+    { p: UCO_PT.tupungato, name: 'Tupungato', desktopOnly: true },
+  ];
+  const [ax, ay] = UCO_PT.altamira;
+  const [fx, fy] = UCO_PT.vistaFlores;
+  const [cx, cy] = UCO_PT.laConsulta;
+  const sel = open !== null ? UCO_VINEYARDS[open] : null;
+
+  const header = (
+    <div className="flex flex-col gap-4 reveal">
+      <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-[#f0d6a0]/85">{t.vinedos.mapLabel}</p>
+      <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(34px,3.6vw,52px)] leading-[1.02] text-on-dark">
+        {art.valley}
+        <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-on-dark/70">{art.mendoza.charAt(0) + art.mendoza.slice(1).toLowerCase()}</span>
+      </h2>
+      <p className="max-w-[340px] font-['Archivo:Light'] text-[13.5px] leading-[24px] text-on-dark/75" style={{ fontVariationSettings: '"wdth" 100' }}>
+        {t.vinedos.mapDesc}
+      </p>
+      <p className="flex items-center gap-3 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.2em] uppercase text-[#f0d6a0]/80">
+        <span className="relative inline-block size-[7px] rounded-full bg-[#f0d6a0]">
+          <span className="uco-pulse !size-[7px]" />
+        </span>
+        {art.hint}
+      </p>
+    </div>
+  );
+
+  return (
+    <section className="relative overflow-hidden border-t border-on-dark/[0.12] bg-[#0b0907] text-on-dark [container-type:inline-size]">
+      {mobile && <div className="px-5 sm:px-8 pt-16 pb-8">{header}</div>}
+
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ aspectRatio: `${vw} / ${vh}` }}
+        onClick={() => setOpen(null)}
+      >
+        <img
+          src={`${A}/uco-relief.webp`}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="absolute max-w-none select-none"
+          style={{ width: `${(UCO_W / vw) * 100}%`, left: `${(-vx / vw) * 100}%`, top: `${(-vy / vh) * 100}%` }}
+        />
+        {/* edge fades into the section colour; on desktop also a well for the text */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,#0b0907_0%,transparent_14%,transparent_80%,#0b0907_100%)]" />
+        {!mobile && (
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_48%_62%_at_0%_100%,rgba(11,9,7,0.92)_0%,rgba(11,9,7,0.55)_55%,transparent_100%)]" />
+        )}
+
+        <svg viewBox={`${vx} ${vy} ${vw} ${vh}`} className="pointer-events-none absolute inset-0 size-full" aria-hidden="true">
+          <defs>
+            <radialGradient id="uco-halo">
+              <stop offset="0%" stopColor={UCO_GOLD} stopOpacity="0.2" />
+              <stop offset="100%" stopColor={UCO_GOLD} stopOpacity="0" />
+            </radialGradient>
+            <filter id="uco-blur" x="-10%" y="-10%" width="120%" height="120%">
+              <feGaussianBlur stdDeviation="5" />
+            </filter>
+          </defs>
+          {/* the three vineyards, lit as one place */}
+          <ellipse cx={(ax + fx + cx) / 3} cy={(ay + fy + cy) / 3} rx="260" ry="300" fill="url(#uco-halo)" />
+          {/* drainage: tributaries, then the Tunuyán with a soft glow */}
+          <path d={UCO_TRIB_MINOR} fill="none" stroke={UCO_WATER} strokeOpacity="0.16" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+          <path d={UCO_TRIB_MAJOR} fill="none" stroke={UCO_WATER} strokeOpacity="0.32" strokeWidth="1.1" vectorEffect="non-scaling-stroke" />
+          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.45" strokeWidth="9" filter="url(#uco-blur)" />
+          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.9" strokeWidth="1.8" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          {/* dashed links: three vineyards, one estate */}
+          <path
+            d={`M${fx} ${fy}L${cx} ${cy}L${ax} ${ay}Z`}
+            fill="none"
+            stroke={UCO_GOLD}
+            strokeOpacity="0.55"
+            strokeWidth="1"
+            strokeDasharray="3 5"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+
+        {/* labels */}
+        {!mobile && (
+          <span
+            className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[clamp(9px,0.8vw,11px)] uppercase tracking-[0.55em] text-on-dark/70 [text-shadow:0_1px_12px_rgba(0,0,0,0.9)]"
+            style={{ left: px(560), top: py(560) }}
+          >
+            {art.andes}
+          </span>
+        )}
+        <span
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(13px,1.15vw,17px)] tracking-[0.06em] text-[#d8eaee]/90 [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]"
+          style={{ left: px(mobile ? 1752 : 1745), top: py(mobile ? 838 : 836), transform: 'translate(-50%,-50%) rotate(-52deg)' }}
+        >
+          {art.river}
+        </span>
+        {towns
+          .filter((tw) => !(mobile && tw.desktopOnly))
+          .map((tw) => (
+            <span
+              key={tw.name}
+              className="pointer-events-none absolute flex -translate-y-1/2 items-center gap-[7px] font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/70 [text-shadow:0_1px_8px_rgba(0,0,0,0.9)]"
+              style={{ left: px(tw.p[0]), top: py(tw.p[1]) }}
+            >
+              <span className="-ml-[2px] size-[4px] rounded-full bg-on-dark/60" />
+              {tw.name}
+            </span>
+          ))}
+        {!mobile && (
+          <span
+            className="pointer-events-none absolute flex -translate-x-1/2 items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/60"
+            style={{ left: px(UCO_PT.mendozaArrow[0] - 70), top: '14%' }}
+          >
+            <svg width="8" height="10" viewBox="0 0 8 10" aria-hidden="true"><path d="M4 0 8 5H5v5H3V5H0Z" fill="currentColor" /></svg>
+            {art.toMendoza}
+          </span>
+        )}
+
+        {/* vineyards */}
+        {UCO_VINEYARDS.map(([x, y], i) => {
+          const c = cards[i];
+          const active = open === i;
+          const dim = open !== null && !active;
+          return (
+            <button
+              key={c.num}
+              type="button"
+              aria-expanded={active}
+              aria-label={art.vineyards[i]}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen(active ? null : i);
+              }}
+              className={`group absolute z-10 size-11 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full outline-none transition-opacity duration-500 focus-visible:ring-1 focus-visible:ring-[#f0d6a0] ${dim ? 'opacity-45' : ''}`}
+              style={{ left: px(x), top: py(y) }}
+            >
+              {!dim && <span className="uco-pulse" style={{ animationDelay: `${i * 0.9}s` }} />}
+              <span
+                className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-500 ${
+                  active ? 'size-[30px] border-[#f0d6a0] bg-[#f0d6a0]/15' : 'size-[22px] border-[#f0d6a0]/85 group-hover:size-[28px]'
+                }`}
+              />
+              <span className="absolute left-1/2 top-1/2 size-[8px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fbf3e2] shadow-[0_0_12px_rgba(240,214,160,0.9)]" />
+              {/* callout: leader line + name, to the left */}
+              <span className="pointer-events-none absolute right-[calc(50%+18px)] top-1/2 flex -translate-y-1/2 items-center gap-3">
+                <span className="flex flex-col items-end text-right">
+                  <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.22em] text-[#f0d6a0]/85">0{i + 1}</span>
+                  <span className="whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(17px,1.6vw,24px)] leading-[1.05] text-on-dark [text-shadow:0_1px_10px_rgba(0,0,0,0.75)]">
+                    {c.italic.trim()}
+                  </span>
+                </span>
+                <span className="h-px w-[clamp(18px,2.4vw,40px)] bg-[#f0d6a0]/70" />
+              </span>
+            </button>
+          );
+        })}
+
+        {/* info card */}
+        {open !== null && sel && (
+          <div
+            role="dialog"
+            aria-label={art.vineyards[open]}
+            onClick={(e) => e.stopPropagation()}
+            className={`uco-card absolute z-20 border border-[#f0d6a0]/25 bg-[#0d0b08]/[0.88] p-6 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-md ${
+              mobile ? 'inset-x-3 bottom-3' : 'w-[330px]'
+            }`}
+            style={mobile ? undefined : { left: `calc(${px(sel[0])} + 34px)`, top: `clamp(16px, calc(${py(sel[1])} - 140px), calc(100% - 380px))` }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <p className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.24em] text-[#f0d6a0]/85">{cards[open].num}</p>
+              <button
+                type="button"
+                aria-label={art.close}
+                onClick={() => setOpen(null)}
+                className="-mr-2 -mt-2 grid size-8 place-items-center text-on-dark/60 transition-colors hover:text-on-dark"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 1l10 10M11 1 1 11" stroke="currentColor" strokeWidth="1.2" /></svg>
+              </button>
             </div>
+            <h3 className="mt-2 font-['Cormorant_Garamond:Light'] text-[30px] leading-[1.05] text-on-dark">{art.vineyards[open]}</h3>
+            <p className="mt-3 font-['Archivo:Light'] text-[13px] leading-[22px] text-on-dark/75" style={{ fontVariationSettings: '"wdth" 100' }}>
+              {cards[open].desc}
+            </p>
+            <dl className="mt-4">
+              {cards[open].specs.map((s) => (
+                <div key={s.l} className="flex justify-between border-t border-on-dark/[0.14] py-[9px] last:border-b">
+                  <dt className="font-['IBM_Plex_Mono:Regular'] text-[9px] tracking-[0.12em] text-on-dark/55">{s.l}</dt>
+                  <dd className="font-['Cormorant_Garamond:Regular'] text-[15px] text-on-dark">{s.v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
+
+        {/* desktop furniture: header bottom-left, inset top-right, altitude bottom-right */}
+        {!mobile && (
+          <>
+            <div className="absolute bottom-[7%] left-[clamp(20px,4vw,64px)] max-w-[380px]">{header}</div>
+            <div className="pointer-events-none absolute right-[clamp(20px,3vw,48px)] top-[30%] flex items-start gap-3">
+              <div className="flex flex-col items-end pt-2 text-right">
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
+              </div>
+              <UcoInset className="h-[clamp(110px,11vw,160px)] w-auto" />
+            </div>
+            <div className={`pointer-events-none absolute bottom-[7%] right-[clamp(20px,3vw,48px)] flex flex-col items-end gap-5 transition-opacity duration-500 ${open !== null ? 'opacity-0' : ''}`}>
+              <UcoAltitude className="items-end text-right" />
+              <UcoScale vw={vw} />
+            </div>
+          </>
+        )}
+      </div>
+
+      {mobile && (
+        <div className="flex items-end justify-between gap-6 px-5 sm:px-8 pb-14 pt-6">
+          <div className="flex flex-col gap-5">
+            <UcoAltitude />
+            <UcoScale vw={vw} />
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="flex flex-col items-end pt-1 text-right">
+              <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
+              <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
+            </div>
+            <UcoInset className="h-[110px] w-auto" />
           </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
@@ -1395,7 +1536,7 @@ function Contacto() {
         </div>
       </div>
 
-      <LocationMap />
+      <UcoMap />
     </div>
   );
 }

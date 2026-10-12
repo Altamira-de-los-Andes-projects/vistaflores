@@ -170,7 +170,27 @@ body { font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1; }
 
 html { scroll-behavior: smooth; }
 
+/* ── Uco Valley relief map — vineyard markers and their info card ───────────── */
+@keyframes ucoPulse {
+  0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0.75; }
+  100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
+}
+@keyframes ucoPop {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); filter: blur(4px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+.uco-pulse {
+  position: absolute; left: 50%; top: 50%;
+  width: 22px; height: 22px; border-radius: 9999px;
+  border: 1px solid rgba(240, 214, 160, 0.9);
+  animation: ucoPulse 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  pointer-events: none;
+}
+.uco-card { animation: ucoPop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 @media (prefers-reduced-motion: reduce) {
+  .uco-pulse { animation: none; opacity: 0; }
+  .uco-card { animation: none; }
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; filter: none; transition: none; }
   .kenburns,
