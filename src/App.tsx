@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
 import { ARG_REST, ARG_MENDOZA, CHILE } from './mapdata';
-import { UCO_W, UCO_RIVER, UCO_TRIB_MAJOR, UCO_TRIB_MINOR, UCO_PT, UCO_KM10 } from './ucomap';
+import { UCO_W, UCO_RIVER, UCO_ZONES, UCO_PT, UCO_KM5 } from './ucomap';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail';
 type Nav = (p: Page, wineId?: string) => void;
@@ -1051,16 +1051,21 @@ function Novedades() {
   );
 }
 
-// ─── Location map — the Uco Valley in relief ──────────────────────────────────
-// Real terrain (shaded from an elevation model, see ucomap.ts) in the brand's copper
-// tones, the Tunuyán river, and the three vineyards side by side. Each vineyard opens
+// ─── Location map — the three Geographical Indications of the vineyards ───────
+// Natural satellite view of the Uco Valley (Sentinel-2, see ucomap.ts) with the official
+// limits of Paraje Altamira, La Consulta and Vista Flores drawn as zones. Each zone opens
 // a card with its copy from the Vineyards page.
-const UCO_VB_DESKTOP = [0, 100, 2400, 1400] as const;
-const UCO_VB_MOBILE = [1040, 430, 1000, 1250] as const;
+const UCO_VB_DESKTOP = [740, 150, 1660, 1130] as const;
+const UCO_VB_MOBILE = [1080, 150, 940, 1180] as const;
 const UCO_GOLD = '#f0d6a0';
-const UCO_WATER = '#c4dde2';
-// index ↔ t.vinedos.cards: Altamira, Vista Flores, La Consulta
-const UCO_VINEYARDS = [UCO_PT.altamira, UCO_PT.vistaFlores, UCO_PT.laConsulta];
+const UCO_WATER = '#bfe0ea';
+// index ↔ t.vinedos.cards (Altamira, Vista Flores, La Consulta); drawn La Consulta → Vista Flores → Altamira
+const UCO_ZONE = [
+  { key: 'altamira', name: 'Paraje Altamira', fill: '#c9a063', label: UCO_PT.altamiraLabel },
+  { key: 'vistaFlores', name: 'Vista Flores', fill: '#8c3044', label: UCO_PT.vistaFloresLabel },
+  { key: 'laConsulta', name: 'La Consulta', fill: '#8f9b66', label: UCO_PT.laConsultaLabel },
+] as const;
+const UCO_DRAW_ORDER = [2, 1, 0];
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -1088,11 +1093,11 @@ function UcoAltitude({ className = '' }: { className?: string }) {
   const t = useT();
   return (
     <div className={`flex flex-col ${className}`}>
-      <p className="font-['Cormorant_Garamond:Light'] text-[clamp(44px,4.6vw,68px)] leading-[0.9] text-on-dark">
+      <p className="font-['Cormorant_Garamond:Light'] text-[clamp(44px,4.6vw,68px)] leading-[0.9] text-on-dark [text-shadow:0_2px_18px_rgba(0,0,0,0.6)]">
         {t.home.stats[0].num}
         <span className="ml-1 font-['Cormorant_Garamond:Light_Italic'] italic text-[0.5em] text-[#f0d6a0]">m</span>
       </p>
-      <p className="mt-2 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.22em] uppercase text-on-dark/60">{t.vinedos.mapArt.asl}</p>
+      <p className="mt-2 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.22em] uppercase text-on-dark/70">{t.vinedos.mapArt.asl}</p>
     </div>
   );
 }
@@ -1101,12 +1106,12 @@ function UcoScale({ vw }: { vw: number }) {
   return (
     <div className="flex items-end gap-4" aria-hidden="true">
       <div className="flex flex-col gap-[6px]">
-        <div className="h-[5px] border-x border-b border-on-dark/60" style={{ width: `${(UCO_KM10 / vw) * 100}cqw` }} />
-        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/55">10 KM</span>
+        <div className="h-[5px] border-x border-b border-on-dark/70" style={{ width: `${(UCO_KM5 / vw) * 100}cqw` }} />
+        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/65">5 KM</span>
       </div>
       <div className="flex flex-col items-center gap-[2px] pb-[1px]">
-        <svg width="9" height="12" viewBox="0 0 9 12"><path d="M4.5 0 9 12 4.5 9 0 12Z" fill="#f2ede4" fillOpacity="0.7" /></svg>
-        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] text-on-dark/55">N</span>
+        <svg width="9" height="12" viewBox="0 0 9 12"><path d="M4.5 0 9 12 4.5 9 0 12Z" fill="#f2ede4" fillOpacity="0.8" /></svg>
+        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] text-on-dark/65">N</span>
       </div>
     </div>
   );
@@ -1119,6 +1124,7 @@ function UcoMap() {
   const mobile = useMedia('(max-width: 1023px)');
   const [vx, vy, vw, vh] = mobile ? UCO_VB_MOBILE : UCO_VB_DESKTOP;
   const [open, setOpen] = useState<number | null>(null);
+  const [hover, setHover] = useState<number | null>(null);
   const px = (v: number) => `${((v - vx) / vw) * 100}%`;
   const py = (v: number) => `${((v - vy) / vh) * 100}%`;
 
@@ -1129,28 +1135,24 @@ function UcoMap() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const towns: { p: readonly [number, number] | readonly number[]; name: string; desktopOnly?: boolean }[] = [
+  const towns = [
     { p: UCO_PT.tunuyan, name: 'Tunuyán' },
     { p: UCO_PT.sanCarlos, name: 'San Carlos' },
-    { p: UCO_PT.pareditas, name: 'Pareditas' },
-    { p: UCO_PT.tupungato, name: 'Tupungato', desktopOnly: true },
   ];
-  const [ax, ay] = UCO_PT.altamira;
-  const [fx, fy] = UCO_PT.vistaFlores;
-  const [cx, cy] = UCO_PT.laConsulta;
-  const sel = open !== null ? UCO_VINEYARDS[open] : null;
+  const sel = open !== null ? UCO_ZONE[open].label : null;
+  const shadow = '[text-shadow:0_1px_10px_rgba(0,0,0,0.85)]';
 
   const header = (
     <div className="flex flex-col gap-4">
-      <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-[#f0d6a0]/85">{t.vinedos.mapLabel}</p>
-      <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(34px,3.6vw,52px)] leading-[1.02] text-on-dark">
+      <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-[#f0d6a0]">{t.vinedos.mapLabel}</p>
+      <h2 className={`font-['Cormorant_Garamond:Light'] text-[clamp(34px,3.6vw,52px)] leading-[1.02] text-on-dark ${shadow}`}>
         {art.valley}
-        <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-on-dark/70">{art.mendoza.charAt(0) + art.mendoza.slice(1).toLowerCase()}</span>
+        <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-on-dark/75">{art.mendoza.charAt(0) + art.mendoza.slice(1).toLowerCase()}</span>
       </h2>
-      <p className="max-w-[340px] font-['Archivo:Light'] text-[13.5px] leading-[24px] text-on-dark/75" style={{ fontVariationSettings: '"wdth" 100' }}>
+      <p className={`max-w-[340px] font-['Archivo:Light'] text-[13.5px] leading-[24px] text-on-dark/85 ${shadow}`} style={{ fontVariationSettings: '"wdth" 100' }}>
         {t.vinedos.mapDesc}
       </p>
-      <p className="flex items-center gap-3 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.2em] uppercase text-[#f0d6a0]/80">
+      <p className="flex items-center gap-3 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.2em] uppercase text-[#f0d6a0]">
         <span className="relative inline-block size-[7px] rounded-full bg-[#f0d6a0]">
           <span className="uco-pulse !size-[7px]" />
         </span>
@@ -1159,17 +1161,23 @@ function UcoMap() {
     </div>
   );
 
+  const credit = (
+    <p className="font-['IBM_Plex_Mono:Regular'] text-[8px] leading-[14px] tracking-[0.06em] text-on-dark/50">
+      {art.limits} ·{' '}
+      <a href="https://s2maps.eu" target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
+        Sentinel-2 cloudless 2016
+      </a>{' '}
+      by EOX IT Services GmbH (Copernicus Sentinel data, CC BY 4.0) · © OpenStreetMap
+    </p>
+  );
+
   return (
     <section className="relative overflow-hidden border-t border-on-dark/[0.12] bg-[#0b0907] text-on-dark [container-type:inline-size]">
       {mobile && <div className="px-5 sm:px-8 pt-16 pb-8">{header}</div>}
 
-      <div
-        className="relative w-full overflow-hidden"
-        style={{ aspectRatio: `${vw} / ${vh}` }}
-        onClick={() => setOpen(null)}
-      >
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: `${vw} / ${vh}` }} onClick={() => setOpen(null)}>
         <img
-          src={`${A}/uco-relief.webp`}
+          src={`${A}/uco-sat.webp`}
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -1177,116 +1185,104 @@ function UcoMap() {
           className="absolute max-w-none select-none"
           style={{ width: `${(UCO_W / vw) * 100}%`, left: `${(-vx / vw) * 100}%`, top: `${(-vy / vh) * 100}%` }}
         />
-        {/* edge fades into the section colour; on desktop also a well for the text */}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,#0b0907_0%,transparent_14%,transparent_80%,#0b0907_100%)]" />
+        {/* soft edge into the section; on desktop a well behind the text */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(11,9,7,0.55)_0%,transparent_12%,transparent_82%,rgba(11,9,7,0.7)_100%)]" />
         {!mobile && (
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_48%_62%_at_0%_100%,rgba(11,9,7,0.92)_0%,rgba(11,9,7,0.55)_55%,transparent_100%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_46%_58%_at_0%_100%,rgba(11,9,7,0.9)_0%,rgba(11,9,7,0.5)_55%,transparent_100%)]" />
         )}
 
-        <svg viewBox={`${vx} ${vy} ${vw} ${vh}`} className="pointer-events-none absolute inset-0 size-full" aria-hidden="true">
+        <svg viewBox={`${vx} ${vy} ${vw} ${vh}`} className="pointer-events-none absolute inset-0 size-full">
           <defs>
-            <radialGradient id="uco-halo">
-              <stop offset="0%" stopColor={UCO_GOLD} stopOpacity="0.2" />
-              <stop offset="100%" stopColor={UCO_GOLD} stopOpacity="0" />
-            </radialGradient>
-            <filter id="uco-blur" x="-10%" y="-10%" width="120%" height="120%">
-              <feGaussianBlur stdDeviation="5" />
+            <filter id="uco-glow" x="-10%" y="-10%" width="120%" height="120%">
+              <feGaussianBlur stdDeviation="4" />
             </filter>
           </defs>
-          {/* the three vineyards, lit as one place */}
-          <ellipse cx={(ax + fx + cx) / 3} cy={(ay + fy + cy) / 3} rx="260" ry="300" fill="url(#uco-halo)" />
-          {/* drainage: tributaries, then the Tunuyán with a soft glow */}
-          <path d={UCO_TRIB_MINOR} fill="none" stroke={UCO_WATER} strokeOpacity="0.16" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
-          <path d={UCO_TRIB_MAJOR} fill="none" stroke={UCO_WATER} strokeOpacity="0.32" strokeWidth="1.1" vectorEffect="non-scaling-stroke" />
-          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.45" strokeWidth="9" filter="url(#uco-blur)" />
-          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.9" strokeWidth="1.8" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-          {/* dashed links: three vineyards, one estate */}
-          <path
-            d={`M${fx} ${fy}L${cx} ${cy}L${ax} ${ay}Z`}
-            fill="none"
-            stroke={UCO_GOLD}
-            strokeOpacity="0.55"
-            strokeWidth="1"
-            strokeDasharray="3 5"
-            vectorEffect="non-scaling-stroke"
-          />
+          {/* river under the zones' edges */}
+          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.5" strokeWidth="8" filter="url(#uco-glow)" />
+          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.95" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          {UCO_DRAW_ORDER.map((i) => {
+            const z = UCO_ZONE[i];
+            const active = open === i || hover === i;
+            const dim = open !== null && open !== i;
+            return (
+              <path
+                key={z.key}
+                d={UCO_ZONES[z.key]}
+                role="button"
+                tabIndex={0}
+                aria-label={`${art.gi} ${z.name} — ${art.vineyards[i]}`}
+                aria-expanded={open === i}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpen(open === i ? null : i);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setOpen(open === i ? null : i);
+                  }
+                }}
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover(null)}
+                fill={z.fill}
+                fillOpacity={dim ? 0.18 : active ? 0.62 : z.key === 'altamira' ? 0.52 : 0.42}
+                stroke="#fbf1dc"
+                strokeOpacity={dim ? 0.35 : 0.95}
+                strokeWidth={active ? 2.4 : 1.4}
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+                className="pointer-events-auto cursor-pointer outline-none transition-[fill-opacity,stroke-width,stroke-opacity] duration-500 focus-visible:[stroke-width:3]"
+              />
+            );
+          })}
         </svg>
 
-        {/* labels */}
+        {/* zone labels */}
+        {UCO_ZONE.map((z, i) => (
+          <span
+            key={z.key}
+            className={`pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center transition-opacity duration-500 ${open !== null && open !== i ? 'opacity-50' : ''}`}
+            style={{ left: px(z.label[0]), top: py(z.label[1]) }}
+          >
+            <span className={`font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.3em] text-[#fbf1dc] ${shadow}`}>{art.gi}</span>
+            <span className={`whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(17px,1.7vw,26px)] leading-[1.05] text-white ${shadow}`}>{z.name}</span>
+          </span>
+        ))}
+
+        {/* context labels */}
+        <span
+          className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(13px,1.15vw,17px)] tracking-[0.06em] text-[#dff1f6] ${shadow}`}
+          style={{ left: px(UCO_PT.riverLabel[0]), top: py(UCO_PT.riverLabel[1]), transform: 'translate(-50%,-50%) rotate(-41deg) translateY(-14px)' }}
+        >
+          {art.river}
+        </span>
         {!mobile && (
           <span
-            className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[clamp(9px,0.8vw,11px)] uppercase tracking-[0.55em] text-on-dark/70 [text-shadow:0_1px_12px_rgba(0,0,0,0.9)]"
-            style={{ left: px(560), top: py(560) }}
+            className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 -rotate-90 whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[clamp(9px,0.8vw,11px)] uppercase tracking-[0.5em] text-on-dark/80 ${shadow}`}
+            style={{ left: px(800), top: py(560) }}
           >
             {art.andes}
           </span>
         )}
-        <span
-          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(13px,1.15vw,17px)] tracking-[0.06em] text-[#d8eaee]/90 [text-shadow:0_1px_10px_rgba(0,0,0,0.85)]"
-          style={{ left: px(mobile ? 1752 : 1745), top: py(mobile ? 838 : 836), transform: 'translate(-50%,-50%) rotate(-52deg)' }}
-        >
-          {art.river}
-        </span>
-        {towns
-          .filter((tw) => !(mobile && tw.desktopOnly))
-          .map((tw) => (
-            <span
-              key={tw.name}
-              className="pointer-events-none absolute flex -translate-y-1/2 items-center gap-[7px] font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/70 [text-shadow:0_1px_8px_rgba(0,0,0,0.9)]"
-              style={{ left: px(tw.p[0]), top: py(tw.p[1]) }}
-            >
-              <span className="-ml-[2px] size-[4px] rounded-full bg-on-dark/60" />
-              {tw.name}
-            </span>
-          ))}
+        {towns.map((tw) => (
+          <span
+            key={tw.name}
+            className={`pointer-events-none absolute flex -translate-y-1/2 items-center gap-[7px] whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/85 ${shadow} ${mobile ? '-translate-x-full flex-row-reverse' : ''}`}
+            style={{ left: px(tw.p[0]), top: py(tw.p[1]) }}
+          >
+            <span className={`size-[5px] rounded-full bg-on-dark/85 ${mobile ? '-mr-[3px]' : '-ml-[3px]'}`} />
+            {tw.name}
+          </span>
+        ))}
         {!mobile && (
           <span
-            className="pointer-events-none absolute flex -translate-x-1/2 items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/60"
-            style={{ left: px(UCO_PT.mendozaArrow[0] - 70), top: '14%' }}
+            className={`pointer-events-none absolute flex -translate-x-1/2 items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/80 ${shadow}`}
+            style={{ left: px(UCO_PT.mendozaArrow[0] - 160), top: '11%' }}
           >
             <svg width="8" height="10" viewBox="0 0 8 10" aria-hidden="true"><path d="M4 0 8 5H5v5H3V5H0Z" fill="currentColor" /></svg>
             {art.toMendoza}
           </span>
         )}
-
-        {/* vineyards */}
-        {UCO_VINEYARDS.map(([x, y], i) => {
-          const c = cards[i];
-          const active = open === i;
-          const dim = open !== null && !active;
-          return (
-            <button
-              key={c.num}
-              type="button"
-              aria-expanded={active}
-              aria-label={art.vineyards[i]}
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpen(active ? null : i);
-              }}
-              className={`group absolute z-10 size-11 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full outline-none transition-opacity duration-500 focus-visible:ring-1 focus-visible:ring-[#f0d6a0] ${dim ? 'opacity-45' : ''}`}
-              style={{ left: px(x), top: py(y) }}
-            >
-              {!dim && <span className="uco-pulse" style={{ animationDelay: `${i * 0.9}s` }} />}
-              <span
-                className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-500 ${
-                  active ? 'size-[30px] border-[#f0d6a0] bg-[#f0d6a0]/15' : 'size-[22px] border-[#f0d6a0]/85 group-hover:size-[28px]'
-                }`}
-              />
-              <span className="absolute left-1/2 top-1/2 size-[8px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fbf3e2] shadow-[0_0_12px_rgba(240,214,160,0.9)]" />
-              {/* callout: leader line + name, to the left */}
-              <span className="pointer-events-none absolute right-[calc(50%+18px)] top-1/2 flex -translate-y-1/2 items-center gap-3">
-                <span className="flex flex-col items-end text-right">
-                  <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.22em] text-[#f0d6a0]/85">0{i + 1}</span>
-                  <span className="whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(17px,1.6vw,24px)] leading-[1.05] text-on-dark [text-shadow:0_1px_10px_rgba(0,0,0,0.75)]">
-                    {c.italic.trim()}
-                  </span>
-                </span>
-                <span className="h-px w-[clamp(18px,2.4vw,40px)] bg-[#f0d6a0]/70" />
-              </span>
-            </button>
-          );
-        })}
 
         {/* info card */}
         {open !== null && sel && (
@@ -1294,13 +1290,22 @@ function UcoMap() {
             role="dialog"
             aria-label={art.vineyards[open]}
             onClick={(e) => e.stopPropagation()}
-            className={`uco-card absolute z-20 border border-[#f0d6a0]/25 bg-[#0d0b08]/[0.88] p-6 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-md ${
+            className={`uco-card absolute z-20 border border-[#f0d6a0]/25 bg-[#0d0b08]/[0.9] p-6 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-md ${
               mobile ? 'inset-x-3 bottom-3' : 'w-[330px]'
             }`}
-            style={mobile ? undefined : { left: `calc(${px(sel[0])} + 34px)`, top: `clamp(16px, calc(${py(sel[1])} - 140px), calc(100% - 380px))` }}
+            style={
+              mobile
+                ? undefined
+                : {
+                    left: `clamp(16px, calc(${px(sel[0])} + 90px), calc(100% - 346px))`,
+                    top: `clamp(16px, calc(${py(sel[1])} - 150px), calc(100% - 390px))`,
+                  }
+            }
           >
             <div className="flex items-start justify-between gap-4">
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.24em] text-[#f0d6a0]/85">{cards[open].num}</p>
+              <p className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.24em] text-[#f0d6a0]/85">
+                {art.gi} · {UCO_ZONE[open].name.toUpperCase()}
+              </p>
               <button
                 type="button"
                 aria-label={art.close}
@@ -1329,34 +1334,40 @@ function UcoMap() {
         {!mobile && (
           <>
             <div className="absolute bottom-[7%] left-[clamp(20px,4vw,64px)] max-w-[380px]">{header}</div>
-            <div className="pointer-events-none absolute right-[clamp(20px,3vw,48px)] top-[30%] flex items-start gap-3">
+            <div className="pointer-events-none absolute right-[clamp(20px,3vw,48px)] top-[34%] flex items-start gap-3">
               <div className="flex flex-col items-end pt-2 text-right">
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
+                <span className={`font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-[#f0d6a0] ${shadow}`}>{art.mendoza}</span>
+                <span className={`font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/70 ${shadow}`}>{art.argentina}</span>
               </div>
-              <UcoInset className="h-[clamp(110px,11vw,160px)] w-auto" />
+              <UcoInset className="h-[clamp(110px,11vw,160px)] w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" />
             </div>
-            <div className={`pointer-events-none absolute bottom-[7%] right-[clamp(20px,3vw,48px)] flex flex-col items-end gap-5 transition-opacity duration-500 ${open !== null ? 'opacity-0' : ''}`}>
+            <div
+              className={`pointer-events-none absolute bottom-[7%] right-[clamp(20px,3vw,48px)] flex flex-col items-end gap-5 transition-opacity duration-500 ${open !== null ? 'opacity-0' : ''}`}
+            >
               <UcoAltitude className="items-end text-right" />
               <UcoScale vw={vw} />
             </div>
+            <div className="pointer-events-auto absolute bottom-2 right-[clamp(20px,3vw,48px)] max-w-[60%] text-right">{credit}</div>
           </>
         )}
       </div>
 
       {mobile && (
-        <div className="flex items-end justify-between gap-6 px-5 sm:px-8 pb-14 pt-6">
-          <div className="flex flex-col gap-5">
-            <UcoAltitude />
-            <UcoScale vw={vw} />
-          </div>
-          <div className="flex items-start gap-3">
-            <div className="flex flex-col items-end pt-1 text-right">
-              <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
-              <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
+        <div className="flex flex-col gap-6 px-5 sm:px-8 pb-14 pt-6">
+          <div className="flex items-end justify-between gap-6">
+            <div className="flex flex-col gap-5">
+              <UcoAltitude />
+              <UcoScale vw={vw} />
             </div>
-            <UcoInset className="h-[110px] w-auto" />
+            <div className="flex items-start gap-3">
+              <div className="flex flex-col items-end pt-1 text-right">
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
+              </div>
+              <UcoInset className="h-[110px] w-auto" />
+            </div>
           </div>
+          {credit}
         </div>
       )}
     </section>
