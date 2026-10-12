@@ -8,6 +8,10 @@ type Nav = (p: Page, wineId?: string) => void;
 
 const A = `${import.meta.env.BASE_URL}assets`;
 
+// News is hidden for now (client request); flip to true to bring back the nav item, the Home
+// section and the #/novedades page.
+const SHOW_NEWS = false;
+
 // Themed replacements for stock images that didn't reference wine/vineyards
 const IMG = {
   vinedosHero:
@@ -277,7 +281,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     ['vinedos', t.nav.vinedos],
     ['novedades', t.nav.novedades],
     ['contacto', t.nav.contacto],
-  ];
+  ].filter(([p]) => SHOW_NEWS || p !== 'novedades') as [Page, string][];
   return (
     <header
       className={`z-50 flex items-center justify-between px-5 sm:px-8 lg:px-12 py-5 ${
@@ -819,6 +823,7 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* News section */}
+      {SHOW_NEWS && (
       <section className="bg-surface-2 border-t border-ink/[0.1] px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[101px] pb-16 lg:pb-[100px] mt-16">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div className="flex flex-col gap-[18px]">
@@ -845,6 +850,7 @@ function Home({ onNav }: { onNav: Nav }) {
           ))}
         </div>
       </section>
+      )}
     </div>
   );
 }
@@ -1616,6 +1622,7 @@ function parseHash(): { page: Page; wineId?: string } {
   const h = window.location.hash.replace(/^#\/?/, '');
   if (!h || h === 'home') return { page: 'home' };
   if (h.startsWith('wine/')) return { page: 'wine-detail', wineId: h.slice(5) || 'dama' };
+  if (h === 'novedades' && !SHOW_NEWS) return { page: 'home' };
   return PAGES.includes(h as Page) && h !== 'wine-detail' ? { page: h as Page } : { page: 'home' };
 }
 
@@ -1682,7 +1689,7 @@ function Site() {
           <Header page={page} onNav={navigate} />
           {page === 'vinos' && <Vinos onNav={navigate} />}
           {page === 'vinedos' && <Vinedos />}
-          {page === 'novedades' && <Novedades />}
+          {SHOW_NEWS && page === 'novedades' && <Novedades />}
           {page === 'contacto' && <Contacto />}
           {page === 'wine-detail' && <WineDetail onNav={navigate} wineId={activeWine} />}
           {showFullFooter ? (
