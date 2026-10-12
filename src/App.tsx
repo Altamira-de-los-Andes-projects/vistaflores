@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
 import { ARG_REST, ARG_MENDOZA, CHILE } from './mapdata';
 import { UCO_W, UCO_RIVER, UCO_TRIB_MAJOR, UCO_TRIB_MINOR, UCO_PT, UCO_KM10 } from './ucomap';
@@ -937,63 +935,6 @@ function Vinos({ onNav }: { onNav: Nav }) {
   );
 }
 
-// ─── Terrain map — real relief tiles (Leaflet + OpenTopoMap) ──────────────────
-function TerrainMap() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const pins = [
-      { name: 'Vista Flores', lat: -33.68, lon: -69.13 },
-      { name: 'La Consulta', lat: -33.76, lon: -69.07 },
-      { name: 'Altamira', lat: -33.79, lon: -69.13 },
-    ];
-    const map = L.map(el, {
-      scrollWheelZoom: false,
-      zoomControl: false,
-      attributionControl: true,
-      minZoom: 8,
-      maxZoom: 16,
-    });
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    // Real satellite imagery — the irrigated vineyards read as green against the
-    // arid Andes foothills (a cultivated oasis, not an empty desert).
-    L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { attribution: 'Imagery © Esri · Maxar · Earthstar Geographics', maxZoom: 18 }
-    ).addTo(map);
-    // Subtle place/road labels for orientation (towns, routes — shows it is farmland).
-    L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '', maxZoom: 18, opacity: 0.9 }
-    ).addTo(map);
-    pins.forEach((p) => {
-      const icon = L.divIcon({
-        className: 'vf-pin',
-        html: `<span class="vf-pin__dot"></span><span class="vf-pin__label">${p.name}</span>`,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0],
-      });
-      L.marker([p.lat, p.lon], { icon }).addTo(map);
-    });
-    // Frame the cultivated valley so the geometric green vineyard parcels fill the
-    // view (clearly farmland, not desert) with the three estates spread across it.
-    map.fitBounds(
-      L.latLngBounds([
-        [-33.61, -69.2],
-        [-33.86, -68.99],
-      ]),
-      { padding: [8, 8] }
-    );
-    const timer = setTimeout(() => map.invalidateSize(), 120);
-    return () => {
-      clearTimeout(timer);
-      map.remove();
-    };
-  }, []);
-  return <div ref={ref} className="vf-map h-[clamp(380px,46vw,560px)] w-full" />;
-}
-
 // ─── VIÑEDOS ──────────────────────────────────────────────────────────────────
 function Vinedos() {
   useReveal();
@@ -1051,36 +992,8 @@ function Vinedos() {
         ))}
       </section>
 
-      {/* Map — bespoke location illustration (Argentina + Uco Valley inset) */}
-      <section className="relative overflow-hidden bg-panel px-5 sm:px-8 lg:px-12 py-[clamp(70px,9vw,120px)]">
-        <div className="pointer-events-none absolute inset-0 text-on-dark">
-          <Contours className="h-full w-full" lines={9} seed={4} opacity={0.05} />
-        </div>
-        <div className="relative mx-auto grid max-w-[1180px] grid-cols-1 lg:grid-cols-[0.82fr_1.18fr] gap-[50px] items-center">
-          <div className="flex flex-col gap-5 reveal">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.vinedos.mapLabel}</p>
-            <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(30px,3.4vw,44px)] text-on-dark leading-[1.1]">
-              {t.vinedos.mapPlace1}
-              <br />
-              <span className="font-['Cormorant_Garamond:Light_Italic'] italic">{t.vinedos.mapPlace2}</span>
-            </h2>
-            <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.7] leading-[25.9px] max-w-[360px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-              {t.vinedos.mapDesc}
-            </p>
-            <div className="flex flex-col gap-[10px] pt-2">
-              {t.vinedos.mapArt.vineyards.map((name) => (
-                <div key={name} className="flex items-center gap-[10px]">
-                  <div className="bg-on-dark rounded-full size-[7px] shrink-0" />
-                  <span className="font-['Archivo:Light'] text-[12.5px] text-on-dark/[0.82]" style={{ fontVariationSettings: '"wdth" 100' }}>{name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="reveal reveal-d1 overflow-hidden rounded-[14px] border border-on-dark/[0.14] shadow-[0_20px_60px_-24px_rgba(0,0,0,0.7)]">
-            <TerrainMap />
-          </div>
-        </div>
-      </section>
+      {/* Map — the Uco Valley in relief, three vineyards side by side */}
+      <UcoMap />
     </div>
   );
 }
@@ -1228,7 +1141,7 @@ function UcoMap() {
   const sel = open !== null ? UCO_VINEYARDS[open] : null;
 
   const header = (
-    <div className="flex flex-col gap-4 reveal">
+    <div className="flex flex-col gap-4">
       <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-[#f0d6a0]/85">{t.vinedos.mapLabel}</p>
       <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(34px,3.6vw,52px)] leading-[1.02] text-on-dark">
         {art.valley}
