@@ -888,6 +888,10 @@ function Vinos({ onNav }: { onNav: Nav }) {
         </div>
       </section>
 
+      {/* One shared, semi-transparent photo behind the filter bar and the wine grid. */}
+      <section className="relative isolate min-h-[640px]">
+      <img src={`${A}/vinos-bg.jpg`} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover" />
+      <div className="absolute inset-0 -z-10 bg-surface/[0.8]" aria-hidden="true" />
       <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-5 gap-y-3 px-5 sm:px-8 lg:px-12 py-5 lg:py-[26px]">
         <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.45]">{t.vinos.filterLabel}</span>
         <div className="flex flex-wrap gap-2">
@@ -909,11 +913,11 @@ function Vinos({ onNav }: { onNav: Nav }) {
         <span className="ml-auto font-['IBM_Plex_Mono:Regular'] text-[10.5px] text-ink/[0.45]">{filtered.length.toString().padStart(2, '0')}</span>
       </div>
 
-      <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-ink/[0.13]">
+      <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-l border-t-0 border-ink/[0.13]">
         {filtered.map((wine, i) => (
           <button
             key={wine.id}
-            className={`bg-surface relative h-[547px] cursor-pointer hover:bg-surface-2 transition-colors reveal reveal-d${(i % 3) + 1} text-left`}
+            className={`relative h-[547px] cursor-pointer border-r border-b border-ink/[0.13] hover:bg-surface-2/[0.7] transition-colors reveal reveal-d${(i % 3) + 1} text-left`}
             onClick={() => onNav('wine-detail', wine.id)}
           >
             <div className="absolute left-[34px] right-[34px] top-[44px] h-[365px] flex items-end justify-center overflow-hidden">
@@ -927,6 +931,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
           </button>
         ))}
       </div>
+      </section>
     </div>
   );
 }
