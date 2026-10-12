@@ -887,11 +887,10 @@ function Vinos({ onNav }: { onNav: Nav }) {
         </div>
       </section>
 
-      {/* One shared, semi-transparent photo behind the filter bar and the wine grid.
-          Always in the light palette so the daylight photo reads naturally in dark mode too. */}
-      <section className="theme-light relative isolate min-h-[640px] text-ink">
+      {/* One shared, semi-transparent photo behind the filter bar and the wine grid. */}
+      <section className="relative isolate min-h-[640px] dark:[text-shadow:0_1px_8px_rgba(0,0,0,0.8)]">
       <img src={`${A}/vinos-bg.jpg`} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover object-[50%_35%]" />
-      <div className="absolute inset-0 -z-10 bg-surface/[0.6]" aria-hidden="true" />
+      <div className="absolute inset-0 -z-10 bg-surface/[0.6] dark:bg-surface/[0.42]" aria-hidden="true" />
       <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-5 gap-y-3 px-5 sm:px-8 lg:px-12 py-5 lg:py-[26px]">
         <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.45]">{t.vinos.filterLabel}</span>
         <div className="flex flex-wrap gap-2">
@@ -927,7 +926,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
             <p className="absolute left-[34px] right-[34px] top-[442px] font-['Cormorant_Garamond:Regular'] text-[23px] text-ink leading-[28px]">
               {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
             </p>
-            <span className="absolute left-[34px] top-[487px] border-b border-accent/[0.35] pb-[5px] font-['Archivo:Regular'] text-[11px] text-accent">{t.vinos.fullInfo}</span>
+            <span className="absolute left-[34px] top-[487px] border-b border-accent/[0.35] pb-[5px] font-['Archivo:Regular'] text-[11px] text-accent dark:border-[#f3c4cb]/50 dark:text-[#f3c4cb]">{t.vinos.fullInfo}</span>
           </button>
         ))}
       </div>

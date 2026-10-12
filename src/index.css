@@ -43,16 +43,6 @@
   color-scheme: dark;
 }
 
-/* A section that keeps the light palette whatever the page theme (e.g. a daylight photo backdrop). */
-.theme-light {
-  --surface: #f7f4ee;
-  --surface-2: #efeae1;
-  --surface-3: #ded8cc;
-  --ink: #14120f;
-  --accent: #6b1f2a;
-  color-scheme: light;
-}
-
 /* Smoothly cross-fade when the theme flips (but not on every hover/transition). */
 body {
   transition: background-color 0.4s ease, color 0.4s ease;
