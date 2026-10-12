@@ -889,7 +889,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
 
       {/* One shared, semi-transparent photo behind the filter bar and the wine grid. */}
       <section className="relative isolate min-h-[640px]">
-      <img src={`${A}/vinos-bg.jpg`} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover" />
+      <img src={`${A}/vinos-bg.jpg`} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover object-[50%_35%]" />
       <div className="absolute inset-0 -z-10 bg-surface/[0.8]" aria-hidden="true" />
       <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-5 gap-y-3 px-5 sm:px-8 lg:px-12 py-5 lg:py-[26px]">
         <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.45]">{t.vinos.filterLabel}</span>
