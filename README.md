@@ -96,6 +96,8 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
 
 - **`andes-real.jpg`:** foto real de la finca en invierno bajo los Andes (convertida de HEIC). Es el hero de Viñedos. **No reemplazar por stock.**
 - **`la-consulta-real.jpg`:** recorte de la anterior.
+- **`vinos-hero.jpg`:** foto C48 del cliente (viñas, cordillera y cielo). Es el hero de Nuestros vinos desde el 12/10/2026. `mza-altamira.jpg` sigue en la verificación de edad, el Inicio y Viñedos.
+- **`wine-bg.jpg`:** foto C26 del cliente (montañas con luz dorada). Fondo tenue (32 %) detrás de la botella en la ficha de cada vino; reemplazó a `e17ef.png`.
 - **`vinos-bg.jpg`:** foto del cliente (12/10/2026) con viñas adelante y la cordillera atrás. Es el fondo de la grilla de Nuestros vinos.
   - Velo: `bg-surface/[0.6]` en modo claro y `dark:bg-surface/[0.42]` en oscuro.
   - En modo oscuro los enlaces son rosa claro y el texto lleva sombra.
@@ -125,7 +127,7 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
 - **Script:** `tools/hero/build_hero.sh` (ffmpeg). Normaliza a 1600×900 a 25 fps, aplica un etalonaje común (eq + colorbalance) y une los clips con fundidos `xfade`.
 - **Secuencia:** cumbres → vuelo → viñedo → uvas → manos → copa → atardecer en la montaña → cumbres (cierra en bucle).
 - Los clips fuente de Mixkit no están en el repo; estaban en una carpeta temporal `hd/`. Se identifican por su número de Mixkit: 4396, 51689, 8292, 29340, 17782, 24754, 22734 y 4695.
-- **Pendiente:** el clip **24754** muestra manos con uvas **verdes**. Hay que cambiarlo por uvas **tintas**, porque todas las uvas de la finca son tintas. Opciones: la foto C45 o los clips Mixkit 24745 / 26559.
+- **Uvas tintas (12/10/2026):** el clip **24754** (manos con uvas **verdes**) se tapó con la foto C45 del cliente (racimo tinto) con un zoom lento, usando `tools/hero/swap_grapes.sh` sobre el video publicado (tramo 14,5–18,1 s). El recorte está en `tools/hero/c45-red-grapes.jpg`. Si algún día se regenera el video desde los clips con `build_hero.sh`, hay que volver a correr `swap_grapes.sh` después.
 
 ---
 
@@ -217,12 +219,12 @@ Después hay que copiar `uco-sat.webp` a `public/assets/`.
 
 1. ✅ Ocultar Noticias.
 2. ⏸ "More details" de Dama y Navigato debe ir directo a la ficha, quitando la "página intermedia de media pantalla". **No está claro qué es esa página**, porque en el código todos los botones ya van directo. Hay que pedirle a John una captura antes de tocar nada.
-3. ⏳ Video del hero: cambiar el clip de uvas verdes por uvas tintas.
-4. ⏳ Hero de `/vinos`: más luminoso y natural, con viñas adelante y montañas atrás, sin malla negra.
+3. ✅ Video del hero: el clip de uvas verdes se cambió por la foto C45 (racimo tinto) con zoom lento.
+4. ✅ Hero de `/vinos` (hecho con **C48**, solo en `/vinos`): más luminoso y natural, con viñas adelante y montañas atrás, sin malla negra.
    - Candidatas: C47, C48, C49, C46, C38.
    - Hay que preguntar si se cambia solo ahí, porque `mza-altamira.jpg` también se usa en la verificación de edad, en el Inicio y en Viñedos.
    - Ojo: John aclaró que la foto del 12 de octubre era **para el fondo de las botellas, no para el hero**.
-5. ⏳ Ficha de vino: mantener la botella flotante y probar un fondo tenue de montaña detrás. Candidatas: C21, C22, C26.
+5. ✅ Ficha de vino (hecho con **C26**): mantener la botella flotante y probar un fondo tenue de montaña detrás. Candidatas: C21, C22, C26.
 
 **Fase 2: definir antes con Sinclair**
 
@@ -268,7 +270,7 @@ Después hay que copiar `uco-sat.webp` a `public/assets/`.
 
 - Recibir las coordenadas de cada finca para marcarlas en el mapa.
 - Recibir los datos reales de suelos y la altitud de La Consulta.
-- Avanzar en la Fase 1: punto 3 (uvas tintas en el video), punto 4 (hero de `/vinos`) y punto 5 (fondo de la ficha de vino).
+- Fase 1: puntos 3, 4 y 5 hechos (commit local, sin subir). Solo queda el punto 2, que espera una captura de John.
 
 ---
 

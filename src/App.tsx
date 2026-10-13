@@ -879,7 +879,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
   return (
     <div className="bg-surface w-full">
       <section className="relative h-[340px] overflow-hidden flex items-center">
-        <img src={`${A}/mza-altamira.jpg`} alt="" className="absolute inset-0 size-full object-cover" style={{ filter: 'brightness(1.12)' }} />
+        <img src={`${A}/vinos-hero.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_58%]" />
         <div
           className="absolute inset-0"
           style={{ backgroundImage: 'linear-gradient(90deg, rgba(20,18,15,0.62) 0%, rgba(20,18,15,0.3) 46%, rgba(20,18,15,0.08) 100%)' }}
@@ -1493,7 +1493,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
       <section className="flex flex-col lg:flex-row lg:min-h-[700px]">
         <div className="bg-panel w-full lg:w-[45%] flex items-center justify-center relative overflow-hidden min-h-[420px] lg:min-h-0">
           <div className="absolute inset-0 opacity-[0.32]">
-            <img src={`${A}/e17ef.png`} alt="" className="size-full object-cover" />
+            <img src={`${A}/wine-bg.jpg`} alt="" className="size-full object-cover" />
           </div>
           <div className="relative py-16 reveal">
             <img src={WINE_META[wine.id].img} alt={`${wine.title1} ${wine.title2}`} className="h-[420px] lg:h-[620px] object-contain hover:scale-105 transition-transform duration-700" />
