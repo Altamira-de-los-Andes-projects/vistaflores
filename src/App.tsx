@@ -52,11 +52,9 @@ const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; line: Wi
   'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', line: 'VAV' },
   'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', line: 'VAV' },
 };
-// Landscape bands behind each row of bottles on Our Wines (client photos C47, C49).
-const VINOS_ROW_IMGS = [
-  { src: `${A}/vinos-row-1.jpg`, pos: '50% 26%' },
-  { src: `${A}/vinos-row-2.jpg`, pos: '50% 44%' },
-];
+// Behind the rows of bottles on Our Wines: client photo C39 (pre-blurred in the file).
+// On desktop it stays fixed, so every row band is a window onto the same landscape.
+const VINOS_ROW_BG = `${A}/vinos-row-c39.jpg`;
 const HOME_WINE_IDS = ['dama', 'navigato', 'reserva-malbec'];
 const HOME_ESTATE_IDS = ['navigato', 'dama', 'reserva-malbec', 'vav-malbec'];
 
@@ -939,11 +937,9 @@ function Vinos({ onNav }: { onNav: Nav }) {
         {rows.map((row, r) => (
           <div key={`${cols}-${r}-${filter}`} className="relative isolate">
             <div className="absolute inset-x-0 top-0 h-[400px] lg:h-[470px] -z-10 overflow-hidden" aria-hidden="true">
-              <img
-                src={VINOS_ROW_IMGS[r % VINOS_ROW_IMGS.length].src}
-                alt=""
-                className="h-[calc(100%-28px)] w-full scale-[1.04] object-cover [filter:blur(1.6px)_saturate(0.82)]"
-                style={{ objectPosition: VINOS_ROW_IMGS[r % VINOS_ROW_IMGS.length].pos }}
+              <div
+                className="absolute inset-x-0 top-0 bottom-[28px] bg-cover lg:bg-fixed"
+                style={{ backgroundImage: `url(${VINOS_ROW_BG})`, backgroundPosition: `50% ${r % 2 ? 72 : 50}%` }}
               />
               <div className="absolute inset-0 bg-surface/[0.14] dark:bg-black/[0.3]" />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[34%] via-surface/[0.55] via-[70%] to-surface to-[95%]" />
