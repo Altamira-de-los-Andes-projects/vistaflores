@@ -74,7 +74,7 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
   - Grilla de 6 botellas sobre una **foto compartida semitransparente**.
 - `#/wine/<id>`: **ficha de cada vino**. Botella "flotante" sobre un panel oscuro.
 - `#/vinedos`: **Viñedos**.
-  - Hero con la foto real de la finca (`andes-real.jpg`).
+  - Hero con la foto C38 del cliente (`vinedos-hero.jpg`).
   - Tres tarjetas, una por viñedo.
   - **Mapa interactivo** (§6).
 - `#/contacto`: **Contacto**. Formulario (nombre, email, teléfono, país, mensaje) y el mismo **mapa interactivo**.
@@ -94,7 +94,8 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
 
 ### Reales del cliente (prioridad absoluta)
 
-- **`andes-real.jpg`:** foto real de la finca en invierno bajo los Andes (convertida de HEIC). Es el hero de Viñedos. **No reemplazar por stock.**
+- **`vinedos-hero.jpg`:** foto C38 del cliente (4032 px: cordillera nevada, mar de nubes, hileras abajo). Es el hero de Viñedos desde el 12/10/2026, a pedido de John porque la anterior se veía con poca calidad.
+- **`andes-real.jpg`:** foto real de la finca en invierno bajo los Andes (convertida de HEIC). Fue el hero de Viñedos hasta el 12/10/2026; ya no se usa, pero `la-consulta-real.jpg` sale de ella. **No reemplazar fotos del cliente por stock.**
 - **`la-consulta-real.jpg`:** recorte de la anterior.
 - **`vinos-hero.jpg`:** foto C48 del cliente (viñas, cordillera y cielo). Es el hero de Nuestros vinos desde el 12/10/2026. `mza-altamira.jpg` sigue en la verificación de edad, el Inicio y Viñedos.
 - **`wine-bg.jpg`:** foto C26 del cliente (montañas con luz dorada). En la ficha de cada vino ocupa la parte superior izquierda y se funde con un degradado hacia la columna de texto ("Montaña integrada"); la botella lleva sombra de piso y la ficha técnica va en grilla de 2 columnas.

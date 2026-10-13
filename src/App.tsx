@@ -993,9 +993,9 @@ function Vinedos() {
       <section className="relative h-[clamp(440px,56vh,580px)] overflow-hidden flex items-end">
         <div className="absolute inset-0">
           <img
-            src={`${A}/andes-real.jpg`}
+            src={`${A}/vinedos-hero.jpg`}
             alt={t.vinedos.heroTitle1 + ' ' + t.vinedos.heroTitle2}
-            className="absolute inset-0 size-full object-cover object-[50%_20%]"
+            className="absolute inset-0 size-full object-cover object-[50%_42%]"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.28)] via-transparent to-[rgba(20,18,15,0.72)]" />
         </div>
