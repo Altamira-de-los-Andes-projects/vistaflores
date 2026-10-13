@@ -52,8 +52,25 @@ const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; line: Wi
   'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', line: 'VAV' },
   'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', line: 'VAV' },
 };
+// Landscape bands behind each row of bottles on Our Wines (client photos C47, C49).
+const VINOS_ROW_IMGS = [
+  { src: `${A}/vinos-row-1.jpg`, pos: '50% 26%' },
+  { src: `${A}/vinos-row-2.jpg`, pos: '50% 44%' },
+];
 const HOME_WINE_IDS = ['dama', 'navigato', 'reserva-malbec'];
 const HOME_ESTATE_IDS = ['navigato', 'dama', 'reserva-malbec', 'vav-malbec'];
+
+// Bottles per row on Our Wines, matching the sm / lg breakpoints.
+function useGridCols() {
+  const get = () => (typeof window === 'undefined' ? 3 : window.matchMedia('(min-width: 1024px)').matches ? 3 : window.matchMedia('(min-width: 640px)').matches ? 2 : 1);
+  const [cols, setCols] = useState(get);
+  useEffect(() => {
+    const onResize = () => setCols(get());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return cols;
+}
 
 // ─── Scroll reveal hook ───────────────────────────────────────────────────────
 function useReveal() {
@@ -862,6 +879,9 @@ function Vinos({ onNav }: { onNav: Nav }) {
   const [filter, setFilter] = useState<'ALL' | WineLine>('ALL');
   const wines = t.wineCatalog.map((w) => ({ ...w, ...WINE_META[w.id] }));
   const filtered = filter === 'ALL' ? wines : wines.filter((w) => w.line === filter);
+  const cols = useGridCols();
+  const rows: (typeof filtered)[] = [];
+  for (let i = 0; i < filtered.length; i += cols) rows.push(filtered.slice(i, i + cols));
 
   // The scroll-reveal observer only runs once on mount, so cards that mount
   // when the filter changes would stay hidden (opacity 0). Reveal them instantly
@@ -874,7 +894,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
       return;
     }
     gridRef.current?.querySelectorAll('.reveal:not(.visible)').forEach((el) => el.classList.add('visible'));
-  }, [filter]);
+  }, [filter, cols]);
 
   return (
     <div className="bg-surface w-full">
@@ -893,21 +913,17 @@ function Vinos({ onNav }: { onNav: Nav }) {
         </div>
       </section>
 
-      {/* One shared, semi-transparent photo behind the filter bar and the wine grid. */}
-      <section className="relative isolate min-h-[640px] dark:[text-shadow:0_1px_8px_rgba(0,0,0,0.8)]">
-      <img src={`${A}/vinos-bg.jpg`} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover object-[50%_35%]" />
-      <div className="absolute inset-0 -z-10 bg-surface/[0.6] dark:bg-surface/[0.42]" aria-hidden="true" />
-      <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-5 gap-y-3 px-5 sm:px-8 lg:px-12 py-5 lg:py-[26px]">
-        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.45]">{t.vinos.filterLabel}</span>
-        <div className="flex flex-wrap gap-2">
+      {/* Filter tabs */}
+      <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-8 gap-y-3 px-5 sm:px-8 lg:px-12 pt-8 lg:pt-10">
+        <span className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[1.9px] text-ink/[0.5] pb-4">{t.vinos.filterLabel}</span>
+        <div className="flex flex-wrap gap-x-7 gap-y-2">
           {(['ALL', 'RESERVA', 'VAV', 'DAMA', 'NAVIGATO'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-[19px] py-[9px] font-['Archivo:Regular'] text-[10.5px] tracking-[0.84px] transition-colors ${
-                filter === f
-                  ? 'bg-panel text-on-dark border border-ink'
-                  : 'border border-ink/[0.25] text-ink hover:border-ink/[0.5]'
+              aria-pressed={filter === f}
+              className={`relative pb-4 font-['Archivo:Regular'] text-[11px] tracking-[1.65px] transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-px after:origin-left after:bg-ink after:transition-transform after:duration-500 ${
+                filter === f ? 'text-ink after:scale-x-100' : 'text-ink/[0.48] hover:text-ink after:scale-x-0'
               }`}
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
@@ -915,28 +931,55 @@ function Vinos({ onNav }: { onNav: Nav }) {
             </button>
           ))}
         </div>
-        <span className="ml-auto font-['IBM_Plex_Mono:Regular'] text-[10.5px] text-ink/[0.45]">{filtered.length.toString().padStart(2, '0')}</span>
       </div>
 
-      <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-l border-t-0 border-ink/[0.13]">
-        {filtered.map((wine, i) => (
-          <button
-            key={wine.id}
-            className={`relative h-[547px] cursor-pointer border-r border-b border-ink/[0.13] hover:bg-surface-2/[0.7] transition-colors reveal reveal-d${(i % 3) + 1} text-left`}
-            onClick={() => onNav('wine-detail', wine.id)}
-          >
-            <div className="absolute left-[34px] right-[34px] top-[44px] h-[365px] flex items-end justify-center overflow-hidden">
-              <img src={wine.img} alt={wine.name} className="h-full object-contain hover:scale-105 transition-transform duration-500" />
+      {/* Each row of bottles stands on its own band of estate landscape, which fades
+          into the page at the bottles' base line ("the horizon"). */}
+      <div ref={gridRef} className="pb-10 lg:pb-16">
+        {rows.map((row, r) => (
+          <div key={`${cols}-${r}-${filter}`} className="relative isolate">
+            <div className="absolute inset-x-0 top-0 h-[400px] lg:h-[470px] -z-10 overflow-hidden" aria-hidden="true">
+              <img
+                src={VINOS_ROW_IMGS[r % VINOS_ROW_IMGS.length].src}
+                alt=""
+                className="h-[calc(100%-28px)] w-full scale-[1.04] object-cover [filter:blur(1.6px)_saturate(0.82)]"
+                style={{ objectPosition: VINOS_ROW_IMGS[r % VINOS_ROW_IMGS.length].pos }}
+              />
+              <div className="absolute inset-0 bg-surface/[0.14] dark:bg-black/[0.3]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[34%] via-surface/[0.55] via-[70%] to-surface to-[95%]" />
+              <div className="absolute inset-x-5 sm:inset-x-8 lg:inset-x-12 bottom-[30px] lg:bottom-[34px] h-px bg-ink/[0.14]" />
             </div>
-            <p className="absolute left-[34px] right-[34px] top-[417px] font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{wine.gridRegion}</p>
-            <p className="absolute left-[34px] right-[34px] top-[442px] font-['Cormorant_Garamond:Regular'] text-[23px] text-ink leading-[28px]">
-              {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
-            </p>
-            <span className="absolute left-[34px] top-[487px] border-b border-accent/[0.35] pb-[5px] font-['Archivo:Regular'] text-[11px] text-accent dark:border-[#f3c4cb]/50 dark:text-[#f3c4cb]">{t.vinos.fullInfo}</span>
-          </button>
+            <div className="flex justify-center px-5 sm:px-8 lg:px-12">
+              {row.map((wine, i) => (
+                <button
+                  key={wine.id}
+                  className={`group basis-full sm:basis-1/2 lg:basis-1/3 min-w-0 cursor-pointer text-center reveal reveal-d${i + 1}`}
+                  onClick={() => onNav('wine-detail', wine.id)}
+                >
+                  <div className="relative h-[400px] lg:h-[470px] flex items-end justify-center pb-[30px] lg:pb-[34px]">
+                    <span className="absolute bottom-[24px] lg:bottom-[27px] left-1/2 h-[14px] w-[120px] -translate-x-1/2 rounded-[50%] bg-black/[0.45] blur-[9px] transition-all duration-700 group-hover:w-[96px] group-hover:bg-black/[0.32]" aria-hidden="true" />
+                    <img
+                      src={wine.img}
+                      alt={wine.name}
+                      className="relative h-[330px] lg:h-[400px] w-auto object-contain object-bottom drop-shadow-[0_18px_22px_rgba(0,0,0,0.28)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2"
+                    />
+                  </div>
+                  <div className="px-4 pt-7 pb-12 lg:pb-14 flex flex-col items-center gap-3">
+                    <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[1.7px] text-ink/[0.55]">{wine.gridRegion}</p>
+                    <p className="font-['Cormorant_Garamond:Regular'] text-[27px] lg:text-[30px] text-ink leading-[1.12]">
+                      {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
+                    </p>
+                    <span className="mt-1 inline-flex items-center gap-2 font-['Archivo:Regular'] text-[11.5px] tracking-[0.4px] text-accent" style={{ fontVariationSettings: '"wdth" 100' }}>
+                      <span className="border-b border-accent/[0.35] pb-[3px] transition-colors group-hover:border-accent">{t.vinos.fullInfo}</span>
+                      <span aria-hidden="true" className="transition-transform duration-500 group-hover:translate-x-1">→</span>
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
-      </section>
     </div>
   );
 }
@@ -1489,50 +1532,56 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
         </p>
       </div>
 
-      {/* Split: dark left / light right */}
-      <section className="flex flex-col lg:flex-row lg:min-h-[700px]">
-        <div className="bg-panel w-full lg:w-[45%] flex items-center justify-center relative overflow-hidden min-h-[420px] lg:min-h-0">
-          <div className="absolute inset-0 opacity-[0.32]">
-            <img src={`${A}/wine-bg.jpg`} alt="" className="size-full object-cover" />
-          </div>
-          <div className="relative py-16 reveal">
-            <img src={WINE_META[wine.id].img} alt={`${wine.title1} ${wine.title2}`} className="h-[420px] lg:h-[620px] object-contain hover:scale-105 transition-transform duration-700" />
-          </div>
+      {/* Bottle over a faint mountain (client photo C26) that dissolves into the page */}
+      <section className="relative isolate grid grid-cols-1 lg:grid-cols-[minmax(0,46fr)_minmax(0,54fr)] lg:min-h-[760px]">
+        <div className="absolute inset-x-0 top-0 h-[560px] lg:inset-y-0 lg:right-auto lg:h-auto lg:w-[60%] -z-10 overflow-hidden" aria-hidden="true">
+          <img src={`${A}/wine-bg.jpg`} alt="" className="h-[calc(100%-24px)] w-full lg:h-[calc(100%-24px)] lg:w-[calc(100%-24px)] object-cover object-[50%_40%] opacity-[0.78] dark:opacity-[0.62]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[45%] to-surface lg:bg-gradient-to-r lg:from-[38%] lg:to-[92%]" />
+          <div className="absolute inset-0 hidden lg:block bg-gradient-to-b from-transparent from-[70%] to-surface" />
         </div>
 
-        <div className="flex-1 py-12 px-6 lg:py-[60px] lg:px-[60px] flex flex-col justify-center reveal reveal-d1">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] mb-5">{wine.region}</p>
-          <div className="mb-8">
-            <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[48px] text-ink leading-[1.1] lg:leading-[52.8px]">{wine.title1}</p>
-            <p className="font-['Cormorant_Garamond:Light'] text-[32px] sm:text-[40px] lg:text-[48px] text-ink leading-[1.1] lg:leading-[52.8px]">{wine.title2}</p>
-          </div>
-          <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[27.75px] max-w-prose mb-8" style={{ fontVariationSettings: '"wdth" 100' }}>
+        <div className="relative flex items-end justify-center pt-12 pb-10 lg:py-16 min-h-[560px] lg:min-h-0">
+          <span className="absolute bottom-[34px] lg:bottom-[58px] left-1/2 h-[18px] w-[150px] lg:w-[190px] -translate-x-1/2 rounded-[50%] bg-black/[0.5] blur-[12px]" aria-hidden="true" />
+          <img
+            src={WINE_META[wine.id].img}
+            alt={`${wine.title1} ${wine.title2}`}
+            className="relative h-[460px] lg:h-[620px] w-auto object-contain object-bottom drop-shadow-[0_24px_30px_rgba(0,0,0,0.35)] reveal"
+          />
+        </div>
+
+        <div className="py-12 px-6 sm:px-8 lg:py-[72px] lg:pl-[40px] lg:pr-12 xl:pr-[72px] flex flex-col justify-center reveal reveal-d1">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[2.2px] text-ink/[0.55] mb-6">{wine.region}</p>
+          <h1 className="mb-8">
+            <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-[38px] sm:text-[46px] lg:text-[58px] text-ink leading-[1.04]">{wine.title1}</span>
+            <span className="block font-['Cormorant_Garamond:Light'] text-[38px] sm:text-[46px] lg:text-[58px] text-ink leading-[1.04]">{wine.title2}</span>
+          </h1>
+          <p className="font-['Archivo:Light'] text-[16px] text-ink/[0.78] leading-[1.8] max-w-[520px] mb-10" style={{ fontVariationSettings: '"wdth" 100' }}>
             {wine.desc}
           </p>
-          <div className="flex items-center gap-[18px] mb-10">
-            <div className="border border-accent/[0.5] rounded-full size-[46px] flex items-center justify-center shrink-0">
-              <span className="font-['Cormorant_Garamond:Regular'] text-[15px] text-accent">{wine.score.value}</span>
-            </div>
-            <div>
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.19px] text-ink/[0.5]">{wine.score.critic}</p>
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.19px] text-ink/[0.5]">{wine.score.year}</p>
+
+          <div className="flex items-center gap-6 mb-11">
+            <p className="font-['Cormorant_Garamond:Light'] text-[58px] text-accent leading-none">{wine.score.value}</p>
+            <span className="h-11 w-px bg-ink/[0.18]" aria-hidden="true" />
+            <div className="flex flex-col gap-[6px]">
+              <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[1.6px] text-ink/[0.75]">{wine.score.critic}</p>
+              <p className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1.6px] text-ink/[0.5]">{wine.score.year}</p>
             </div>
           </div>
 
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.53px] text-ink/[0.5] mb-4">{t.wineDetail.fichaLabel}</p>
-          <div className="flex flex-col">
-            {wine.ficha.map((s, i) => (
-              <div key={s.label} className={`flex justify-between py-[13px] border-t border-ink/[0.16] ${i === wine.ficha.length - 1 ? 'border-b' : ''}`}>
-                <span className="font-['IBM_Plex_Mono:Regular'] text-[11px] text-ink/[0.5]">{s.label}</span>
-                <span className="font-['Cormorant_Garamond:Regular'] text-[15px] text-ink">{s.value}</span>
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[2px] text-ink/[0.55] mb-1">{t.wineDetail.fichaLabel}</p>
+          <dl className="grid grid-cols-2 gap-x-10">
+            {wine.ficha.map((s) => (
+              <div key={s.label} className={`border-t border-ink/[0.16] py-[16px] ${s.value.length > 24 ? 'col-span-2' : ''}`}>
+                <dt className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1.4px] text-ink/[0.5] mb-[6px]">{s.label}</dt>
+                <dd className="font-['Cormorant_Garamond:Regular'] text-[20px] text-ink leading-[1.25]">{s.value}</dd>
               </div>
             ))}
-          </div>
+          </dl>
 
-          <div className="flex gap-[14px] mt-8">
+          <div className="flex flex-wrap gap-[14px] mt-9 pt-9 border-t border-ink/[0.16]">
             <button
               onClick={() => onNav('contacto')}
-              className="bg-panel px-[30px] py-[15px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:bg-panel-2 transition-colors"
+              className="bg-panel px-[30px] py-[16px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:bg-panel-2 transition-colors dark:bg-on-dark dark:text-panel dark:hover:bg-white"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
               {t.wineDetail.ctaInfo}

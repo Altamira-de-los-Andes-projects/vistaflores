@@ -97,8 +97,9 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
 - **`andes-real.jpg`:** foto real de la finca en invierno bajo los Andes (convertida de HEIC). Es el hero de Viñedos. **No reemplazar por stock.**
 - **`la-consulta-real.jpg`:** recorte de la anterior.
 - **`vinos-hero.jpg`:** foto C48 del cliente (viñas, cordillera y cielo). Es el hero de Nuestros vinos desde el 12/10/2026. `mza-altamira.jpg` sigue en la verificación de edad, el Inicio y Viñedos.
-- **`wine-bg.jpg`:** foto C26 del cliente (montañas con luz dorada). Fondo tenue (32 %) detrás de la botella en la ficha de cada vino; reemplazó a `e17ef.png`.
-- **`vinos-bg.jpg`:** foto del cliente (12/10/2026) con viñas adelante y la cordillera atrás. Es el fondo de la grilla de Nuestros vinos.
+- **`wine-bg.jpg`:** foto C26 del cliente (montañas con luz dorada). En la ficha de cada vino ocupa la parte superior izquierda y se funde con un degradado hacia la columna de texto ("Montaña integrada"); la botella lleva sombra de piso y la ficha técnica va en grilla de 2 columnas.
+- **`vinos-row-1.jpg` / `vinos-row-2.jpg`:** fotos C47 y C49 del cliente. Desde el 12/10/2026 la grilla de Nuestros vinos es "Horizonte": cada fila de botellas apoya sobre su propia franja de paisaje (alternando estas dos fotos, levemente desenfocadas) que se funde con el fondo en la base de las botellas. Las filas se arman según las columnas (1/2/3) con `useGridCols()`.
+- **`vinos-bg.jpg`** (ya no se usa; queda en el repo por si se quiere volver): foto del cliente (12/10/2026) con viñas adelante y la cordillera atrás. Es el fondo de la grilla de Nuestros vinos.
   - Velo: `bg-surface/[0.6]` en modo claro y `dark:bg-surface/[0.42]` en oscuro.
   - En modo oscuro los enlaces son rosa claro y el texto lleva sombra.
   - **A John le gustó así.**
