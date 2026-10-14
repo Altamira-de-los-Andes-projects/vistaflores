@@ -1291,9 +1291,8 @@ function UcoMap() {
               <feGaussianBlur stdDeviation="4" />
             </filter>
           </defs>
-          {/* river under the zones' edges */}
-          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.5" strokeWidth="8" filter="url(#uco-glow)" />
-          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.95" strokeWidth="2" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          {/* river — a soft wide glow under the zones to feel like water */}
+          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.55" strokeWidth="11" filter="url(#uco-glow)" />
           {UCO_DRAW_ORDER.map((i) => {
             const z = UCO_ZONE[i];
             const active = open === i || hover === i;
@@ -1329,6 +1328,9 @@ function UcoMap() {
               />
             );
           })}
+          {/* river again, over the zones, so the Tunuyán reads clearly along the vineyards' western edge */}
+          <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.4" strokeWidth="6" filter="url(#uco-glow)" />
+          <path d={UCO_RIVER} fill="none" stroke="#eaf7fb" strokeOpacity="1" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         </svg>
 
         {/* zone labels */}
