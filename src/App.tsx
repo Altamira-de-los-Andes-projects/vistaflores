@@ -259,11 +259,19 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
 function Breath({ label, pre, em, post }: { label: string; pre: string; em: string; post: string }) {
   useReveal();
   return (
-    <section className="relative overflow-hidden bg-surface px-5 sm:px-8 lg:px-12 py-[clamp(84px,13vh,158px)]">
+    <section className="relative overflow-hidden bg-surface px-5 sm:px-8 lg:px-12 py-[clamp(96px,15vh,180px)]">
+      {/* faint mountain backdrop so "the place" feels grounded, not empty */}
+      <img
+        src={`${A}/place-bg.jpg`}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 size-full object-cover object-[50%_42%] opacity-[0.5] dark:opacity-[0.42]"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-surface via-surface/[0.72] to-surface dark:from-surface dark:via-surface/[0.68] dark:to-surface" />
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-ink">
-        <Contours className="h-full w-full" lines={8} seed={5} opacity={0.06} />
+        <Contours className="h-full w-full" lines={9} seed={5} opacity={0.08} />
       </div>
-      <div className="reveal relative mx-auto flex max-w-[880px] flex-col items-center gap-8 text-center">
+      <div className="reveal relative mx-auto flex max-w-[880px] flex-col items-center gap-8 text-center [text-shadow:0_1px_18px_var(--surface)]">
         <span className="flex items-center gap-3 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[2.4px] text-accent">
           <span className="h-px w-8 bg-accent/60" />
           {label}
