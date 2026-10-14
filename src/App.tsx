@@ -993,10 +993,11 @@ function Vinedos() {
             alt={t.vinedos.heroTitle1 + ' ' + t.vinedos.heroTitle2}
             className="absolute inset-0 size-full object-cover object-[50%_42%]"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.28)] via-transparent to-[rgba(20,18,15,0.72)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.34)] via-[rgba(20,18,15,0.12)] via-[42%] to-[rgba(20,18,15,0.9)]" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-[rgba(20,18,15,0.78)]" />
         </div>
-        <div className="relative px-5 sm:px-8 lg:px-12 pb-14 flex flex-col gap-[18px]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.72] hero-line-1">{t.vinedos.heroEyebrow}</p>
+        <div className="relative px-5 sm:px-8 lg:px-12 pb-14 flex flex-col gap-[18px] [text-shadow:0_1px_14px_rgba(0,0,0,0.85)]">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.9] hero-line-1">{t.vinedos.heroEyebrow}</p>
           <h1 className="font-['Cormorant_Garamond:Light'] text-[36px] sm:text-[44px] lg:text-[54px] text-on-dark leading-[1.1] lg:leading-[59.4px] max-w-[760px] hero-line-2">
             {t.vinedos.heroTitle1} {t.vinedos.heroTitle2}
           </h1>
