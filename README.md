@@ -119,7 +119,7 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
 ### Textos provisionales
 
 - **Suelos de las tarjetas** ("Pedregoso", "Franco-arenoso", "Mineral"): faltan datos reales del cliente.
-- **Altitudes:** Altamira 1.077 m y Vista Flores 1.050 m vienen del cliente. La Consulta no tiene altitud.
+- **Altitudes:** Altamira 1.077 m y Vista Flores 1.050 m vienen del cliente (se mantienen en las fichas de cada viñedo). La Consulta no tiene altitud. **Desde el 14/10/2026 la cifra principal del sitio es el promedio 1.050 m (3.445 ft)**, según el "written narrative" del cliente (ver §11).
 
 ---
 
@@ -284,3 +284,24 @@ Después hay que copiar `uco-sat.webp` a `public/assets/`.
 - **Consola de Windows (cp1252):** usar `PYTHONIOENCODING=utf-8` al imprimir caracteres como "→".
 - **PDFs:** la herramienta de lectura de PDF falla sin poppler. Usar PyMuPDF (`import pymupdf`).
 - **Capturas sin interfaz:** para saltar la verificación de edad, inyectar `localStorage.setItem('vf-age-ok','1')` antes de cargar la página.
+
+---
+
+## 11. "Written narrative" del cliente (14/10/2026)
+
+Sinclair envió `written narrative for new website.docx` (en `C:\Users\omail\Downloads`) con el texto definitivo, que **reemplaza** la copy descriptiva anterior. Insertado en los 3 idiomas (EN textual de Sinclair; ES/PT traducción fiel, sin cambiar datos):
+
+- **Inicio:** `heroSubtitle` = tagline; sección oscura de viñedos (`vyIntro`) = párrafo "The Uco Valley" (río Tunuyán, +250 días de sol); sección "estate" (`estatePara1/2`) = párrafo "Altamira de los Andes" (altitud media, clima 14 °C).
+- **Viñedos (`Vinedos` en `App.tsx`):** `intro1/2` = párrafo "Three high-altitude vineyards"; y **3 secciones nuevas** al final de la página: Suelo (`narrative.soil*`), Viñas viejas (`narrative.vines*`), Artesanía (`narrative.craft*`). Las claves `vinedos.narrative.*` están en `i18n.tsx`.
+
+Decisiones tomadas (confirmadas con John):
+- **Altitud:** cifra principal del sitio = **1.050 m (3.445 ft)** promedio. Fichas de cada viñedo mantienen Altamira 1.077 / Vista Flores 1.050.
+- **Viñas viejas:** **La Consulta pasó a "+85 años"** (y el Malbec viejo de Navigato); **Altamira se mantiene en "+70 años"** (el narrativo no menciona su edad).
+- **Se quitó** la línea de fundación "Bill Navigato y Janett, 2007", que no está en el narrativo y no estaba verificada.
+
+Imágenes (sin subir aún):
+- `vinedos-hands.jpg` (artesanía): foto de manos cosechando uva tinta que **envió John; proviene del anuncio inmobiliario original de la finca**. Conviene reemplazarla luego por una foto propia de la bodega.
+- `vinedos-vines-1/2.jpg`: troncos viejos reales del cliente (C52/C53).
+- `vinedos-soil.jpg`: **recorte temporal** del suelo pedregoso de C47. Falta foto real de suelo/calicata.
+
+Pendiente con Sinclair: foto real de suelo; confirmar de qué viñedo son los troncos viejos; traducción de los textos aprobada.

@@ -1039,6 +1039,55 @@ function Vinedos() {
 
       {/* Map — the Uco Valley in relief, three vineyards side by side */}
       <UcoMap />
+
+      {/* Soil — the alluvial fan */}
+      <section className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] border-t border-ink/[0.12]">
+        <div className="flex flex-col justify-center gap-6 px-5 sm:px-8 lg:px-12 py-16 lg:py-[110px] order-2 lg:order-1">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.vinedos.narrative.soilEyebrow}</p>
+          <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px] reveal reveal-d1">{t.vinedos.narrative.soilTitle}</h2>
+          <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.74] leading-[1.75] max-w-[520px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.soilBody}</p>
+        </div>
+        <div className="order-1 lg:order-2 overflow-hidden min-h-[320px] lg:min-h-0">
+          <img src={`${A}/vinedos-soil.jpg`} alt={t.vinedos.narrative.soilTitle} className="w-full h-full object-cover" />
+        </div>
+      </section>
+
+      {/* Old vines */}
+      <section className="border-t border-ink/[0.12]">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          <div className="overflow-hidden min-h-[360px] lg:min-h-[560px]">
+            <img src={`${A}/vinedos-vines-1.jpg`} alt={t.vinedos.narrative.vinesTitle} className="w-full h-full object-cover" />
+          </div>
+          <div className="flex flex-col justify-center gap-6 px-5 sm:px-8 lg:px-12 py-16 lg:py-[90px]">
+            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.vinedos.narrative.vinesEyebrow}</p>
+            <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px] reveal reveal-d1">{t.vinedos.narrative.vinesTitle}</h2>
+            <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody1}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 border-t border-ink/[0.12]">
+          <div className="flex flex-col justify-center gap-5 px-5 sm:px-8 lg:px-12 py-16 lg:py-[90px] order-2 lg:order-1">
+            <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px] reveal" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody2}</p>
+            <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.64] leading-[1.75] max-w-[520px] reveal reveal-d1" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody3}</p>
+          </div>
+          <div className="overflow-hidden min-h-[320px] lg:min-h-[460px] order-1 lg:order-2">
+            <img src={`${A}/vinedos-vines-2.jpg`} alt={t.vinedos.narrative.vinesTitle} className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </section>
+
+      {/* Craftsmanship — hand-harvested, minimal intervention */}
+      <section className="bg-panel grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
+        <div className="overflow-hidden min-h-[360px] lg:min-h-[620px]">
+          <img src={`${A}/vinedos-hands.jpg`} alt={t.vinedos.narrative.craftTitle} className="w-full h-full object-cover object-[50%_45%]" />
+        </div>
+        <div className="flex flex-col justify-center gap-6 px-5 sm:px-8 lg:px-12 py-16 lg:py-[90px]">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5] reveal">{t.vinedos.narrative.craftEyebrow}</p>
+          <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(26px,2.8vw,38px)] text-on-dark leading-[1.18] max-w-[500px] reveal reveal-d1">{t.vinedos.narrative.craftTitle}</h2>
+          <p className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.78] leading-[1.75] max-w-[520px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody1}</p>
+          <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark/[0.62] leading-[1.75] max-w-[520px] reveal reveal-d3" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody2}</p>
+          <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark/[0.62] leading-[1.75] max-w-[520px] reveal reveal-d3" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody3}</p>
+        </div>
+      </section>
     </div>
   );
 }
