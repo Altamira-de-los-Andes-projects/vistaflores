@@ -35,11 +35,11 @@ const IMG = {
 };
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
-const HOME_VY_IMGS = [`${A}/mza-altamira.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/la-consulta-real.jpg`];
+const HOME_VY_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
 const HOME_WINE_IMGS = [`${A}/73a8f.png`, `${A}/941aa.png`, `${A}/4600e.png`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `${A}/5b74e.png`, `${A}/fb3eb.png`, `${A}/36671.png`];
-const VINEDOS_IMGS = [`${A}/mza-estate.jpg`, `${A}/mza-vistaflores.jpg`, `${A}/mza-altamira.jpg`];
+const VINEDOS_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 
 // Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
@@ -205,7 +205,7 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
       className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-panel px-6 text-on-dark`}
     >
       <img
-        src={`${A}/mza-altamira.jpg`}
+        src={`${A}/gate-bg.jpg`}
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 size-full object-cover kenburns"
@@ -628,7 +628,7 @@ function Home({ onNav }: { onNav: Nav }) {
             {t.home.estateTitle2}
           </h2>
           <div className="overflow-hidden h-[min(55vw,664px)] reveal reveal-d2">
-            <img src={`${A}/mza-estate.jpg`} alt={t.home.estateEyebrow} className="w-full h-full object-cover" />
+            <img src={`${A}/estate-wide.jpg`} alt={t.home.estateEyebrow} className="w-full h-full object-cover" />
           </div>
         </div>
         <div className="flex flex-col justify-center lg:pt-[147px]">
@@ -809,7 +809,7 @@ function Home({ onNav }: { onNav: Nav }) {
       {/* Quote section */}
       <section className="relative h-[480px] overflow-hidden flex items-center justify-center mt-16">
         <div className="absolute inset-0">
-          <img src={`${A}/mza-valley.jpg`} alt="" className="w-full h-full object-cover" />
+          <img src={`${A}/quote-bg.jpg`} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
         </div>
         <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[860px] reveal">
