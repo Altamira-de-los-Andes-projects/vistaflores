@@ -1591,7 +1591,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
       {/* Bottle over a faint mountain (client photo C26) that dissolves into the page */}
       <section className="relative isolate grid grid-cols-1 lg:grid-cols-[minmax(0,46fr)_minmax(0,54fr)] lg:min-h-[760px]">
         <div className="absolute inset-x-0 top-0 h-[560px] lg:inset-y-0 lg:right-auto lg:h-auto lg:w-[60%] -z-10 overflow-hidden" aria-hidden="true">
-          <img src={`${A}/wine-bg.jpg`} alt="" className="h-[calc(100%-24px)] w-full lg:h-[calc(100%-24px)] lg:w-[calc(100%-24px)] object-cover object-[50%_40%] opacity-[0.78] dark:opacity-[0.62]" />
+          <img src={`${A}/wbg-${wine.id}.jpg`} alt="" className="h-[calc(100%-24px)] w-full lg:h-[calc(100%-24px)] lg:w-[calc(100%-24px)] object-cover object-[50%_40%] opacity-[0.78] dark:opacity-[0.62]" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[45%] to-surface lg:bg-gradient-to-r lg:from-[38%] lg:to-[92%]" />
           <div className="absolute inset-0 hidden lg:block bg-gradient-to-b from-transparent from-[70%] to-surface" />
         </div>
