@@ -111,7 +111,7 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
 
 ### Stock (temporales)
 
-- ~~**`mza-*.jpg`:** fotos de Pexels de Tunuyán y Potrerillos.~~ **Eliminadas el 14/10/2026** y reemplazadas por fotos reales del cliente: verificación de edad → `gate-bg.jpg` (C38); sección estate del Inicio → `estate-wide.jpg` (C46); banda de la cita → `quote-bg.jpg` (C21); viñedo Altamira → `altamira-vy.jpg` (C49); viñedo Vista Flores → `vistaflores-vy.jpg` (C47); La Consulta → `la-consulta-real.jpg`. (La asignación por viñedo es criterio nuestro; falta que Sinclair confirme cuál foto es de cuál finca.) La sección Noticias (oculta) todavía usa URLs de Unsplash en el objeto `IMG`.
+- ~~**`mza-*.jpg`:** fotos de Pexels de Tunuyán y Potrerillos.~~ **Eliminadas el 14/10/2026** y reemplazadas por fotos reales del cliente: verificación de edad → `gate-bg.jpg` (C38); sección estate del Inicio → `estate-wide.jpg` (C46); banda de la cita → `quote-bg.jpg` (C21); viñedo Altamira → `altamira-vy.jpg` (C49); viñedo Vista Flores → `vistaflores-vy.jpg` (C47); La Consulta → `la-consulta-real.jpg`. (La asignación por viñedo es criterio nuestro; falta que Sinclair confirme cuál foto es de cuál finca.) La imagen de la página de **Contacto** (antes un Unsplash de bodega, `CELLAR`) ahora es `contact-bg.jpg` (C06, viña con cartel de Altamira). La sección Noticias (oculta) todavía usa URLs de Unsplash en el objeto `IMG`.
 - **Video del hero:** montaje propio con clips de **Mixkit** (licencia libre, sin atribución).
 - **Regla:** nunca usar fotos o videos de otras bodegas, ni carteles, marcas o caras identificables.
   - Ya se descartó el video promocional de la bodega Bianchini.

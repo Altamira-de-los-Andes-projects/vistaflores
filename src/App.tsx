@@ -1483,8 +1483,7 @@ function UcoMap() {
 function Contacto() {
   useReveal();
   const t = useT();
-  const CELLAR =
-    'https://images.unsplash.com/photo-1765850257843-aa029ab7769c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aW5lcnklMjJjZWxsYXIlMjJBcmdlbnRpbmElMjB2aW5leWFyZCUyMG1vdW50YWluJTIwQW5kZXN8ZW58MXx8fHwxNzg5OTE3MTUzfDA&ixlib=rb-4.1.0&q=80&w=1080';
+  const CELLAR = `${A}/contact-bg.jpg`;
   const fields = [
     { label: t.contacto.fields[0], type: 'text' },
     { label: t.contacto.fields[1], type: 'email' },
