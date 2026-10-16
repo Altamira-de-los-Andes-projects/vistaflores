@@ -630,7 +630,7 @@ function Home({ onNav }: { onNav: Nav }) {
             {t.home.estateTitle2}
           </h2>
           <div className="overflow-hidden h-[min(55vw,664px)] reveal reveal-d2">
-            <img src={`${A}/estate-wide.jpg`} alt={t.home.estateEyebrow} className="w-full h-full object-cover object-[50%_25%]" />
+            <img src={`${A}/estate-home.jpg`} alt={t.home.estateEyebrow} className="w-full h-full object-cover object-[50%_60%]" />
           </div>
         </div>
         <div className="flex flex-col justify-center lg:pt-[147px]">
