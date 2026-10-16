@@ -35,7 +35,7 @@ const IMG = {
 };
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
-const HOME_VY_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
+const HOME_VY_IMGS = [`${A}/estate-wide.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
 const HOME_WINE_IMGS = [`${A}/73a8f.png`, `${A}/941aa.png`, `${A}/4600e.png`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `${A}/5b74e.png`, `${A}/fb3eb.png`, `${A}/36671.png`];
@@ -941,8 +941,9 @@ function Vinos({ onNav }: { onNav: Nav }) {
 
       <div ref={gridRef} className="relative isolate pb-10 lg:pb-16">
         <div className="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-          <img src={`${A}/vinos-row-c39.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_30%] opacity-[0.55] dark:opacity-[0.35]" />
-          <div className="absolute inset-0 bg-surface/[0.25] dark:bg-black/[0.3]" />
+          <img src={`${A}/vinos-bg-andes.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_35%] opacity-[0.6] dark:opacity-[0.4]" />
+          <div className="absolute inset-0 bg-surface/[0.2] dark:bg-black/[0.3]" />
+          <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-t from-transparent to-surface" />
           <div className="absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-b from-transparent to-surface" />
         </div>
         {rows.map((row, r) => (
