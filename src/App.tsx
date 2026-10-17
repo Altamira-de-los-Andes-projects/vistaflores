@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
 import { ARG_REST, ARG_MENDOZA, CHILE } from './mapdata';
-import { UCO_W, UCO_RIVER, UCO_ZONES, UCO_PT, UCO_KM5 } from './ucomap';
+import { UCO_H, UCO_RIVER, UCO_ZONES, UCO_PT, UCO_KM5 } from './ucomap';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail';
 type Nav = (p: Page, wineId?: string) => void;
@@ -1152,8 +1152,12 @@ function Novedades() {
 // Natural satellite view of the Uco Valley (Sentinel-2, see ucomap.ts) with the official
 // limits of Paraje Altamira, La Consulta and Vista Flores drawn as zones. Each zone opens
 // a card with its copy from the Vineyards page.
-const UCO_VB_DESKTOP = [740, 150, 1660, 1130] as const;
-const UCO_VB_MOBILE = [1080, 150, 940, 1180] as const;
+// Shown west-up: the Andes on top, descending east to the vineyards. ucomap.ts stays north-up;
+// rotated space is X' = UCO_H - y, Y' = x (uco-sat-wup.webp = uco-sat.webp turned 90° clockwise).
+const UCO_ROT = `matrix(0 1 -1 0 ${UCO_H} 0)`;
+const ucoRot = ([x, y]: readonly number[]) => [UCO_H - y, x] as const;
+const UCO_VB_DESKTOP = [0, 60, UCO_H, 1930] as const;
+const UCO_VB_MOBILE = [300, 120, 1200, 1900] as const;
 const UCO_GOLD = '#f0d6a0';
 const UCO_WATER = '#bfe0ea';
 // index ↔ t.vinedos.cards (Altamira, Vista Flores, La Consulta); drawn La Consulta → Vista Flores → Altamira
@@ -1207,7 +1211,7 @@ function UcoScale({ vw }: { vw: number }) {
         <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/65">5 KM</span>
       </div>
       <div className="flex flex-col items-center gap-[2px] pb-[1px]">
-        <svg width="9" height="12" viewBox="0 0 9 12"><path d="M4.5 0 9 12 4.5 9 0 12Z" fill="#f2ede4" fillOpacity="0.8" /></svg>
+        <svg width="9" height="12" viewBox="0 0 9 12" className="rotate-90"><path d="M4.5 0 9 12 4.5 9 0 12Z" fill="#f2ede4" fillOpacity="0.8" /></svg>
         <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] text-on-dark/65">N</span>
       </div>
     </div>
@@ -1224,6 +1228,10 @@ function UcoMap() {
   const [hover, setHover] = useState<number | null>(null);
   const px = (v: number) => `${((v - vx) / vw) * 100}%`;
   const py = (v: number) => `${((v - vy) / vh) * 100}%`;
+  const at = (p: readonly number[]) => {
+    const [x, y] = ucoRot(p);
+    return { left: px(x), top: py(y) };
+  };
 
   useEffect(() => {
     if (open === null) return;
@@ -1236,7 +1244,7 @@ function UcoMap() {
     { p: UCO_PT.tunuyan, name: 'Tunuyán' },
     { p: UCO_PT.sanCarlos, name: 'San Carlos' },
   ];
-  const sel = open !== null ? UCO_ZONE[open].label : null;
+  const sel = open !== null ? ucoRot(UCO_ZONE[open].label) : null;
   const shadow = '[text-shadow:0_1px_10px_rgba(0,0,0,0.85)]';
 
   const header = (
@@ -1270,23 +1278,37 @@ function UcoMap() {
 
   return (
     <section className="relative overflow-hidden border-t border-on-dark/[0.12] bg-[#0b0907] text-on-dark [container-type:inline-size]">
-      {mobile && <div className="px-5 sm:px-8 pt-16 pb-8">{header}</div>}
+      <div className="lg:grid lg:grid-cols-[minmax(320px,0.4fr)_1fr]">
+      <div className="flex flex-col justify-between gap-12 px-5 sm:px-8 pt-16 pb-8 lg:px-[clamp(24px,4vw,64px)] lg:py-20">
+        {header}
+        {!mobile && (
+          <div className="flex flex-col gap-10">
+            <div className="flex items-start gap-3">
+              <UcoInset className="h-[clamp(110px,10vw,150px)] w-auto" />
+              <div className="flex flex-col pt-2">
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/70">{art.argentina}</span>
+              </div>
+            </div>
+            <UcoAltitude />
+            {credit}
+          </div>
+        )}
+      </div>
 
-      <div className="relative w-full overflow-hidden" style={{ aspectRatio: `${vw} / ${vh}` }} onClick={() => setOpen(null)}>
+      <div className="relative w-full overflow-hidden [container-type:inline-size]" style={{ aspectRatio: `${vw} / ${vh}` }} onClick={() => setOpen(null)}>
         <img
-          src={`${A}/uco-sat.webp`}
+          src={`${A}/uco-sat-wup.webp`}
           alt=""
           aria-hidden="true"
           loading="lazy"
           decoding="async"
           className="absolute max-w-none select-none"
-          style={{ width: `${(UCO_W / vw) * 100}%`, left: `${(-vx / vw) * 100}%`, top: `${(-vy / vh) * 100}%` }}
+          style={{ width: `${(UCO_H / vw) * 100}%`, left: `${(-vx / vw) * 100}%`, top: `${(-vy / vh) * 100}%` }}
         />
-        {/* soft edge into the section; on desktop a well behind the text */}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(11,9,7,0.55)_0%,transparent_12%,transparent_82%,rgba(11,9,7,0.7)_100%)]" />
-        {!mobile && (
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_46%_58%_at_0%_100%,rgba(11,9,7,0.9)_0%,rgba(11,9,7,0.5)_55%,transparent_100%)]" />
-        )}
+        {/* soft edges into the section; on desktop also into the text column */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(11,9,7,0.45)_0%,transparent_10%,transparent_86%,rgba(11,9,7,0.7)_100%)]" />
+        {!mobile && <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(11,9,7,0.9)_0%,transparent_12%)]" />}
 
         <svg viewBox={`${vx} ${vy} ${vw} ${vh}`} className="pointer-events-none absolute inset-0 size-full">
           <defs>
@@ -1294,6 +1316,7 @@ function UcoMap() {
               <feGaussianBlur stdDeviation="4" />
             </filter>
           </defs>
+          <g transform={UCO_ROT}>
           {/* river — a soft wide glow under the zones to feel like water */}
           <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.55" strokeWidth="11" filter="url(#uco-glow)" />
           {UCO_DRAW_ORDER.map((i) => {
@@ -1334,6 +1357,7 @@ function UcoMap() {
           {/* river again, over the zones, so the Tunuyán reads clearly along the vineyards' western edge */}
           <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.4" strokeWidth="6" filter="url(#uco-glow)" />
           <path d={UCO_RIVER} fill="none" stroke="#eaf7fb" strokeOpacity="1" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          </g>
         </svg>
 
         {/* zone labels */}
@@ -1341,7 +1365,7 @@ function UcoMap() {
           <span
             key={z.key}
             className={`pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center transition-opacity duration-500 ${open !== null && open !== i ? 'opacity-50' : ''}`}
-            style={{ left: px(z.label[0]), top: py(z.label[1]) }}
+            style={at(z.label)}
           >
             <span className={`font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.3em] text-[#fbf1dc] ${shadow}`}>{art.gi}</span>
             <span className={`whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(17px,1.7vw,26px)] leading-[1.05] text-white ${shadow}`}>{z.name}</span>
@@ -1351,23 +1375,21 @@ function UcoMap() {
         {/* context labels */}
         <span
           className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(13px,1.15vw,17px)] tracking-[0.06em] text-[#dff1f6] ${shadow}`}
-          style={{ left: px(UCO_PT.riverLabel[0]), top: py(UCO_PT.riverLabel[1]), transform: 'translate(-50%,-50%) rotate(-41deg) translateY(-14px)' }}
+          style={{ ...at(UCO_PT.riverLabel), transform: 'translate(-50%,-50%) rotate(49deg) translateY(-14px)' }}
         >
           {art.river}
         </span>
-        {!mobile && (
-          <span
-            className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 -rotate-90 whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[clamp(9px,0.8vw,11px)] uppercase tracking-[0.5em] text-on-dark/80 ${shadow}`}
-            style={{ left: px(800), top: py(560) }}
-          >
-            {art.andes}
-          </span>
-        )}
+        <span
+          className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[clamp(9px,0.8vw,11px)] uppercase tracking-[0.5em] text-on-dark/85 ${shadow}`}
+          style={{ left: '50%', top: py(330) }}
+        >
+          {art.andes}
+        </span>
         {towns.map((tw) => (
           <span
             key={tw.name}
             className={`pointer-events-none absolute flex -translate-y-1/2 items-center gap-[7px] whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/85 ${shadow} ${mobile ? '-translate-x-full flex-row-reverse' : ''}`}
-            style={{ left: px(tw.p[0]), top: py(tw.p[1]) }}
+            style={at(tw.p)}
           >
             <span className={`size-[5px] rounded-full bg-on-dark/85 ${mobile ? '-mr-[3px]' : '-ml-[3px]'}`} />
             {tw.name}
@@ -1375,11 +1397,11 @@ function UcoMap() {
         ))}
         {!mobile && (
           <span
-            className={`pointer-events-none absolute flex -translate-x-1/2 items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/80 ${shadow}`}
-            style={{ left: px(UCO_PT.mendozaArrow[0] - 160), top: '11%' }}
+            className={`pointer-events-none absolute right-[2.5%] flex -translate-y-1/2 items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/80 ${shadow}`}
+            style={{ top: py(1200) }}
           >
-            <svg width="8" height="10" viewBox="0 0 8 10" aria-hidden="true"><path d="M4 0 8 5H5v5H3V5H0Z" fill="currentColor" /></svg>
             {art.toMendoza}
+            <svg width="10" height="8" viewBox="0 0 10 8" aria-hidden="true"><path d="M10 4 5 8V5H0V3h5V0Z" fill="currentColor" /></svg>
           </span>
         )}
 
@@ -1396,7 +1418,10 @@ function UcoMap() {
               mobile
                 ? undefined
                 : {
-                    left: `clamp(16px, calc(${px(sel[0])} + 90px), calc(100% - 346px))`,
+                    left:
+                      sel[0] > vx + vw / 2
+                        ? `clamp(16px, calc(${px(sel[0])} - 420px), calc(100% - 346px))`
+                        : `clamp(16px, calc(${px(sel[0])} + 90px), calc(100% - 346px))`,
                     top: `clamp(16px, calc(${py(sel[1])} - 150px), calc(100% - 390px))`,
                   }
             }
@@ -1429,26 +1454,12 @@ function UcoMap() {
           </div>
         )}
 
-        {/* desktop furniture: header bottom-left, inset top-right, altitude bottom-right */}
         {!mobile && (
-          <>
-            <div className="absolute bottom-[7%] left-[clamp(20px,4vw,64px)] max-w-[380px]">{header}</div>
-            <div className="pointer-events-none absolute right-[clamp(20px,3vw,48px)] top-[34%] flex items-start gap-3">
-              <div className="flex flex-col items-end pt-2 text-right">
-                <span className={`font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-[#f0d6a0] ${shadow}`}>{art.mendoza}</span>
-                <span className={`font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/70 ${shadow}`}>{art.argentina}</span>
-              </div>
-              <UcoInset className="h-[clamp(110px,11vw,160px)] w-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" />
-            </div>
-            <div
-              className={`pointer-events-none absolute bottom-[7%] right-[clamp(20px,3vw,48px)] flex flex-col items-end gap-5 transition-opacity duration-500 ${open !== null ? 'opacity-0' : ''}`}
-            >
-              <UcoAltitude className="items-end text-right" />
-              <UcoScale vw={vw} />
-            </div>
-            <div className="pointer-events-auto absolute bottom-2 right-[clamp(20px,3vw,48px)] max-w-[60%] text-right">{credit}</div>
-          </>
+          <div className={`pointer-events-none absolute bottom-[3%] left-[4%] transition-opacity duration-500 ${shadow} ${open !== null ? 'opacity-0' : ''}`}>
+            <UcoScale vw={vw} />
+          </div>
         )}
+      </div>
       </div>
 
       {mobile && (
