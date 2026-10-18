@@ -35,8 +35,7 @@ const IMG = {
 };
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
-const HOME_VY_IMGS = [`${A}/estate-wide.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
-const HOME_WINE_IMGS = [`${A}/73a8f.png`, `${A}/941aa.png`, `${A}/4600e.png`];
+const HOME_VY_IMGS = [`${A}/altamira-sq.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `${A}/5b74e.png`, `${A}/fb3eb.png`, `${A}/36671.png`];
 const VINEDOS_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
@@ -52,8 +51,6 @@ const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; line: Wi
   'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', line: 'VAV' },
   'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', line: 'VAV' },
 };
-const HOME_WINE_IDS = ['dama', 'navigato', 'reserva-malbec'];
-const HOME_ESTATE_IDS = ['navigato', 'dama', 'reserva-malbec', 'vav-malbec'];
 
 // Bottles per row on Our Wines, matching the sm / lg breakpoints.
 function useGridCols() {
@@ -576,6 +573,42 @@ function Footer({ onNav }: { onNav: Nav }) {
   );
 }
 
+// ─── Square pair ──────────────────────────────────────────────────────────────
+// Photo + text, each exactly half the page width and as tall as it is wide (stacked on mobile).
+// Alternate `imgRight` down the page so the squares meet only at their corners.
+function SquareSplit({
+  img,
+  alt,
+  imgClass = 'object-center',
+  imgRight = false,
+  dark = false,
+  children,
+}: {
+  img: string;
+  alt: string;
+  imgClass?: string;
+  imgRight?: boolean;
+  dark?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`[container-type:inline-size] ${dark ? 'border-t border-on-dark/[0.14]' : ''}`}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-[minmax(50cqw,auto)]">
+        <div className={`group relative aspect-square overflow-hidden lg:aspect-auto ${imgRight ? 'lg:order-2' : ''}`}>
+          <img
+            src={img}
+            alt={alt}
+            className={`absolute inset-0 size-full object-cover ${imgClass} transition-transform duration-700 group-hover:scale-105`}
+          />
+        </div>
+        <div className={`reveal flex flex-col justify-center gap-6 px-6 py-14 sm:px-10 lg:px-[clamp(32px,5vw,88px)] lg:py-16 ${imgRight ? 'lg:order-1' : ''}`}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── HOME ─────────────────────────────────────────────────────────────────────
 function Home({ onNav }: { onNav: Nav }) {
   useReveal();
@@ -650,57 +683,21 @@ function Home({ onNav }: { onNav: Nav }) {
         </div>
       </section>
 
-      {/* "Vinos únicos" split section */}
-      <section className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-[70px] px-5 sm:px-8 lg:px-12 py-16 lg:py-[110px]">
-        <div className="flex flex-col gap-[22px]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">
-            {t.home.estateEyebrow}
-          </p>
-          <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,40px)] text-ink leading-[1.16] reveal reveal-d1">
-            {t.home.estateTitle1}
-            <br />
-            {t.home.estateTitle2}
-          </h2>
-          <div className="overflow-hidden h-[min(55vw,664px)] reveal reveal-d2">
-            <img src={`${A}/estate-home.jpg`} alt={t.home.estateEyebrow} className="w-full h-full object-cover object-[50%_60%]" />
-          </div>
-        </div>
-        <div className="flex flex-col justify-center lg:pt-[147px]">
-          <p
-            className="font-['Archivo:Light'] text-[clamp(16px,1.5vw,20px)] text-ink/[0.86] leading-[1.72] reveal reveal-d1"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.estatePara1}
-          </p>
-          <p
-            className="font-['Archivo:Light'] text-[14.5px] text-ink/[0.66] leading-[26.8px] mt-8 reveal reveal-d2"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.estatePara2}
-          </p>
-          <div className="mt-10 grid grid-cols-2 gap-px bg-ink/[0.14] reveal reveal-d3">
-            {t.home.estateWines.map((w, i) => (
-              <button
-                key={w.name}
-                className="group bg-surface p-5 flex items-center gap-4 cursor-pointer hover:bg-surface-2 transition-colors text-left"
-                onClick={() => onNav('wine-detail', HOME_ESTATE_IDS[i])}
-              >
-                <div className="shrink-0 h-[72px] w-[36px] overflow-hidden">
-                  <img src={WINE_META[HOME_ESTATE_IDS[i]].img} alt={w.name} className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
-                </div>
-                <div className="flex flex-col gap-[6px] min-w-0">
-                  <p className="font-['Cormorant_Garamond:Regular'] text-[16px] sm:text-[20px] text-ink leading-[1.2]">
-                    {w.name}
-                  </p>
-                  <p className="font-['IBM_Plex_Mono:Medium'] text-[7px] sm:text-[8px] tracking-[1.12px] text-ink/[0.5]">
-                    {w.sub}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* "Unique wines" — scene-setting square pair (no wines on the Home) */}
+      <SquareSplit img={`${A}/estate-home.jpg`} alt={t.home.estateEyebrow} imgClass="object-[50%_60%]">
+        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.estateEyebrow}</p>
+        <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,44px)] text-ink leading-[1.16]">
+          {t.home.estateTitle1}
+          <br />
+          {t.home.estateTitle2}
+        </h2>
+        <p className="font-['Archivo:Light'] text-[clamp(15px,1.3vw,19px)] text-ink/[0.86] leading-[1.72] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+          {t.home.estatePara1}
+        </p>
+        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[1.75] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+          {t.home.estatePara2}
+        </p>
+      </SquareSplit>
 
       {/* Vineyards dark section */}
       <section className="bg-panel">
@@ -721,53 +718,40 @@ function Home({ onNav }: { onNav: Nav }) {
           </p>
         </div>
 
-        {/* Vineyard rows */}
-        {t.home.vyRows.map((vyd, idx) => {
-          const imgLeft = idx % 2 === 0;
-          const img = HOME_VY_IMGS[idx];
-          const objPos = idx === 2 ? 'object-top' : 'object-center';
-          return (
-            <div
-              key={vyd.num}
-              className={`border-t border-on-dark/[0.14] grid ${imgLeft ? 'grid-cols-1 lg:grid-cols-[1.12fr_1fr]' : 'grid-cols-1 lg:grid-cols-[1fr_1.12fr]'}`}
-            >
-              {imgLeft && (
-                <div className="overflow-hidden" style={{ aspectRatio: '676/520' }}>
-                  <img src={img} alt={vyd.name} className={`w-full h-full object-cover ${objPos} hover:scale-105 transition-transform duration-700`} />
+        {/* Vineyard rows — alternating square photo / square text */}
+        {t.home.vyRows.map((vyd, idx) => (
+          <SquareSplit
+            key={vyd.num}
+            dark
+            imgRight={idx % 2 === 1}
+            img={HOME_VY_IMGS[idx]}
+            alt={vyd.name}
+            imgClass={idx === 2 ? 'object-top' : 'object-center'}
+          >
+            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{vyd.num}</p>
+            <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(30px,3vw,42px)] text-on-dark leading-[1.12]">
+              {vyd.name}
+            </h3>
+            <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.72] leading-[25.2px] max-w-[380px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+              {vyd.desc}
+            </p>
+            <div className="border-t border-on-dark/[0.2] pt-5 flex gap-[38px]">
+              {vyd.stats.map((s) => (
+                <div key={s.l} className="flex flex-col gap-2">
+                  <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.28px] text-on-dark/[0.45]">{s.l}</p>
+                  <p className="font-['Cormorant_Garamond:Regular'] text-[23px] text-on-dark">{s.v}</p>
                 </div>
-              )}
-              <div className={`flex flex-col gap-6 justify-center py-14 px-6 lg:py-[98px] lg:px-[55px] reveal ${imgLeft ? 'border-l border-on-dark/[0.14]' : ''}`}>
-                <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{vyd.num}</p>
-                <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[38px] text-on-dark leading-[42.56px]">
-                  {vyd.name}
-                </h3>
-                <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.72] leading-[25.2px] max-w-[380px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                  {vyd.desc}
-                </p>
-                <div className="border-t border-on-dark/[0.2] pt-5 flex gap-[38px]">
-                  {vyd.stats.map((s) => (
-                    <div key={s.l} className="flex flex-col gap-2">
-                      <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.28px] text-on-dark/[0.45]">{s.l}</p>
-                      <p className="font-['Cormorant_Garamond:Regular'] text-[23px] text-on-dark">{s.v}</p>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => onNav('vinedos')}
-                  className="self-start border border-on-dark/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-on-dark hover:border-white/70 transition-colors"
-                  style={{ fontVariationSettings: '"wdth" 100' }}
-                >
-                  {t.home.vyBtn}
-                </button>
-              </div>
-              {!imgLeft && (
-                <div className="overflow-hidden" style={{ aspectRatio: '676/520' }}>
-                  <img src={img} alt={vyd.name} className={`w-full h-full object-cover ${objPos} hover:scale-105 transition-transform duration-700`} />
-                </div>
-              )}
+              ))}
             </div>
-          );
-        })}
+            <button
+              onClick={() => onNav('vinedos')}
+              className="self-start border border-on-dark/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-on-dark hover:border-white/70 transition-colors"
+              style={{ fontVariationSettings: '"wdth" 100' }}
+            >
+              {t.home.vyBtn}
+            </button>
+          </SquareSplit>
+        ))}
 
         {/* Stats band — oversized serif numerals over the altitude motif */}
         <div className="relative overflow-hidden border-t border-on-dark/[0.14] px-5 sm:px-8 lg:px-12 pt-[84px] pb-16 lg:pb-[100px]">
@@ -799,50 +783,6 @@ function Home({ onNav }: { onNav: Nav }) {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Wines section */}
-      <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-11">
-          <div className="flex flex-col gap-[19px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.home.winesEyebrow}</p>
-            <h2 className="font-['Cormorant_Garamond:Light'] text-[30px] sm:text-[38px] lg:text-[44px] text-ink leading-[1.12] lg:leading-[49.28px] reveal reveal-d1">{t.home.winesTitle}</h2>
-          </div>
-          <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[25.2px] max-w-[380px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.home.winesPara}
-          </p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-px bg-ink/[0.13] border-t border-b border-ink/[0.13]">
-          {t.home.wines.map((wine, i) => (
-            <button
-              key={wine.name}
-              className={`group bg-surface flex-1 flex flex-col gap-[17px] items-start px-8 py-10 reveal reveal-d${i + 1} hover:bg-surface-2 transition-colors text-left overflow-hidden`}
-              onClick={() => onNav('wine-detail', HOME_WINE_IDS[i])}
-            >
-              <div className="relative h-[428px] w-full flex items-center justify-center overflow-hidden">
-                <img src={HOME_WINE_IMGS[i]} alt={wine.name} className="h-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-[0_14px_18px_rgba(0,0,0,0.22)]" />
-              </div>
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{wine.region}</p>
-              <div>
-                <p className="font-['Cormorant_Garamond:Regular'] text-[24px] text-ink leading-[28.8px]">{wine.name}</p>
-                <p className="font-['Cormorant_Garamond:Italic'] italic text-[24px] text-ink leading-[28.8px]">{wine.sub}</p>
-              </div>
-              <p className="font-['Archivo:Light'] text-[12.5px] text-ink/[0.68] leading-[21.88px]" style={{ fontVariationSettings: '"wdth" 100' }}>{wine.desc}</p>
-              <span className="border-b border-accent/[0.35] pb-[5px] font-['Archivo:Regular'] text-[11px] text-accent">{t.home.fullInfo}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="flex justify-center mt-11">
-          <button
-            onClick={() => onNav('vinos')}
-            className="border border-ink/[0.42] px-[35px] py-[16px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-ink hover:bg-ink/[0.05] transition-colors"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.seeAllWines}
-          </button>
         </div>
       </section>
 
