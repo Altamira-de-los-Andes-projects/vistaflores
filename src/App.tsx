@@ -594,9 +594,11 @@ function SquareSplit({
   imgClass = 'object-center',
   imgRight = false,
   dark = false,
+  media,
   children,
 }: {
-  img: string;
+  img?: string;
+  media?: React.ReactNode;
   alt: string;
   imgClass?: string;
   imgRight?: boolean;
@@ -607,16 +609,44 @@ function SquareSplit({
     <div className={`[container-type:inline-size] ${dark ? 'border-t border-on-dark/[0.14]' : ''}`}>
       <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-[minmax(50cqw,auto)]">
         <div className={`group relative aspect-square overflow-hidden lg:aspect-auto ${imgRight ? 'lg:order-2' : ''}`}>
-          <img
-            src={img}
-            alt={alt}
-            className={`absolute inset-0 size-full object-cover ${imgClass} transition-transform duration-700 group-hover:scale-105`}
-          />
+          {media ?? (
+            <img
+              src={img}
+              alt={alt}
+              className={`absolute inset-0 size-full object-cover ${imgClass} transition-transform duration-700 group-hover:scale-105`}
+            />
+          )}
         </div>
         <div className={`reveal flex flex-col justify-center gap-6 px-6 py-14 sm:px-10 lg:px-[clamp(32px,5vw,88px)] lg:py-16 ${imgRight ? 'lg:order-1' : ''}`}>
           {children}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Soil triptych ────────────────────────────────────────────────────────────
+// The stones of each vineyard side by side (Altamira · Vista Flores · La Consulta).
+const SOIL_IMGS = [`${A}/soil-altamira.jpg`, `${A}/soil-vistaflores.jpg`, `${A}/soil-laconsulta.jpg`];
+
+function SoilTriptych() {
+  const t = useT();
+  return (
+    <div className="absolute inset-0 grid grid-cols-3 gap-px bg-[#16120f]">
+      {t.vinedos.narrative.soilProfiles.map((it, i) => (
+        <figure key={it.name} className="relative m-0 overflow-hidden">
+          <img
+            src={SOIL_IMGS[i]}
+            alt={`${it.name} — ${it.desc}`}
+            className="absolute inset-0 size-full object-cover object-[42%_50%] transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-b from-transparent to-black/80" />
+          <figcaption className="absolute inset-x-0 bottom-0 flex flex-col gap-[6px] px-[9%] pb-[9%]">
+            <span className="font-['Cormorant_Garamond:Regular'] text-[clamp(17px,1.8vw,27px)] leading-[1.05] text-on-dark">{it.name}</span>
+            <span className="font-['IBM_Plex_Mono:Medium'] text-[clamp(7.5px,0.62vw,9.5px)] uppercase leading-[1.55] tracking-[0.13em] text-on-dark/[0.78]">{it.desc}</span>
+          </figcaption>
+        </figure>
+      ))}
     </div>
   );
 }
@@ -1058,7 +1088,7 @@ function Vinedos() {
       <UcoMap />
 
       {/* Soil — the alluvial fan */}
-      <SquareSplit imgRight img={`${A}/vinedos-soil.jpg`} alt={t.vinedos.narrative.soilTitle}>
+      <SquareSplit imgRight media={<SoilTriptych />} alt={t.vinedos.narrative.soilTitle}>
         <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.vinedos.narrative.soilEyebrow}</p>
         <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px]">{t.vinedos.narrative.soilTitle}</h2>
         <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.74] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.soilBody}</p>
