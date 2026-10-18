@@ -52,9 +52,9 @@ const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; line: Wi
   'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', line: 'VAV' },
 };
 
-// Bottles per row on Our Wines, matching the sm / lg breakpoints.
+// Bottles per row on Our Wines, matching the sm / lg breakpoints: all six in one row on desktop.
 function useGridCols() {
-  const get = () => (typeof window === 'undefined' ? 3 : window.matchMedia('(min-width: 1024px)').matches ? 3 : window.matchMedia('(min-width: 640px)').matches ? 2 : 1);
+  const get = () => (typeof window === 'undefined' ? 6 : window.matchMedia('(min-width: 1024px)').matches ? 6 : window.matchMedia('(min-width: 640px)').matches ? 3 : 2);
   const [cols, setCols] = useState(get);
   useEffect(() => {
     const onResize = () => setCols(get());
@@ -850,6 +850,12 @@ function Home({ onNav }: { onNav: Nav }) {
   );
 }
 
+// Our Wines stage: the landscape behind the bottles and the bottle size, tuned together so the
+// bottles stand on the vineyard ground (base at 11% from the stage bottom).
+const STAGE_IMG = `${A}/vinos-stage.jpg`;
+const STAGE_H = 'h-[360px] sm:h-[440px] lg:h-[clamp(520px,44vw,680px)]';
+const BOTTLE_H = 'h-[230px] sm:h-[290px] lg:h-[clamp(300px,25vw,400px)]';
+
 // ─── NUESTROS VINOS ───────────────────────────────────────────────────────────
 function Vinos({ onNav }: { onNav: Nav }) {
   useReveal();
@@ -911,42 +917,44 @@ function Vinos({ onNav }: { onNav: Nav }) {
         </div>
       </div>
 
-      <div ref={gridRef} className="relative isolate pb-10 lg:pb-16">
-        <div className="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-          <img src={`${A}/vinos-bg-andes.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_35%] opacity-[0.6] dark:opacity-[0.4]" />
-          <div className="absolute inset-0 bg-surface/[0.2] dark:bg-black/[0.3]" />
-          <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-t from-transparent to-surface" />
-          <div className="absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-b from-transparent to-surface" />
-        </div>
+      <div ref={gridRef} className="pb-12 lg:pb-20">
         {rows.map((row, r) => (
-          <div key={`${cols}-${r}-${filter}`} className="flex justify-center px-5 sm:px-8 lg:px-12">
-            {row.map((wine, i) => (
-              <button
-                key={wine.id}
-                className={`group relative basis-full sm:basis-1/2 lg:basis-1/3 min-w-0 cursor-pointer text-center reveal reveal-d${i + 1}`}
-                onClick={() => onNav('wine-detail', wine.id)}
-              >
-                <div className="relative h-[400px] lg:h-[470px] flex items-end justify-center pb-[30px] lg:pb-[34px]">
-                  <span className="absolute bottom-[24px] lg:bottom-[27px] left-1/2 h-[14px] w-[120px] -translate-x-1/2 rounded-[50%] bg-black/[0.45] blur-[9px] transition-all duration-700 group-hover:w-[96px] group-hover:bg-black/[0.32]" aria-hidden="true" />
-                  <img
-                    src={wine.img}
-                    alt={wine.name}
-                    className="relative h-[330px] lg:h-[400px] w-auto object-contain object-bottom drop-shadow-[0_18px_22px_rgba(0,0,0,0.28)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2"
-                  />
-                </div>
-                <div className="absolute inset-x-4 bottom-[30px] lg:bottom-[34px] h-px bg-ink/[0.14]" aria-hidden="true" />
-                <div className="px-4 pt-7 pb-12 lg:pb-14 flex flex-col items-center gap-3">
-                  <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[1.7px] text-ink/[0.55]">{wine.gridRegion}</p>
-                  <p className="font-['Cormorant_Garamond:Regular'] text-[27px] lg:text-[30px] text-ink leading-[1.12]">
-                    {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
-                  </p>
-                  <span className="mt-1 inline-flex items-center gap-2 font-['Archivo:Regular'] text-[11.5px] tracking-[0.4px] text-accent" style={{ fontVariationSettings: '"wdth" 100' }}>
-                    <span className="border-b border-accent/[0.35] pb-[3px] transition-colors group-hover:border-accent">{t.vinos.fullInfo}</span>
-                    <span aria-hidden="true" className="transition-transform duration-500 group-hover:translate-x-1">→</span>
-                  </span>
-                </div>
-              </button>
-            ))}
+          <div key={`${cols}-${r}-${filter}`} className="relative">
+            {/* the landscape the bottles stand in: mountains above, vineyard ground below */}
+            <div className={`absolute inset-x-0 top-0 overflow-hidden ${STAGE_H}`} aria-hidden="true">
+              <img src={STAGE_IMG} alt="" className="absolute inset-0 size-full object-cover object-[50%_54%]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/0 from-[55%] to-black/30" />
+            </div>
+            <div className="relative flex justify-center">
+              {row.map((wine, i) => (
+                <button
+                  key={wine.id}
+                  className={`group min-w-0 basis-1/2 sm:basis-1/3 lg:basis-1/6 cursor-pointer text-center reveal reveal-d${(i % 6) + 1}`}
+                  onClick={() => onNav('wine-detail', wine.id)}
+                >
+                  <div className={`relative ${STAGE_H}`}>
+                    <span className="absolute bottom-[calc(11%-7px)] left-1/2 h-[12px] w-[78px] lg:w-[96px] -translate-x-1/2 rounded-[50%] bg-black/[0.6] blur-[7px] transition-all duration-700 group-hover:w-[62px] group-hover:bg-black/[0.4]" aria-hidden="true" />
+                    <div className="absolute inset-x-0 bottom-[11%] flex justify-center">
+                      <img
+                        src={wine.img}
+                        alt={wine.name}
+                        className={`${BOTTLE_H} w-auto object-contain object-bottom drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2`}
+                      />
+                    </div>
+                  </div>
+                  <div className="px-2 lg:px-3 pt-6 pb-8 flex flex-col items-center gap-[10px]">
+                    <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] lg:text-[9px] tracking-[1.5px] text-ink/[0.55]">{wine.gridRegion}</p>
+                    <p className="font-['Cormorant_Garamond:Regular'] text-[21px] lg:text-[clamp(18px,1.6vw,24px)] text-ink leading-[1.12]">
+                      {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
+                    </p>
+                    <span className="inline-flex items-center gap-2 font-['Archivo:Regular'] text-[11px] tracking-[0.4px] text-accent" style={{ fontVariationSettings: '"wdth" 100' }}>
+                      <span className="border-b border-accent/[0.35] pb-[3px] transition-colors group-hover:border-accent">{t.vinos.fullInfo}</span>
+                      <span aria-hidden="true" className="transition-transform duration-500 group-hover:translate-x-1">→</span>
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -1548,7 +1556,6 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
   useReveal();
   const t = useT();
   const wine = t.wineCatalog.find((w) => w.id === wineId) ?? t.wineCatalog[0];
-  const others = t.wineCatalog.filter((w) => w.id !== wine.id).slice(0, 3);
   return (
     <div className="bg-surface w-full">
       {/* Breadcrumb */}
@@ -1563,18 +1570,18 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
 
       {/* Bottle over a faint mountain (client photo C26) that dissolves into the page */}
       <section className="relative isolate grid grid-cols-1 lg:grid-cols-[minmax(0,46fr)_minmax(0,54fr)] lg:min-h-[760px]">
-        <div className="absolute inset-x-0 top-0 h-[560px] lg:inset-y-0 lg:right-auto lg:h-auto lg:w-[60%] -z-10 overflow-hidden" aria-hidden="true">
-          <img src={`${A}/wbg-${wine.id}.jpg`} alt="" className="h-[calc(100%-24px)] w-full lg:h-[calc(100%-24px)] lg:w-[calc(100%-24px)] object-cover object-[50%_40%] opacity-[0.78] dark:opacity-[0.62]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[45%] to-surface lg:bg-gradient-to-r lg:from-[38%] lg:to-[92%]" />
-          <div className="absolute inset-0 hidden lg:block bg-gradient-to-b from-transparent from-[70%] to-surface" />
-        </div>
-
-        <div className="relative flex items-end justify-center pt-12 pb-10 lg:py-16 min-h-[560px] lg:min-h-0">
-          <span className="absolute bottom-[34px] lg:bottom-[58px] left-1/2 h-[18px] w-[150px] lg:w-[190px] -translate-x-1/2 rounded-[50%] bg-black/[0.5] blur-[12px]" aria-hidden="true" />
+        <div className="relative isolate flex items-end justify-center pt-12 pb-10 min-h-[560px] lg:sticky lg:top-[72px] lg:h-[calc(100svh-130px)] lg:min-h-[500px] lg:max-h-[860px] lg:self-start lg:pt-8 lg:pb-[72px]">
+          {/* landscape and bottle share one panel, so the bottle always stands on the ground */}
+          <div className="absolute inset-0 -z-10 overflow-hidden lg:right-auto lg:w-[130%]" aria-hidden="true">
+            <img src={`${A}/wbg-${wine.id}.jpg`} alt="" className="h-[calc(100%-24px)] w-full lg:w-[calc(100%-24px)] object-cover object-[50%_60%] opacity-[0.78] dark:opacity-[0.62]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[45%] to-surface lg:bg-gradient-to-r lg:from-[38%] lg:to-[92%]" />
+            <div className="absolute inset-0 hidden lg:block bg-gradient-to-b from-transparent from-[80%] to-surface" />
+          </div>
+          <span className="absolute bottom-[34px] lg:bottom-[56px] left-1/2 h-[18px] w-[150px] lg:w-[190px] -translate-x-1/2 rounded-[50%] bg-black/[0.5] blur-[12px]" aria-hidden="true" />
           <img
             src={WINE_META[wine.id].img}
             alt={`${wine.title1} ${wine.title2}`}
-            className="relative h-[460px] lg:h-[620px] w-auto object-contain object-bottom drop-shadow-[0_24px_30px_rgba(0,0,0,0.35)] reveal"
+            className="relative h-[460px] lg:h-full lg:max-h-[640px] w-auto object-contain object-bottom drop-shadow-[0_24px_30px_rgba(0,0,0,0.35)] reveal"
           />
         </div>
 
@@ -1656,10 +1663,10 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
         </div>
       </section>
 
-      {/* Other wines */}
+      {/* All six wines in one box */}
       <section className="px-5 sm:px-8 lg:px-12 pt-20 pb-[90px]">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-[34px]">
-          <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] text-ink leading-[35.2px] reveal">{t.wineDetail.otherWines}</h3>
+          <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] text-ink leading-[35.2px] reveal">{t.nav.vinos}</h3>
           <button
             onClick={() => onNav('vinos')}
             className="border-b border-ink/[0.4] pb-[5px] font-['Archivo:Regular'] text-[11px] text-ink hover:border-ink transition-colors"
@@ -1668,24 +1675,28 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
             {t.wineDetail.seeAllWines}
           </button>
         </div>
-        <div className="flex flex-col md:flex-row gap-[30px]">
-          {others.map((w, i) => (
-            <button
-              key={w.id}
-              className={`border border-ink/[0.13] flex gap-5 items-center p-[23px] flex-1 cursor-pointer hover:bg-ink/[0.03] transition-colors reveal reveal-d${i + 1} text-left`}
-              onClick={() => onNav('wine-detail', w.id)}
-            >
-              <div className="shrink-0 h-[90px] w-[52px] overflow-hidden">
-                <img src={WINE_META[w.id].img} alt={w.name} className="h-full w-full object-contain" />
-              </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.12px] text-ink/[0.5]">{WINE_META[w.id].tag}</p>
-                <p className="font-['Cormorant_Garamond:Regular'] text-[19px] text-ink leading-[23.75px]">
-                  {w.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{w.sub}</span>
-                </p>
-              </div>
-            </button>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px border border-ink/[0.13] bg-ink/[0.13] reveal reveal-d1">
+          {t.wineCatalog.map((w) => {
+            const current = w.id === wine.id;
+            return (
+              <button
+                key={w.id}
+                aria-current={current ? 'page' : undefined}
+                className={`group flex items-center gap-5 p-[23px] cursor-pointer transition-colors text-left ${current ? 'bg-surface-2' : 'bg-surface hover:bg-surface-2'}`}
+                onClick={() => onNav('wine-detail', w.id)}
+              >
+                <div className="shrink-0 h-[110px] w-[58px] overflow-hidden">
+                  <img src={WINE_META[w.id].img} alt={w.name} className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
+                </div>
+                <div className="flex flex-col gap-2 min-w-0">
+                  <p className={`font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.12px] ${current ? 'text-accent' : 'text-ink/[0.5]'}`}>{WINE_META[w.id].tag}</p>
+                  <p className="font-['Cormorant_Garamond:Regular'] text-[20px] text-ink leading-[1.2]">
+                    {w.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{w.sub}</span>
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </section>
     </div>
