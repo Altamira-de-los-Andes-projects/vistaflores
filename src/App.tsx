@@ -3,8 +3,8 @@ import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
 import { ARG_REST, ARG_MENDOZA, CHILE } from './mapdata';
 import { UCO_H, UCO_RIVER, UCO_ZONES, UCO_PT, UCO_KM5 } from './ucomap';
 
-type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail';
-type Nav = (p: Page, wineId?: string) => void;
+type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail' | 'privacidad';
+type Nav = (p: Page, wineId?: string, anchor?: string) => void;
 
 const A = `${import.meta.env.BASE_URL}assets`;
 
@@ -35,10 +35,19 @@ const IMG = {
 };
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
-const HOME_VY_IMGS = [`${A}/altamira-sq.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
+const HOME_VY_IMGS = [`${A}/altamira-home-sq.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/laconsulta-home-sq.jpg`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
-const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `${A}/5b74e.png`, `${A}/fb3eb.png`, `${A}/36671.png`];
-const VINEDOS_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/vinedos-poplars-sq.jpg`];
+// Award badges. The James Suckling scores per wine come from the client's previous site;
+// the two Gilbert & Gaillard medals (2024) are not tied to a wine yet.
+const HOME_AWARDS: { img: string; critic: string; wineId?: string; note?: string }[] = [
+  { img: `${A}/d7200.png`, critic: 'James Suckling', wineId: 'dama' },
+  { img: `${A}/5b74e.png`, critic: 'James Suckling', wineId: 'reserva-malbec' },
+  { img: `${A}/fb3eb.png`, critic: 'James Suckling', wineId: 'vav-malbec' },
+  { img: `${A}/36671.png`, critic: 'James Suckling', wineId: 'tres-fincas' },
+  { img: `${A}/b1740.png`, critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+  { img: `${A}/226c0.png`, critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+];
+const VINEDOS_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-pond-sq.jpg`, `${A}/vinedos-poplars-sq.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 
 // Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
@@ -199,7 +208,7 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
       className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-panel px-6 text-on-dark`}
     >
       <img
-        src={`${A}/gate-bg.jpg`}
+        src={`${A}/gate-c28.jpg`}
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 size-full object-cover kenburns"
@@ -480,7 +489,7 @@ function Footer({ onNav }: { onNav: Nav }) {
       <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-[50px] px-5 sm:px-8 lg:px-12 pt-20 pb-10">
         <div className="flex flex-col gap-[19px]">
           <div className="flex flex-col items-start leading-none text-on-dark">
-            <span className="font-['Cormorant_Garamond:Regular'] text-[26px] sm:text-[30px] leading-[1.05] tracking-[0.06em]">
+            <span className="font-['Cormorant_Garamond:Regular'] text-[26px] sm:text-[30px] lg:whitespace-nowrap lg:text-[clamp(20px,2.1vw,30px)] leading-[1.05] tracking-[0.06em]">
               ALTAMIRA DE LOS ANDES
             </span>
             <span className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.42em] mt-[10px] pl-px text-on-dark/[0.7]">
@@ -560,8 +569,11 @@ function Footer({ onNav }: { onNav: Nav }) {
       </div>
 
       <div className="border-t border-on-dark/[0.2] flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 pt-[23px] pb-[34px]">
-        <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
+        <span className="flex flex-wrap items-center gap-x-5 gap-y-2 font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
           {t.footer.copyright}
+          <button onClick={() => onNav('privacidad')} className="uppercase underline-offset-4 hover:text-on-dark hover:underline">
+            {t.footer.privacy}
+          </button>
         </span>
         {t.footer.warning && (
           <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
@@ -684,20 +696,22 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* "Unique wines" — scene-setting square pair (no wines on the Home) */}
+      <div className="bg-panel">
       <SquareSplit img={`${A}/estate-home.jpg`} alt={t.home.estateEyebrow} imgClass="object-[50%_60%]">
-        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.estateEyebrow}</p>
-        <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,44px)] text-ink leading-[1.16]">
+        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.home.estateEyebrow}</p>
+        <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,44px)] text-on-dark leading-[1.16]">
           {t.home.estateTitle1}
           <br />
           {t.home.estateTitle2}
         </h2>
-        <p className="font-['Archivo:Light'] text-[clamp(15px,1.3vw,19px)] text-ink/[0.86] leading-[1.72] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+        <p className="font-['Archivo:Light'] text-[clamp(15px,1.3vw,19px)] text-on-dark/[0.86] leading-[1.72] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
           {t.home.estatePara1}
         </p>
-        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[1.75] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+        <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.66] leading-[1.75] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
           {t.home.estatePara2}
         </p>
       </SquareSplit>
+      </div>
 
       {/* Vineyards dark section */}
       <section className="bg-panel">
@@ -726,7 +740,7 @@ function Home({ onNav }: { onNav: Nav }) {
             imgRight={idx % 2 === 1}
             img={HOME_VY_IMGS[idx]}
             alt={vyd.name}
-            imgClass={idx === 2 ? 'object-top' : 'object-center'}
+            imgClass="object-center"
           >
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{vyd.num}</p>
             <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(30px,3vw,42px)] text-on-dark leading-[1.12]">
@@ -744,7 +758,7 @@ function Home({ onNav }: { onNav: Nav }) {
               ))}
             </div>
             <button
-              onClick={() => onNav('vinedos')}
+              onClick={() => onNav('vinedos', undefined, 'mapa')}
               className="self-start border border-on-dark/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-on-dark hover:border-white/70 transition-colors"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
@@ -787,7 +801,7 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* Quote section */}
-      <section className="relative h-[480px] overflow-hidden flex items-center justify-center mt-16">
+      <section className="relative h-[480px] overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0">
           <img src={`${A}/quote-bg.jpg`} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
@@ -808,12 +822,36 @@ function Home({ onNav }: { onNav: Nav }) {
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.awardsEyebrow}</p>
           <h2 className="font-['Cormorant_Garamond:Light'] text-[28px] sm:text-[34px] lg:text-[40px] text-ink leading-[1.14] lg:leading-[45.6px]">{t.home.awardsTitle}</h2>
         </div>
-        <div className="flex gap-6 justify-center flex-wrap">
-          {HOME_AWARD_IMGS.map((src, i) => (
-            <div key={i} className={`border border-ink/[0.16] rounded-full size-[130px] sm:size-[177px] flex items-center justify-center reveal reveal-d${(i % 5) + 1}`}>
-              <img src={src} alt={t.home.awardAlt} className="size-[88px] sm:size-[120px] object-contain" />
-            </div>
-          ))}
+        <div className="mx-auto grid max-w-[1180px] grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
+          {HOME_AWARDS.map((a, i) => {
+            const wine = a.wineId ? t.wineCatalog.find((w) => w.id === a.wineId) : undefined;
+            const inner = (
+              <>
+                <span className="flex size-[124px] items-center justify-center rounded-full border border-ink/[0.16] transition-colors group-hover:border-ink/[0.4] lg:size-[clamp(112px,10vw,150px)]">
+                  <img src={a.img} alt={`${a.critic}${wine ? ' — ' + wine.name : ''}`} className="size-[80px] object-contain lg:size-[clamp(72px,6.6vw,100px)]" />
+                </span>
+                <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.4px] uppercase text-ink/[0.5]">{a.critic}</span>
+                <span className="mt-1 font-['Cormorant_Garamond:Regular'] text-[16px] leading-[1.25] text-ink">
+                  {wine ? (
+                    <>
+                      {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
+                    </>
+                  ) : (
+                    <span className="text-ink/[0.6]">{a.note}</span>
+                  )}
+                </span>
+              </>
+            );
+            return wine ? (
+              <button key={i} onClick={() => onNav('wine-detail', wine.id)} className={`group flex flex-col items-center text-center reveal reveal-d${(i % 6) + 1}`}>
+                {inner}
+              </button>
+            ) : (
+              <div key={i} className={`group flex flex-col items-center text-center reveal reveal-d${(i % 6) + 1}`}>
+                {inner}
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -1020,53 +1058,33 @@ function Vinedos() {
       <UcoMap />
 
       {/* Soil — the alluvial fan */}
-      <section className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] border-t border-ink/[0.12]">
-        <div className="flex flex-col justify-center gap-6 px-5 sm:px-8 lg:px-12 py-16 lg:py-[110px] order-2 lg:order-1">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.vinedos.narrative.soilEyebrow}</p>
-          <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px] reveal reveal-d1">{t.vinedos.narrative.soilTitle}</h2>
-          <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.74] leading-[1.75] max-w-[520px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.soilBody}</p>
-        </div>
-        <div className="order-1 lg:order-2 overflow-hidden min-h-[320px] lg:min-h-0">
-          <img src={`${A}/vinedos-soil.jpg`} alt={t.vinedos.narrative.soilTitle} className="w-full h-full object-cover" />
-        </div>
-      </section>
+      <SquareSplit imgRight img={`${A}/vinedos-soil.jpg`} alt={t.vinedos.narrative.soilTitle}>
+        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.vinedos.narrative.soilEyebrow}</p>
+        <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px]">{t.vinedos.narrative.soilTitle}</h2>
+        <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.74] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.soilBody}</p>
+      </SquareSplit>
 
       {/* Old vines */}
-      <section className="border-t border-ink/[0.12]">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
-          <div className="overflow-hidden min-h-[360px] lg:min-h-[560px]">
-            <img src={`${A}/vinedos-vines-1.jpg`} alt={t.vinedos.narrative.vinesTitle} className="w-full h-full object-cover" />
-          </div>
-          <div className="flex flex-col justify-center gap-6 px-5 sm:px-8 lg:px-12 py-16 lg:py-[90px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.vinedos.narrative.vinesEyebrow}</p>
-            <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px] reveal reveal-d1">{t.vinedos.narrative.vinesTitle}</h2>
-            <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody1}</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 border-t border-ink/[0.12]">
-          <div className="flex flex-col justify-center gap-5 px-5 sm:px-8 lg:px-12 py-16 lg:py-[90px] order-2 lg:order-1">
-            <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px] reveal" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody2}</p>
-            <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.64] leading-[1.75] max-w-[520px] reveal reveal-d1" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody3}</p>
-          </div>
-          <div className="overflow-hidden min-h-[320px] lg:min-h-[460px] order-1 lg:order-2">
-            <img src={`${A}/vinedos-vines-2.jpg`} alt={t.vinedos.narrative.vinesTitle} className="w-full h-full object-cover" />
-          </div>
-        </div>
-      </section>
+      <SquareSplit img={`${A}/vinedos-vines-1.jpg`} alt={t.vinedos.narrative.vinesTitle}>
+        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.vinedos.narrative.vinesEyebrow}</p>
+        <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px]">{t.vinedos.narrative.vinesTitle}</h2>
+        <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody1}</p>
+      </SquareSplit>
+      <SquareSplit imgRight img={`${A}/vinedos-vines-2.jpg`} alt={t.vinedos.narrative.vinesTitle}>
+        <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody2}</p>
+        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.64] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody3}</p>
+      </SquareSplit>
 
       {/* Craftsmanship — hand-harvested, minimal intervention */}
-      <section className="bg-panel grid grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
-        <div className="overflow-hidden min-h-[360px] lg:min-h-[620px]">
-          <img src={`${A}/vinedos-hands.jpg`} alt={t.vinedos.narrative.craftTitle} className="w-full h-full object-cover object-[50%_45%]" />
-        </div>
-        <div className="flex flex-col justify-center gap-6 px-5 sm:px-8 lg:px-12 py-16 lg:py-[90px]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5] reveal">{t.vinedos.narrative.craftEyebrow}</p>
-          <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(26px,2.8vw,38px)] text-on-dark leading-[1.18] max-w-[500px] reveal reveal-d1">{t.vinedos.narrative.craftTitle}</h2>
-          <p className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.78] leading-[1.75] max-w-[520px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody1}</p>
-          <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark/[0.62] leading-[1.75] max-w-[520px] reveal reveal-d3" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody2}</p>
-          <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark/[0.62] leading-[1.75] max-w-[520px] reveal reveal-d3" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody3}</p>
-        </div>
-      </section>
+      <div className="bg-panel">
+        <SquareSplit img={`${A}/vinedos-hands.jpg`} alt={t.vinedos.narrative.craftTitle} imgClass="object-[50%_45%]">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.vinedos.narrative.craftEyebrow}</p>
+          <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(26px,2.8vw,38px)] text-on-dark leading-[1.18] max-w-[500px]">{t.vinedos.narrative.craftTitle}</h2>
+          <p className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody1}</p>
+          <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark/[0.62] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody2}</p>
+          <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark/[0.62] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody3}</p>
+        </SquareSplit>
+      </div>
     </div>
   );
 }
@@ -1253,7 +1271,7 @@ function UcoMap() {
   );
 
   return (
-    <section className="relative overflow-hidden border-t border-on-dark/[0.12] bg-[#0b0907] text-on-dark [container-type:inline-size]">
+    <section id="mapa" className="relative scroll-mt-[72px] overflow-hidden border-t border-on-dark/[0.12] bg-[#0b0907] text-on-dark [container-type:inline-size]">
       <div className="lg:grid lg:grid-cols-[minmax(320px,0.4fr)_1fr]">
       <div className="flex flex-col justify-between gap-12 px-5 sm:px-8 pt-16 pb-8 lg:px-[clamp(24px,4vw,64px)] lg:py-20">
         {header}
@@ -1460,9 +1478,11 @@ function UcoMap() {
 }
 
 // ─── CONTACTO ─────────────────────────────────────────────────────────────────
-function Contacto() {
+function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string | null }) {
   useReveal();
   const t = useT();
+  const inquiryWine = inquiryWineId ? t.wineCatalog.find((w) => w.id === inquiryWineId) : undefined;
+  const inquiryName = inquiryWine ? `${inquiryWine.name} ${inquiryWine.sub}` : '';
   const CELLAR = `${A}/contact-bg.jpg`;
   const fields = [
     { label: t.contacto.fields[0], type: 'text' },
@@ -1483,11 +1503,23 @@ function Contacto() {
             {t.contacto.intro1}<br />
             {t.contacto.intro2}
           </p>
+          {inquiryWine && (
+            <div className="mb-9 flex items-center gap-4 border-y border-ink/[0.14] py-4 reveal reveal-d1">
+              <img src={WINE_META[inquiryWine.id].img} alt="" className="h-[64px] w-auto object-contain" />
+              <div className="flex flex-col gap-1">
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.contacto.regarding}</span>
+                <span className="font-['Cormorant_Garamond:Regular'] text-[20px] leading-[1.2] text-ink">
+                  {inquiryWine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{inquiryWine.sub}</span>
+                </span>
+              </div>
+            </div>
+          )}
           <form className="flex flex-col gap-0 reveal reveal-d2">
-            {fields.map((field) => (
+            {fields.map((field, i) => (
               <div key={field.label} className="flex flex-col gap-[9px] mb-9">
-                <label className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{field.label}</label>
+                <label htmlFor={`cf-${i}`} className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{field.label}</label>
                 <input
+                  id={`cf-${i}`}
                   type={field.type}
                   className="border-b border-ink/[0.28] bg-transparent outline-none font-['Archivo:Light'] text-[14px] text-ink py-2 focus:border-ink transition-colors"
                   style={{ fontVariationSettings: '"wdth" 100' }}
@@ -1495,8 +1527,11 @@ function Contacto() {
               </div>
             ))}
             <div className="flex flex-col gap-[9px] mb-12">
-              <label className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.contacto.messageLabel}</label>
+              <label htmlFor="cf-msg" className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.contacto.messageLabel}</label>
               <textarea
+                id="cf-msg"
+                key={inquiryName}
+                defaultValue={inquiryName ? t.contacto.inquiry(inquiryName) : ''}
                 className="border-b border-ink/[0.28] bg-transparent outline-none font-['Archivo:Light'] text-[14px] text-ink py-2 resize-none h-[80px] focus:border-ink transition-colors"
                 style={{ fontVariationSettings: '"wdth" 100' }}
               />
@@ -1508,6 +1543,13 @@ function Contacto() {
             >
               {t.contacto.submit}
             </button>
+            <p className="mt-6 font-['Archivo:Light'] text-[12px] leading-[20px] text-ink/[0.55]" style={{ fontVariationSettings: '"wdth" 100' }}>
+              {t.contacto.consentPre}
+              <button type="button" onClick={() => onNav('privacidad')} className="underline underline-offset-4 hover:text-ink">
+                {t.contacto.consentLink}
+              </button>
+              .
+            </p>
           </form>
         </div>
 
@@ -1543,6 +1585,30 @@ function Contacto() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── PRIVACY ──────────────────────────────────────────────────────────────────
+function Privacidad() {
+  const t = useT();
+  const l = t.legal;
+  return (
+    <div className="bg-surface w-full">
+      <article className="mx-auto max-w-[760px] px-5 sm:px-8 pt-20 pb-24 lg:pt-28">
+        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{l.eyebrow}</p>
+        <h1 className="mt-5 font-['Cormorant_Garamond:Light_Italic'] italic text-[36px] sm:text-[44px] lg:text-[52px] leading-[1.08] text-ink">{l.title}</h1>
+        <p className="mt-4 font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1.4px] text-ink/[0.5]">{l.updated}</p>
+        <p className="mt-10 font-['Archivo:Light'] text-[16px] leading-[1.8] text-ink/[0.8]" style={{ fontVariationSettings: '"wdth" 100' }}>{l.intro}</p>
+        <div className="mt-12 flex flex-col">
+          {l.sections.map((sec) => (
+            <section key={sec.h} className="border-t border-ink/[0.14] py-8">
+              <h2 className="font-['Cormorant_Garamond:Regular'] text-[24px] leading-[1.2] text-ink">{sec.h}</h2>
+              <p className="mt-3 font-['Archivo:Light'] text-[14.5px] leading-[1.8] text-ink/[0.72]" style={{ fontVariationSettings: '"wdth" 100' }}>{sec.p}</p>
+            </section>
+          ))}
+        </div>
+      </article>
     </div>
   );
 }
@@ -1591,14 +1657,16 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
             {wine.desc}
           </p>
 
-          <div className="flex items-center gap-6 mb-11">
-            <p className="font-['Cormorant_Garamond:Light'] text-[58px] text-accent leading-none">{wine.score.value}</p>
-            <span className="h-11 w-px bg-ink/[0.18]" aria-hidden="true" />
-            <div className="flex flex-col gap-[6px]">
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[1.6px] text-ink/[0.75]">{wine.score.critic}</p>
-              <p className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1.6px] text-ink/[0.5]">{wine.score.year}</p>
+          {wine.score && (
+            <div className="flex items-center gap-6 mb-11">
+              <p className="font-['Cormorant_Garamond:Light'] text-[58px] text-accent leading-none">{wine.score.value}</p>
+              <span className="h-11 w-px bg-ink/[0.18]" aria-hidden="true" />
+              <div className="flex flex-col gap-[6px]">
+                <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[1.6px] text-ink/[0.75]">{wine.score.critic}</p>
+                {wine.score.year && <p className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1.6px] text-ink/[0.5]">{wine.score.year}</p>}
+              </div>
             </div>
-          </div>
+          )}
 
           <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[2px] text-ink/[0.55] mb-1">{t.wineDetail.fichaLabel}</p>
           <dl className="grid grid-cols-2 gap-x-10">
@@ -1612,7 +1680,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
 
           <div className="flex flex-wrap gap-[14px] mt-9 pt-9 border-t border-ink/[0.16]">
             <button
-              onClick={() => onNav('contacto')}
+              onClick={() => onNav('contacto', wine.id)}
               className="bg-panel px-[30px] py-[16px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:bg-panel-2 transition-colors dark:bg-on-dark dark:text-panel dark:hover:bg-white"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
@@ -1650,7 +1718,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
             {t.wineDetail.vyDesc}
           </p>
           <button
-            onClick={() => onNav('vinedos')}
+            onClick={() => onNav('vinedos', undefined, 'mapa')}
             className="self-start border border-on-dark/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-on-dark hover:border-white/70 transition-colors"
             style={{ fontVariationSettings: '"wdth" 100' }}
           >
@@ -1700,7 +1768,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
 }
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
-const PAGES: Page[] = ['home', 'vinos', 'vinedos', 'novedades', 'contacto', 'wine-detail'];
+const PAGES: Page[] = ['home', 'vinos', 'vinedos', 'novedades', 'contacto', 'wine-detail', 'privacidad'];
 
 function parseHash(): { page: Page; wineId?: string } {
   if (typeof window === 'undefined') return { page: 'home' };
@@ -1721,6 +1789,7 @@ function Site() {
   const initial = parseHash();
   const [page, setPage] = useState<Page>(initial.page);
   const [activeWine, setActiveWine] = useState(initial.wineId || 'dama');
+  const [inquiry, setInquiry] = useState<string | null>(null);
   const [entered, setEntered] = useState(() => {
     try {
       return localStorage.getItem('vf-age-ok') === '1';
@@ -1748,17 +1817,33 @@ function Site() {
     setEntered(true);
   };
 
-  function navigate(p: Page, wineId?: string) {
-    if (wineId) setActiveWine(wineId);
+  function navigate(p: Page, wineId?: string, anchor?: string) {
+    if (p === 'contacto') setInquiry(wineId ?? null);
+    else if (wineId) setActiveWine(wineId);
     setPage(p);
-    const url = hashFor(p, wineId);
+    const url = hashFor(p, p === 'contacto' ? undefined : wineId);
     if (typeof window !== 'undefined' && window.location.hash !== url) {
       window.history.pushState({ p, wineId }, '', url);
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (anchor) {
+      // wait for the new page to render, then glide to the section
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      setTimeout(() => {
+        const el = document.getElementById(anchor);
+        if (!el) return;
+        const top = el.getBoundingClientRect().top + window.scrollY - 72;
+        window.scrollTo({ top, behavior: 'smooth' });
+        // smooth scrolling can stall (background tab, reduced motion): make sure we land
+        setTimeout(() => {
+          if (Math.abs(window.scrollY - top) > 40) window.scrollTo({ top, behavior: 'instant' });
+        }, 1100);
+      }, 120);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
-  const showFullFooter = page !== 'contacto' && page !== 'vinos' && page !== 'novedades' && page !== 'vinedos';
+  const showFullFooter = page !== 'contacto' && page !== 'vinos' && page !== 'novedades' && page !== 'vinedos' && page !== 'privacidad';
 
   return (
     <div className="min-h-screen w-full bg-surface">
@@ -1775,12 +1860,13 @@ function Site() {
           {page === 'vinos' && <Vinos onNav={navigate} />}
           {page === 'vinedos' && <Vinedos />}
           {SHOW_NEWS && page === 'novedades' && <Novedades />}
-          {page === 'contacto' && <Contacto />}
+          {page === 'contacto' && <Contacto onNav={navigate} inquiryWineId={inquiry} />}
+          {page === 'privacidad' && <Privacidad />}
           {page === 'wine-detail' && <WineDetail onNav={navigate} wineId={activeWine} />}
           {showFullFooter ? (
             <Footer onNav={navigate} />
           ) : (
-            <FooterBar />
+            <FooterBar onNav={navigate} />
           )}
         </>
       )}
@@ -1788,11 +1874,16 @@ function Site() {
   );
 }
 
-function FooterBar() {
+function FooterBar({ onNav }: { onNav: Nav }) {
   const t = useT();
   return (
     <footer className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
-      <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.copyright}</span>
+      <span className="flex flex-wrap items-center gap-x-5 gap-y-2 font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">
+        {t.footer.copyright}
+        <button onClick={() => onNav('privacidad')} className="uppercase underline-offset-4 hover:text-on-dark hover:underline">
+          {t.footer.privacy}
+        </button>
+      </span>
       {t.footer.warning && <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>}
     </footer>
   );
