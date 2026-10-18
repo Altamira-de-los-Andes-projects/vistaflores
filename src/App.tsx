@@ -38,7 +38,7 @@ const IMG = {
 const HOME_VY_IMGS = [`${A}/altamira-sq.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 const HOME_AWARD_IMGS = [`${A}/b1740.png`, `${A}/226c0.png`, `${A}/d7200.png`, `${A}/5b74e.png`, `${A}/fb3eb.png`, `${A}/36671.png`];
-const VINEDOS_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/la-consulta-real.jpg`];
+const VINEDOS_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/vinedos-poplars-sq.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 
 // Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
@@ -923,6 +923,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
             {/* the landscape the bottles stand in: mountains above, vineyard ground below */}
             <div className={`absolute inset-x-0 top-0 overflow-hidden ${STAGE_H}`} aria-hidden="true">
               <img src={STAGE_IMG} alt="" className="absolute inset-0 size-full object-cover object-[50%_54%]" />
+              <div className="absolute inset-0 bg-black/[0.28]" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/0 from-[55%] to-black/30" />
             </div>
             <div className="relative flex justify-center">
@@ -971,9 +972,9 @@ function Vinedos() {
       <section className="relative h-[clamp(440px,56vh,580px)] overflow-hidden flex items-end">
         <div className="absolute inset-0">
           <img
-            src={`${A}/vinedos-hero.jpg`}
+            src={`${A}/la-consulta-real.jpg`}
             alt={t.vinedos.heroTitle1 + ' ' + t.vinedos.heroTitle2}
-            className="absolute inset-0 size-full object-cover object-[50%_42%]"
+            className="absolute inset-0 size-full object-cover object-[50%_10%]"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.34)] via-[rgba(20,18,15,0.12)] via-[42%] to-[rgba(20,18,15,0.9)]" />
           <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-transparent to-[rgba(20,18,15,0.78)]" />
@@ -995,28 +996,23 @@ function Vinedos() {
         </p>
       </section>
 
-      <section className="flex flex-col lg:flex-row gap-px bg-ink/[0.13]">
+      <section className="border-t border-ink/[0.12]">
         {t.vinedos.cards.map((v, i) => (
-          <article key={v.num} className={`bg-surface flex-1 flex flex-col reveal reveal-d${i + 1}`}>
-            <div className="overflow-hidden" style={{ aspectRatio: '426/532' }}>
-              <img src={VINEDOS_IMGS[i]} alt={v.name + v.italic} className={`w-full h-full object-cover ${i === 2 ? 'object-top' : 'object-center'} hover:scale-105 transition-transform duration-700`} />
+          <SquareSplit key={v.num} imgRight={i % 2 === 1} img={VINEDOS_IMGS[i]} alt={v.name + v.italic}>
+            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{v.num}</p>
+            <h3 className="font-['Cormorant_Garamond:Italic'] italic text-[clamp(30px,3vw,44px)] text-ink leading-[1.12]">
+              {v.name}<span className="font-['Cormorant_Garamond:Regular'] not-italic">{v.italic}</span>
+            </h3>
+            <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.7] leading-[25px] max-w-[420px]" style={{ fontVariationSettings: '"wdth" 100' }}>{v.desc}</p>
+            <div className="mt-2 max-w-[420px]">
+              {v.specs.map((sp, j) => (
+                <div key={sp.l} className={`flex justify-between py-[11px] border-t border-ink/[0.14] ${j === v.specs.length - 1 ? 'border-b' : ''}`}>
+                  <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-ink/[0.5]">{sp.l}</span>
+                  <span className="font-['Cormorant_Garamond:Regular'] text-[14px] text-ink">{sp.v}</span>
+                </div>
+              ))}
             </div>
-            <div className="flex flex-col gap-4 px-[30px] pt-[31px] pb-[38px]">
-              <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.53px] text-ink/[0.5]">{v.num}</p>
-              <h3 className="font-['Cormorant_Garamond:Italic'] italic text-[27px] text-ink leading-[31.32px]">
-                {v.name}<span className="font-['Cormorant_Garamond:Regular'] not-italic">{v.italic}</span>
-              </h3>
-              <p className="font-['Archivo:Light'] text-[12.5px] text-ink/[0.68] leading-[22.5px]" style={{ fontVariationSettings: '"wdth" 100' }}>{v.desc}</p>
-              <div className="mt-2">
-                {v.specs.map((s, j) => (
-                  <div key={s.l} className={`flex justify-between py-[10px] border-t border-ink/[0.14] ${j === v.specs.length - 1 ? 'border-b' : ''}`}>
-                    <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-ink/[0.5]">{s.l}</span>
-                    <span className="font-['Cormorant_Garamond:Regular'] text-[13px] text-ink">{s.v}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </article>
+          </SquareSplit>
         ))}
       </section>
 
