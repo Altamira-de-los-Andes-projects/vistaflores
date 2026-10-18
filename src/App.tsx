@@ -929,7 +929,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
               {row.map((wine, i) => (
                 <button
                   key={wine.id}
-                  className={`group min-w-0 basis-1/2 sm:basis-1/3 lg:basis-1/6 cursor-pointer text-center reveal reveal-d${(i % 6) + 1}`}
+                  className={`group flex min-w-0 basis-1/2 flex-col sm:basis-1/3 lg:basis-1/6 cursor-pointer text-center reveal reveal-d${(i % 6) + 1}`}
                   onClick={() => onNav('wine-detail', wine.id)}
                 >
                   <div className={`relative ${STAGE_H}`}>
@@ -1577,7 +1577,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[45%] to-surface lg:bg-gradient-to-r lg:from-[38%] lg:to-[92%]" />
             <div className="absolute inset-0 hidden lg:block bg-gradient-to-b from-transparent from-[80%] to-surface" />
           </div>
-          <span className="absolute bottom-[34px] lg:bottom-[56px] left-1/2 h-[18px] w-[150px] lg:w-[190px] -translate-x-1/2 rounded-[50%] bg-black/[0.5] blur-[12px]" aria-hidden="true" />
+          <span className="absolute bottom-[34px] lg:bottom-[62px] left-1/2 h-[18px] w-[150px] lg:w-[190px] -translate-x-1/2 rounded-[50%] bg-black/[0.5] blur-[12px]" aria-hidden="true" />
           <img
             src={WINE_META[wine.id].img}
             alt={`${wine.title1} ${wine.title2}`}
