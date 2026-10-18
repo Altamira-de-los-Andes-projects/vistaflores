@@ -1055,12 +1055,9 @@ function Vinedos() {
         </div>
       </section>
 
-      <section className="border-b border-ink/[0.12] grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-[60px] px-5 sm:px-8 lg:px-12 py-20">
-        <p className="font-['Archivo:Light'] text-[22px] text-ink/[0.84] leading-[37.84px] reveal" style={{ fontVariationSettings: '"wdth" 100' }}>
+      <section className="border-b border-ink/[0.12] px-5 sm:px-8 lg:px-12 py-14 lg:py-16">
+        <p className="max-w-[880px] font-['Archivo:Light'] text-[clamp(18px,1.6vw,22px)] text-ink/[0.84] leading-[1.7] reveal" style={{ fontVariationSettings: '"wdth" 100' }}>
           {t.vinedos.intro1}
-        </p>
-        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[25.9px] reveal reveal-d2" style={{ fontVariationSettings: '"wdth" 100' }}>
-          {t.vinedos.intro2}
         </p>
       </section>
 
@@ -1100,19 +1097,13 @@ function Vinedos() {
         <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px]">{t.vinedos.narrative.vinesTitle}</h2>
         <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody1}</p>
       </SquareSplit>
-      <SquareSplit imgRight img={`${A}/vinedos-vines-2.jpg`} alt={t.vinedos.narrative.vinesTitle}>
-        <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody2}</p>
-        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.64] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody3}</p>
-      </SquareSplit>
 
       {/* Craftsmanship — hand-harvested, minimal intervention */}
       <div className="bg-panel">
-        <SquareSplit img={`${A}/vinedos-hands.jpg`} alt={t.vinedos.narrative.craftTitle} imgClass="object-[50%_45%]">
+        <SquareSplit imgRight img={`${A}/vinedos-hands.jpg`} alt={t.vinedos.narrative.craftTitle} imgClass="object-[50%_45%]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.vinedos.narrative.craftEyebrow}</p>
           <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(26px,2.8vw,38px)] text-on-dark leading-[1.18] max-w-[500px]">{t.vinedos.narrative.craftTitle}</h2>
           <p className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody1}</p>
-          <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark/[0.62] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody2}</p>
-          <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark/[0.62] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody3}</p>
         </SquareSplit>
       </div>
     </div>
