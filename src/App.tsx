@@ -285,6 +285,36 @@ function Breath({ label, pre, em, post }: { label: string; pre: string; em: stri
 }
 
 // ─── Shared header ────────────────────────────────────────────────────────────
+// Language flags as inline SVG (emoji flags don't render on Windows). EN uses the UK flag to
+// match the copy's British spelling.
+function Flag({ code, className = '' }: { code: Lang; className?: string }) {
+  const base = `block h-[12px] w-[18px] shrink-0 rounded-[2px] ring-1 ring-black/15 ${className}`;
+  if (code === 'es')
+    return (
+      <svg viewBox="0 0 18 12" className={base} aria-hidden="true">
+        <rect width="18" height="12" fill="#AA151B" />
+        <rect y="3" width="18" height="6" fill="#F1BF00" />
+      </svg>
+    );
+  if (code === 'pt')
+    return (
+      <svg viewBox="0 0 20 14" className={base} aria-hidden="true">
+        <rect width="20" height="14" fill="#009C3B" />
+        <path d="M10 1.4 18.2 7 10 12.6 1.8 7Z" fill="#FFDF00" />
+        <circle cx="10" cy="7" r="3.4" fill="#002776" />
+      </svg>
+    );
+  return (
+    <svg viewBox="0 0 60 30" className={base} preserveAspectRatio="none" aria-hidden="true">
+      <rect width="60" height="30" fill="#012169" />
+      <path d="M0 0 60 30M60 0 0 30" stroke="#fff" strokeWidth="6" />
+      <path d="M0 0 60 30M60 0 0 30" stroke="#C8102E" strokeWidth="2.4" />
+      <path d="M30 0v30M0 15h60" stroke="#fff" strokeWidth="10" />
+      <path d="M30 0v30M0 15h60" stroke="#C8102E" strokeWidth="6" />
+    </svg>
+  );
+}
+
 function Header({ page, onNav }: { page: Page; onNav: Nav }) {
   const isHome = page === 'home';
   const { theme, toggle } = useTheme();
@@ -364,7 +394,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
                   onClick={() => setLang(code as Lang)}
                   aria-current={activeLang ? 'true' : undefined}
                   aria-label={t.a11y.langOf(code.toUpperCase())}
-                  className={`font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[1px] px-[9px] py-[7px] transition-opacity ${
+                  className={`flex items-center gap-[7px] font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[1px] px-[9px] py-[7px] transition-opacity ${
                     activeLang
                       ? isHome
                         ? 'text-white'
@@ -374,6 +404,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
                       : 'text-ink/[0.4] hover:text-ink/[0.7]'
                   }`}
                 >
+                  <Flag code={code} className={activeLang ? '' : 'opacity-60'} />
                   {code.toUpperCase()}
                 </button>
               </span>
@@ -429,10 +460,11 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
                 onClick={() => setLang(code as Lang)}
                 aria-current={code === lang ? 'true' : undefined}
                 aria-label={t.a11y.langOf(code.toUpperCase())}
-                className={`font-['IBM_Plex_Mono:Medium'] text-[11px] tracking-[1px] px-3 py-2 rounded transition-colors ${
+                className={`flex items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[11px] tracking-[1px] px-3 py-2 rounded transition-colors ${
                   code === lang ? 'text-ink border border-ink/[0.3]' : 'text-ink/[0.45] border border-transparent'
                 }`}
               >
+                <Flag code={code} className={code === lang ? '' : 'opacity-60'} />
                 {code.toUpperCase()}
               </button>
             ))}
@@ -490,7 +522,7 @@ function Footer({ onNav }: { onNav: Nav }) {
               className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              Tel / Fax +54 261 4299962
+              Tel +54 261 4299962
               <br />
               Mobile USA +1 (305) 988 5992
             </p>
@@ -507,7 +539,7 @@ function Footer({ onNav }: { onNav: Nav }) {
               className="border-b border-on-dark/[0.35] pb-[5px] font-['Archivo:Light'] text-[13.5px] text-on-dark text-left leading-[24.3px] hover:border-white/60 transition-colors self-start"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              facundo@vistafloresestate.com
+              facundo@altamiradelosandes.com
             </button>
           </div>
           <div className="flex flex-col gap-[10px]">
@@ -821,7 +853,7 @@ function Home({ onNav }: { onNav: Nav }) {
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
         </div>
         <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[860px] reveal">
-          <p className="font-['Playfair_Display:Bold_Italic'] font-bold italic text-[34px] text-on-dark leading-[48.28px]">
+          <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(28px,3.4vw,42px)] text-on-dark leading-[1.25]">
             {t.home.quote}
           </p>
           <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-on-dark/[0.7] mt-5">
@@ -1162,7 +1194,7 @@ const UCO_GOLD = '#f0d6a0';
 const UCO_WATER = '#bfe0ea';
 // index ↔ t.vinedos.cards (Altamira, Vista Flores, La Consulta); drawn La Consulta → Vista Flores → Altamira
 const UCO_ZONE = [
-  { key: 'altamira', name: 'Paraje Altamira', fill: '#c9a063', label: UCO_PT.altamiraLabel },
+  { key: 'altamira', name: 'Altamira', fill: '#c9a063', label: UCO_PT.altamiraLabel },
   { key: 'vistaFlores', name: 'Vista Flores', fill: '#8c3044', label: UCO_PT.vistaFloresLabel },
   { key: 'laConsulta', name: 'La Consulta', fill: '#8f9b66', label: UCO_PT.laConsultaLabel },
 ] as const;
@@ -1329,7 +1361,7 @@ function UcoMap() {
                 d={UCO_ZONES[z.key]}
                 role="button"
                 tabIndex={0}
-                aria-label={`${art.gi} ${z.name} — ${art.vineyards[i]}`}
+                aria-label={`${z.name} — ${art.vineyards[i]}`}
                 aria-expanded={open === i}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1367,7 +1399,6 @@ function UcoMap() {
             className={`pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center transition-opacity duration-500 ${open !== null && open !== i ? 'opacity-50' : ''}`}
             style={at(z.label)}
           >
-            <span className={`font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.3em] text-[#fbf1dc] ${shadow}`}>{art.gi}</span>
             <span className={`whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(17px,1.7vw,26px)] leading-[1.05] text-white ${shadow}`}>{z.name}</span>
           </span>
         ))}
@@ -1428,7 +1459,7 @@ function UcoMap() {
           >
             <div className="flex items-start justify-between gap-4">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.24em] text-[#f0d6a0]/85">
-                {art.gi} · {UCO_ZONE[open].name.toUpperCase()}
+                {UCO_ZONE[open].name.toUpperCase()}
               </p>
               <button
                 type="button"
@@ -1551,25 +1582,23 @@ function Contacto() {
             <div className="flex flex-col gap-[9px]">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.phoneLabel}</p>
               <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                Tel / Fax +54 261 4299962<br />
+                Tel +54 261 4299962<br />
                 Mobile USA +1 (305) 988 5992
               </p>
             </div>
             <div className="col-span-2 flex flex-col gap-[9px]">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.emailLabel}</p>
               <a
-                href="mailto:facundo@vistafloresestate.com"
+                href="mailto:facundo@altamiradelosandes.com"
                 className="self-start border-b border-on-dark/[0.4] pb-[5px] font-['Archivo:Light'] text-[13.5px] text-on-dark hover:border-white/70 transition-colors"
                 style={{ fontVariationSettings: '"wdth" 100' }}
               >
-                facundo@vistafloresestate.com
+                facundo@altamiradelosandes.com
               </a>
             </div>
           </div>
         </div>
       </div>
-
-      <UcoMap />
     </div>
   );
 }

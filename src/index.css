@@ -114,13 +114,6 @@ body {
   font-style: normal;
 }
 
-@font-face {
-  font-family: 'Playfair Display:Bold Italic';
-  src: url('https://static.figma.com/font/PlayfairDisplay-Italic_wght__1') format('woff2');
-  font-weight: 700;
-  font-style: italic;
-}
-
 /* Serif refinement: kerning + ligatures across the type. */
 body { font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1; }
 
