@@ -1377,10 +1377,10 @@ function UcoMap() {
         {!mobile && (
           <div className="flex flex-col gap-10">
             <div className="flex items-start gap-3">
-              <UcoInset className="h-[clamp(110px,10vw,150px)] w-auto" />
+              <UcoInset className="h-[clamp(190px,17vw,260px)] w-auto" />
               <div className="flex flex-col pt-2">
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/70">{art.argentina}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-on-dark/70">{art.argentina}</span>
               </div>
             </div>
             <UcoAltitude />
@@ -1562,10 +1562,10 @@ function UcoMap() {
             </div>
             <div className="flex items-start gap-3">
               <div className="flex flex-col items-end pt-1 text-right">
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
               </div>
-              <UcoInset className="h-[110px] w-auto" />
+              <UcoInset className="h-[170px] w-auto" />
             </div>
           </div>
         </div>
