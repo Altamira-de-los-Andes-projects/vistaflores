@@ -811,7 +811,7 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* "Unique wines" — scene-setting square pair (no wines on the Home) */}
-      <div className="bg-surface dark:bg-panel">
+      <div className="bg-surface pt-14 lg:pt-24 dark:bg-panel">
       <SquareSplit img={`${A}/estate-home.jpg`} alt={t.home.estateEyebrow} imgClass="object-[50%_60%]">
         <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.estateEyebrow}</p>
         <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,44px)] text-ink leading-[1.16]">
