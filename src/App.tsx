@@ -35,7 +35,7 @@ const IMG = {
 };
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
-const HOME_VY_IMGS = [`${A}/altamira-home-sq.jpg`, `${A}/vistaflores-vy.jpg`, `${A}/laconsulta-home-sq.jpg`];
+const HOME_VY_IMGS = [`${A}/altamira-home-sq.jpg`, `${A}/estate-home.jpg`, `${A}/laconsulta-home-sq.jpg`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 // Award badges. The James Suckling scores per wine come from the client's previous site;
 // the two Gilbert & Gaillard medals (2024) are not tied to a wine yet.
@@ -333,8 +333,8 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
   };
   const navItems: [Page, string][] = [
     ['home', t.nav.home],
-    ['vinos', t.nav.vinos],
     ['vinedos', t.nav.vinedos],
+    ['vinos', t.nav.vinos],
     ['galeria', t.nav.galeria],
     ['novedades', t.nav.novedades],
     ['contacto', t.nav.contacto],

@@ -213,7 +213,7 @@ const es = {
   },
   wineCatalog: [
     {
-      id: 'dama', gridRegion: 'ALTAMIRA · 3 TERROIRS', name: 'Dama de los Andes', sub: 'Blend de Malbec',
+      id: 'dama', gridRegion: 'ALTAMIRA · 3 TERROIRS', name: 'Dama', sub: '',
       region: 'ALTAMIRA · BLEND DE MALBEC', title1: 'Dama de', title2: 'los Andes',
       desc: 'La esencia misma de la montaña: imponente, misteriosa y eternamente elegante. Este blend de Malbec combina las mejores uvas de nuestros tres terroirs —Altamira, Vista Flores y La Consulta— como homenaje a la fuerza y la belleza natural de los Andes.',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
@@ -253,7 +253,7 @@ const es = {
       notes: [{ label: 'VISTA', text: 'Intenso y púrpura.' }, { label: 'NARIZ', text: 'Definitivamente Malbec, con frutos rojos y azules.' }, { label: 'BOCA', text: 'Suave en boca, buena acidez y estructura, final limpio.' }],
     },
     {
-      id: 'tres-fincas', gridRegion: 'VAV · 3 VIÑEDOS', name: 'Tres Fincas', sub: 'Blend',
+      id: 'tres-fincas', gridRegion: 'VAV · 3 VIÑEDOS', name: 'VAV Tres Fincas', sub: '',
       region: 'VAV · BLEND DE TRES VIÑEDOS', title1: 'Tres Fincas', title2: 'Blend',
       desc: 'Uvas de nuestros tres viñedos se unen en este blend, que realza la variedad del Valle de Uco. Color granate, nariz fragante y una gran variedad de aromas y sabores. De cuerpo medio y final suave, es un placer solo o en la mesa.',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
@@ -475,7 +475,7 @@ const en: Copy = {
   },
   wineCatalog: [
     {
-      id: 'dama', gridRegion: 'ALTAMIRA · 3 TERROIRS', name: 'Dama de los Andes', sub: 'Malbec Blend',
+      id: 'dama', gridRegion: 'ALTAMIRA · 3 TERROIRS', name: 'Dama', sub: '',
       region: 'ALTAMIRA · MALBEC BLEND', title1: 'Dama de', title2: 'los Andes',
       desc: 'The very essence of the mountains: imposing, mysterious and eternally elegant. This Malbec blend brings together the finest grapes from our three terroirs — Altamira, Vista Flores and La Consulta — as a tribute to the strength and natural beauty of the Andes.',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
@@ -515,7 +515,7 @@ const en: Copy = {
       notes: [{ label: 'EYE', text: 'Intense purple.' }, { label: 'NOSE', text: 'Unmistakably Malbec, with red and blue fruit.' }, { label: 'PALATE', text: 'Smooth, with good acidity and structure and a clean finish.' }],
     },
     {
-      id: 'tres-fincas', gridRegion: 'VAV · 3 VINEYARDS', name: 'Tres Fincas', sub: 'Blend',
+      id: 'tres-fincas', gridRegion: 'VAV · 3 VINEYARDS', name: 'VAV Tres Fincas', sub: '',
       region: 'VAV · THREE-VINEYARD BLEND', title1: 'Tres Fincas', title2: 'Blend',
       desc: 'Grapes from our three vineyards come together in this blend, a showcase of the Uco Valley\'s variety. Garnet in colour, with a fragrant nose and many layers of aroma and flavour. Medium-bodied with a smooth finish, a pleasure on its own or at the table.',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
@@ -735,7 +735,7 @@ const pt: Copy = {
   },
   wineCatalog: [
     {
-      id: 'dama', gridRegion: 'ALTAMIRA · 3 TERROIRS', name: 'Dama de los Andes', sub: 'Blend de Malbec',
+      id: 'dama', gridRegion: 'ALTAMIRA · 3 TERROIRS', name: 'Dama', sub: '',
       region: 'ALTAMIRA · BLEND DE MALBEC', title1: 'Dama de', title2: 'los Andes',
       desc: 'A própria essência da montanha: imponente, misteriosa e eternamente elegante. Este blend de Malbec reúne as melhores uvas dos nossos três terroirs — Altamira, Vista Flores e La Consulta — como homenagem à força e à beleza natural dos Andes.',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
@@ -775,7 +775,7 @@ const pt: Copy = {
       notes: [{ label: 'VISUAL', text: 'Intenso e púrpura.' }, { label: 'NARIZ', text: 'Inconfundivelmente Malbec, com frutas vermelhas e azuis.' }, { label: 'BOCA', text: 'Macio, com boa acidez e estrutura e final limpo.' }],
     },
     {
-      id: 'tres-fincas', gridRegion: 'VAV · 3 VINHEDOS', name: 'Tres Fincas', sub: 'Blend',
+      id: 'tres-fincas', gridRegion: 'VAV · 3 VINHEDOS', name: 'VAV Tres Fincas', sub: '',
       region: 'VAV · BLEND DE TRÊS VINHEDOS', title1: 'Tres Fincas', title2: 'Blend',
       desc: 'Uvas dos nossos três vinhedos se unem neste blend, que realça a variedade do Vale de Uco. Cor granada, nariz perfumado e uma grande variedade de aromas e sabores. De corpo médio e final macio, é um prazer sozinho ou à mesa.',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
