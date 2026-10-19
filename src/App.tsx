@@ -810,23 +810,21 @@ function Home({ onNav }: { onNav: Nav }) {
         </div>
       </section>
 
-      {/* "Unique wines" — scene-setting square pair (no wines on the Home) */}
-      <div className="bg-surface pt-14 lg:pt-24 dark:bg-panel">
-      <SquareSplit img={`${A}/estate-home.jpg`} alt={t.home.estateEyebrow} imgClass="object-[50%_60%]">
-        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.estateEyebrow}</p>
-        <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,44px)] text-ink leading-[1.16]">
-          {t.home.estateTitle1}
-          <br />
-          {t.home.estateTitle2}
-        </h2>
-        <p className="font-['Archivo:Light'] text-[clamp(15px,1.3vw,19px)] text-ink/[0.86] leading-[1.72] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-          {t.home.estatePara1}
-        </p>
-        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[1.75] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-          {t.home.estatePara2}
-        </p>
-      </SquareSplit>
-      </div>
+      {/* "Unique wines" — text-only pause between the hero and the vineyards (no photo, no wines) */}
+      <section className="bg-surface px-5 sm:px-8 lg:px-12 py-20 lg:py-[130px] dark:bg-panel">
+        <div className="mx-auto flex max-w-[820px] flex-col items-center gap-7 text-center reveal">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.estateEyebrow}</p>
+          <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3.4vw,48px)] text-ink leading-[1.16]">
+            {t.home.estateTitle1}
+            <br />
+            {t.home.estateTitle2}
+          </h2>
+          <span className="h-px w-14 bg-ink/[0.25]" aria-hidden="true" />
+          <p className="font-['Archivo:Light'] text-[clamp(15px,1.35vw,19px)] text-ink/[0.82] leading-[1.85]" style={{ fontVariationSettings: '"wdth" 100' }}>
+            {t.home.estatePara1} {t.home.estatePara2}
+          </p>
+        </div>
+      </section>
 
       {/* Vineyards dark section */}
       <section className="bg-surface dark:bg-panel">
