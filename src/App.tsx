@@ -891,11 +891,11 @@ function Home({ onNav }: { onNav: Nav }) {
           >
             {t.home.statsIntro}
           </p>
-          <div className="relative mt-[68px] grid grid-cols-2 md:grid-cols-4 reveal reveal-d1">
+          <div className="relative mt-[68px] grid grid-cols-1 gap-10 sm:grid-cols-3 sm:gap-0 reveal reveal-d1">
             {t.home.stats.map((s, i) => (
               <div
                 key={s.label}
-                className={`flex flex-col gap-[18px] px-4 sm:px-9 ${i > 0 ? 'border-l border-ink/[0.16]' : 'pl-0'}`}
+                className={`flex flex-col gap-[18px] sm:px-9 ${i > 0 ? 'sm:border-l sm:border-ink/[0.16]' : 'sm:pl-0'}`}
               >
                 <span className="flex items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.6px] text-ink/[0.55]">
                   <span className="h-px w-4 bg-accent" />
@@ -920,10 +920,10 @@ function Home({ onNav }: { onNav: Nav }) {
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
         </div>
         <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[860px] reveal">
-          <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(28px,3.4vw,42px)] text-ink leading-[1.25]">
+          <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(28px,3.4vw,42px)] text-on-dark leading-[1.25]">
             {t.home.quote}
           </p>
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-ink/[0.7] mt-5">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-on-dark/[0.7] mt-5">
             {t.home.quoteSub}
           </p>
         </div>
@@ -1147,7 +1147,7 @@ function Vinedos() {
         </p>
       </section>
 
-      <section className="border-t border-ink/[0.12]">
+      <section className="border-t border-ink/[0.12] pb-14 lg:pb-24">
         {t.vinedos.cards.map((v, i) => (
           <SquareSplit key={v.num} imgRight={i % 2 === 1} img={VINEDOS_IMGS[i]} alt={v.name + v.italic}>
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{v.num}</p>
@@ -1170,12 +1170,14 @@ function Vinedos() {
       {/* Map — the Uco Valley in relief, three vineyards side by side */}
       <UcoMap />
 
-      {/* Soil — the alluvial fan */}
+      {/* Soil — the alluvial fan (with breathing space below the map) */}
+      <div className="pt-14 lg:pt-24">
       <SquareSplit imgRight img={`${A}/soil-laconsulta.jpg`} imgClass="object-[50%_58%]" alt={t.vinedos.narrative.soilTitle}>
         <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.vinedos.narrative.soilEyebrow}</p>
         <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px]">{t.vinedos.narrative.soilTitle}</h2>
         <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.74] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.soilBody}</p>
       </SquareSplit>
+      </div>
 
       {/* Old vines */}
       <SquareSplit img={`${A}/vinedos-vines-1.jpg`} alt={t.vinedos.narrative.vinesTitle}>
@@ -1367,16 +1369,6 @@ function UcoMap() {
     </div>
   );
 
-  const credit = (
-    <p className="font-['IBM_Plex_Mono:Regular'] text-[8px] leading-[14px] tracking-[0.06em] text-on-dark/50">
-      {art.limits} ·{' '}
-      <a href="https://s2maps.eu" target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
-        Sentinel-2 cloudless 2016
-      </a>{' '}
-      by EOX IT Services GmbH (Copernicus Sentinel data, CC BY 4.0) · © OpenStreetMap
-    </p>
-  );
-
   return (
     <section id="mapa" className="relative scroll-mt-[72px] overflow-hidden border-t border-on-dark/[0.12] bg-[#0b0907] text-on-dark [container-type:inline-size]">
       <div className="lg:grid lg:grid-cols-[minmax(320px,0.4fr)_1fr]">
@@ -1392,7 +1384,6 @@ function UcoMap() {
               </div>
             </div>
             <UcoAltitude />
-            {credit}
           </div>
         )}
       </div>
@@ -1577,7 +1568,6 @@ function UcoMap() {
               <UcoInset className="h-[110px] w-auto" />
             </div>
           </div>
-          {credit}
         </div>
       )}
     </section>
