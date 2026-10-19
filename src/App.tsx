@@ -226,7 +226,7 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
             ALTAMIRA DE LOS ANDES
           </span>
           <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.5em] text-on-dark/70">
-            UCO VALLEY, MENDOZA
+            UCO VALLEY · MENDOZA
           </span>
         </div>
         <span className="h-px w-14 bg-on-dark/30" />
@@ -360,7 +360,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
             isHome ? 'text-white/70' : 'text-ink/[0.55]'
           }`}
         >
-          UCO VALLEY, MENDOZA
+          UCO VALLEY · MENDOZA
         </span>
       </button>
 
@@ -494,7 +494,7 @@ function Footer({ onNav }: { onNav: Nav }) {
               ALTAMIRA DE LOS ANDES
             </span>
             <span className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.42em] mt-[10px] pl-px text-on-dark/[0.7]">
-              UCO VALLEY, MENDOZA
+              UCO VALLEY · MENDOZA
             </span>
           </div>
           <p
@@ -1600,7 +1600,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
   const t = useT();
   const inquiryWine = inquiryWineId ? t.wineCatalog.find((w) => w.id === inquiryWineId) : undefined;
   const inquiryName = inquiryWine ? `${inquiryWine.name} ${inquiryWine.sub}` : '';
-  const CELLAR = `${A}/contact-bg.jpg`;
+  const CELLAR = `${A}/altamira-vy.jpg`;
   const fields = [
     { label: t.contacto.fields[0], type: 'text' },
     { label: t.contacto.fields[1], type: 'email' },
