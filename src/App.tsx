@@ -47,7 +47,7 @@ const HOME_AWARDS: { img: string; critic: string; wineId?: string; note?: string
   { img: `${A}/b1740.png`, critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
   { img: `${A}/226c0.png`, critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
 ];
-const VINEDOS_IMGS = [`${A}/altamira-vy.jpg`, `${A}/vistaflores-pond-sq.jpg`, `${A}/vinedos-poplars-sq.jpg`];
+const VINEDOS_IMGS = [`${A}/vinedos-poplars-sq.jpg`, `${A}/vistaflores-pond-sq.jpg`, `${A}/la-consulta-vineyard.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 
 // Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
@@ -605,7 +605,7 @@ function SquareSplit({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`[container-type:inline-size] ${dark ? 'border-t border-on-dark/[0.14]' : ''}`}>
+    <div className={`[container-type:inline-size] ${dark ? 'border-t border-ink/[0.14]' : ''}`}>
       <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-[minmax(50cqw,auto)]">
         <div className={`group relative aspect-square overflow-hidden lg:aspect-auto ${imgRight ? 'lg:order-2' : ''}`}>
           {media ?? (
@@ -819,36 +819,36 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* "Unique wines" — scene-setting square pair (no wines on the Home) */}
-      <div className="bg-panel">
+      <div className="bg-surface dark:bg-panel">
       <SquareSplit img={`${A}/estate-home.jpg`} alt={t.home.estateEyebrow} imgClass="object-[50%_60%]">
-        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.home.estateEyebrow}</p>
-        <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,44px)] text-on-dark leading-[1.16]">
+        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.estateEyebrow}</p>
+        <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3vw,44px)] text-ink leading-[1.16]">
           {t.home.estateTitle1}
           <br />
           {t.home.estateTitle2}
         </h2>
-        <p className="font-['Archivo:Light'] text-[clamp(15px,1.3vw,19px)] text-on-dark/[0.86] leading-[1.72] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+        <p className="font-['Archivo:Light'] text-[clamp(15px,1.3vw,19px)] text-ink/[0.86] leading-[1.72] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
           {t.home.estatePara1}
         </p>
-        <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.66] leading-[1.75] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+        <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.66] leading-[1.75] max-w-[560px]" style={{ fontVariationSettings: '"wdth" 100' }}>
           {t.home.estatePara2}
         </p>
       </SquareSplit>
       </div>
 
       {/* Vineyards dark section */}
-      <section className="bg-panel">
+      <section className="bg-surface dark:bg-panel">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:gap-[60px] justify-center px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[100px] pb-16">
           <div className="flex flex-col gap-[21px] max-w-[562px]">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5] reveal">
+            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">
               {t.home.vyEyebrow}
             </p>
-            <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.5vw,44px)] text-on-dark leading-[1.12] reveal reveal-d1">
+            <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.5vw,44px)] text-ink leading-[1.12] reveal reveal-d1">
               {t.home.vyTitle1} {t.home.vyTitle2}
             </h2>
           </div>
           <p
-            className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.7] leading-[27px] max-w-[440px] reveal reveal-d2"
+            className="font-['Archivo:Light'] text-[15px] text-ink/[0.7] leading-[27px] max-w-[440px] reveal reveal-d2"
             style={{ fontVariationSettings: '"wdth" 100' }}
           >
             {t.home.vyIntro}
@@ -865,24 +865,24 @@ function Home({ onNav }: { onNav: Nav }) {
             alt={vyd.name}
             imgClass="object-center"
           >
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{vyd.num}</p>
-            <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(30px,3vw,42px)] text-on-dark leading-[1.12]">
+            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{vyd.num}</p>
+            <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(30px,3vw,42px)] text-ink leading-[1.12]">
               {vyd.name}
             </h3>
-            <p className="font-['Archivo:Light'] text-[14px] text-on-dark/[0.72] leading-[25.2px] max-w-[380px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+            <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.72] leading-[25.2px] max-w-[380px]" style={{ fontVariationSettings: '"wdth" 100' }}>
               {vyd.desc}
             </p>
-            <div className="border-t border-on-dark/[0.2] pt-5 flex gap-[38px]">
+            <div className="border-t border-ink/[0.2] pt-5 flex gap-[38px]">
               {vyd.stats.map((s) => (
                 <div key={s.l} className="flex flex-col gap-2">
-                  <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.28px] text-on-dark/[0.45]">{s.l}</p>
-                  <p className="font-['Cormorant_Garamond:Regular'] text-[23px] text-on-dark">{s.v}</p>
+                  <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.28px] text-ink/[0.45]">{s.l}</p>
+                  <p className="font-['Cormorant_Garamond:Regular'] text-[23px] text-ink">{s.v}</p>
                 </div>
               ))}
             </div>
             <button
               onClick={() => onNav('vinedos', undefined, 'mapa')}
-              className="self-start border border-on-dark/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-on-dark hover:border-white/70 transition-colors"
+              className="self-start border border-ink/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-ink hover:border-ink/60 dark:hover:border-white/70 transition-colors"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
               {t.home.vyBtn}
@@ -891,12 +891,12 @@ function Home({ onNav }: { onNav: Nav }) {
         ))}
 
         {/* Stats band — oversized serif numerals over the altitude motif */}
-        <div className="relative overflow-hidden border-t border-on-dark/[0.14] px-5 sm:px-8 lg:px-12 pt-[84px] pb-16 lg:pb-[100px]">
-          <div className="pointer-events-none absolute inset-0 text-on-dark">
+        <div className="relative overflow-hidden border-t border-ink/[0.14] px-5 sm:px-8 lg:px-12 pt-[84px] pb-16 lg:pb-[100px]">
+          <div className="pointer-events-none absolute inset-0 text-ink">
             <Contours className="h-full w-full" lines={10} seed={7} opacity={0.07} />
           </div>
           <p
-            className="relative max-w-[720px] font-['Archivo:Light'] text-[19px] text-on-dark/[0.78] leading-[1.75] reveal"
+            className="relative max-w-[720px] font-['Archivo:Light'] text-[19px] text-ink/[0.78] leading-[1.75] reveal"
             style={{ fontVariationSettings: '"wdth" 100' }}
           >
             {t.home.statsIntro}
@@ -905,16 +905,16 @@ function Home({ onNav }: { onNav: Nav }) {
             {t.home.stats.map((s, i) => (
               <div
                 key={s.label}
-                className={`flex flex-col gap-[18px] px-4 sm:px-9 ${i > 0 ? 'border-l border-on-dark/[0.16]' : 'pl-0'}`}
+                className={`flex flex-col gap-[18px] px-4 sm:px-9 ${i > 0 ? 'border-l border-ink/[0.16]' : 'pl-0'}`}
               >
-                <span className="flex items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.6px] text-on-dark/[0.55]">
+                <span className="flex items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.6px] text-ink/[0.55]">
                   <span className="h-px w-4 bg-accent" />
                   {s.label}
                 </span>
-                <span className="font-['Cormorant_Garamond:Light'] text-[clamp(38px,8vw,80px)] leading-[0.86] tracking-[-0.01em] text-on-dark">
+                <span className="font-['Cormorant_Garamond:Light'] text-[clamp(38px,8vw,80px)] leading-[0.86] tracking-[-0.01em] text-ink">
                   {s.num}
                 </span>
-                <span className="font-['Cormorant_Garamond:Italic'] italic text-[15px] text-on-dark/[0.6]">
+                <span className="font-['Cormorant_Garamond:Italic'] italic text-[15px] text-ink/[0.6]">
                   {s.unit}
                 </span>
               </div>
@@ -930,10 +930,10 @@ function Home({ onNav }: { onNav: Nav }) {
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
         </div>
         <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[860px] reveal">
-          <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(28px,3.4vw,42px)] text-on-dark leading-[1.25]">
+          <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(28px,3.4vw,42px)] text-ink leading-[1.25]">
             {t.home.quote}
           </p>
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-on-dark/[0.7] mt-5">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-ink/[0.7] mt-5">
             {t.home.quoteSub}
           </p>
         </div>
