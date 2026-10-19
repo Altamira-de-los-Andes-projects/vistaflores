@@ -4,6 +4,9 @@
   "robots": {
     "index": false
   },
+  "icons": {
+    "icon": "/favicon.svg"
+  },
   "openGraph": {
     "image": "https://altamira-de-los-andes.vercel.app/og-image.jpg"
   },

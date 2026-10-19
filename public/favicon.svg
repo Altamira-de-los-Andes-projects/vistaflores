@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Altamira de los Andes">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0d6a0"/>
+      <stop offset="0.55" stop-color="#d7a876"/>
+      <stop offset="1" stop-color="#b87a4e"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="13" fill="#6b1f2a"/>
+  <!-- the estate mark: an A peak resting on an arc -->
+  <g fill="none" stroke="url(#g)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 16 L24.5 40.5" stroke-width="3.3"/>
+    <path d="M32 16 L39.5 40.5" stroke-width="3.3"/>
+    <path d="M27.4 33.2 H36.6" stroke-width="2.7"/>
+  </g>
+  <path d="M13 42 Q32 33.6 51 42 Q32 39.2 13 42 Z" fill="url(#g)"/>
+</svg>
