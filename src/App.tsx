@@ -11,6 +11,7 @@ const A = `${import.meta.env.BASE_URL}assets`;
 // News is hidden for now (client request); flip to true to bring back the nav item, the Home
 // section and the #/novedades page.
 const SHOW_NEWS = false;
+const SHOW_AWARDS = false;
 
 // Themed replacements for stock images that didn't reference wine/vineyards
 const IMG = {
@@ -526,12 +527,12 @@ function Footer({ onNav }: { onNav: Nav }) {
               {t.footer.phoneLabel}
             </p>
             <p
-              className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]"
+              className="font-['Archivo:Light'] text-[12px] sm:text-[13.5px] text-on-dark leading-[21px] sm:leading-[24.3px]"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              Tel +54 261 4299962
+              Argentina +54 261 4299962
               <br />
-              Mobile USA +1 (305) 988 5992
+              USA +1 (305) 988 5992
             </p>
           </div>
         </div>
@@ -931,7 +932,7 @@ function Home({ onNav }: { onNav: Nav }) {
 
       {/* Gallery — a horizontal film-strip of the estate, spaced so no two photos share a hard edge */}
       {/* AWARDS */}
-      <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
+      {SHOW_AWARDS && <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
         <div className="flex flex-col gap-[23px] items-center text-center mb-[27px] reveal">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.awardsEyebrow}</p>
           <h2 className="font-['Cormorant_Garamond:Light'] text-[28px] sm:text-[34px] lg:text-[40px] text-ink leading-[1.14] lg:leading-[45.6px]">{t.home.awardsTitle}</h2>
@@ -967,7 +968,7 @@ function Home({ onNav }: { onNav: Nav }) {
             );
           })}
         </div>
-      </section>
+      </section>}
 
       {/* News section */}
       {SHOW_NEWS && (
@@ -1285,7 +1286,7 @@ function useMedia(query: string) {
 
 function UcoInset({ className }: { className?: string }) {
   return (
-    <svg viewBox="438 14 372 600" className={className} aria-hidden="true">
+    <svg viewBox="520 20 280 540" className={className} aria-hidden="true">
       <path d={CHILE} fill="none" stroke="#f2ede4" strokeOpacity="0.22" strokeWidth="1.4" strokeLinejoin="round" />
       <path d={ARG_REST} fill="#f2ede4" fillOpacity="0.1" stroke="#f2ede4" strokeOpacity="0.5" strokeWidth="1.4" strokeLinejoin="round" />
       <path d={ARG_MENDOZA} fill={UCO_GOLD} stroke={UCO_GOLD} strokeWidth="1.4" strokeLinejoin="round" />
@@ -1371,13 +1372,13 @@ function UcoMap() {
 
   return (
     <section id="mapa" className="relative scroll-mt-[72px] overflow-hidden border-t border-on-dark/[0.12] bg-[#0b0907] text-on-dark [container-type:inline-size]">
-      <div className="lg:grid lg:grid-cols-[minmax(320px,0.4fr)_1fr]">
+      <div className="lg:grid lg:grid-cols-[minmax(280px,0.3fr)_minmax(0,1.7fr)]">
       <div className="flex flex-col justify-between gap-12 px-5 sm:px-8 pt-16 pb-8 lg:px-[clamp(24px,4vw,64px)] lg:py-20">
         {header}
         {!mobile && (
           <div className="flex flex-col gap-10">
             <div className="flex items-start gap-3">
-              <UcoInset className="h-[clamp(190px,17vw,260px)] w-auto" />
+              <UcoInset className="h-[clamp(300px,25vw,400px)] w-[220px] shrink-0" />
               <div className="flex flex-col pt-2">
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-on-dark/70">{art.argentina}</span>
@@ -1565,7 +1566,7 @@ function UcoMap() {
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
               </div>
-              <UcoInset className="h-[170px] w-auto" />
+              <UcoInset className="h-[360px] w-[240px] shrink-0" />
             </div>
           </div>
         </div>
