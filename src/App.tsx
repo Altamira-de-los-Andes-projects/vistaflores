@@ -1007,6 +1007,8 @@ function Home({ onNav }: { onNav: Nav }) {
 const STAGE_IMG = `${A}/vinos-stage.jpg`;
 const STAGE_H = 'h-[360px] sm:h-[440px] lg:h-[clamp(520px,44vw,680px)]';
 const BOTTLE_H = 'h-[230px] sm:h-[290px] lg:h-[clamp(300px,25vw,400px)]';
+// A lone bottle (filters Dama / Navigato) gets a larger size so it holds the whole stage.
+const BOTTLE_H_SOLO = 'h-[290px] sm:h-[365px] lg:h-[clamp(400px,33vw,520px)]';
 
 // ─── NUESTROS VINOS ───────────────────────────────────────────────────────────
 function Vinos({ onNav }: { onNav: Nav }) {
@@ -1082,16 +1084,16 @@ function Vinos({ onNav }: { onNav: Nav }) {
               {row.map((wine, i) => (
                 <button
                   key={wine.id}
-                  className={`group flex min-w-0 basis-1/2 flex-col sm:basis-1/3 lg:basis-1/6 cursor-pointer text-center reveal reveal-d${(i % 6) + 1}`}
+                  className={`group flex min-w-0 flex-col cursor-pointer text-center reveal reveal-d${(i % 6) + 1} ${row.length === 1 ? 'basis-full sm:basis-1/2 lg:basis-1/3' : 'basis-1/2 sm:basis-1/3 lg:basis-1/6'}`}
                   onClick={() => onNav('wine-detail', wine.id)}
                 >
                   <div className={`relative ${STAGE_H}`}>
-                    <span className="absolute bottom-[calc(11%-7px)] left-1/2 h-[12px] w-[78px] lg:w-[96px] -translate-x-1/2 rounded-[50%] bg-black/[0.6] blur-[7px] transition-all duration-700 group-hover:w-[62px] group-hover:bg-black/[0.4]" aria-hidden="true" />
+                    <span className={`absolute bottom-[calc(11%-7px)] left-1/2 h-[12px] -translate-x-1/2 rounded-[50%] bg-black/[0.6] blur-[7px] transition-all duration-700 group-hover:bg-black/[0.4] ${row.length === 1 ? 'w-[110px] lg:w-[140px] group-hover:w-[90px]' : 'w-[78px] lg:w-[96px] group-hover:w-[62px]'}`} aria-hidden="true" />
                     <div className="absolute inset-x-0 bottom-[11%] flex justify-center">
                       <img
                         src={wine.img}
                         alt={wine.name}
-                        className={`${BOTTLE_H} w-auto object-contain object-bottom drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2`}
+                        className={`${row.length === 1 ? BOTTLE_H_SOLO : BOTTLE_H} w-auto object-contain object-bottom drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2`}
                       />
                     </div>
                   </div>
