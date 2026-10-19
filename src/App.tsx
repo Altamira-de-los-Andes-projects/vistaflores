@@ -569,18 +569,16 @@ function Footer({ onNav }: { onNav: Nav }) {
         </div>
       </div>
 
-      <div className="border-t border-on-dark/[0.2] flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 pt-[23px] pb-[34px]">
-        <span className="flex flex-wrap items-center gap-x-5 gap-y-2 font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
+      <div className="border-t border-on-dark/[0.2] flex flex-col gap-1 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 pt-[23px] pb-[34px]">
+        <span className="whitespace-nowrap font-['IBM_Plex_Mono:Regular'] text-[6px] md:text-[9.5px] text-on-dark/[0.6] tracking-[0.25px] md:tracking-[1.33px]">
           {t.footer.copyright}
+        </span>
+        <span className="flex items-center gap-3 whitespace-nowrap font-['IBM_Plex_Mono:Regular'] text-[6px] md:text-[9.5px] text-on-dark/[0.6] tracking-[0.25px] md:tracking-[1.33px]">
           <button onClick={() => onNav('privacidad')} className="uppercase underline-offset-4 hover:text-on-dark hover:underline">
             {t.footer.privacy}
           </button>
+          {t.footer.warning && <span>{t.footer.warning}</span>}
         </span>
-        {t.footer.warning && (
-          <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-on-dark/[0.6] tracking-[1.33px]">
-            {t.footer.warning}
-          </span>
-        )}
       </div>
     </footer>
   );
@@ -1995,14 +1993,16 @@ function Site() {
 function FooterBar({ onNav }: { onNav: Nav }) {
   const t = useT();
   return (
-    <footer className="bg-accent-solid flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
-      <span className="flex flex-wrap items-center gap-x-5 gap-y-2 font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">
+    <footer className="bg-accent-solid flex flex-col gap-1 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
+      <span className="whitespace-nowrap font-['IBM_Plex_Mono:Regular'] text-[6px] md:text-[9.5px] tracking-[0.25px] md:tracking-[1.33px] text-on-dark/[0.7]">
         {t.footer.copyright}
+      </span>
+      <span className="flex items-center gap-3 whitespace-nowrap font-['IBM_Plex_Mono:Regular'] text-[6px] md:text-[9.5px] tracking-[0.25px] md:tracking-[1.33px] text-on-dark/[0.7]">
         <button onClick={() => onNav('privacidad')} className="uppercase underline-offset-4 hover:text-on-dark hover:underline">
           {t.footer.privacy}
         </button>
+        {t.footer.warning && <span>{t.footer.warning}</span>}
       </span>
-      {t.footer.warning && <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] tracking-[1.33px] text-on-dark/[0.7]">{t.footer.warning}</span>}
     </footer>
   );
 }
