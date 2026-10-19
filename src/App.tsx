@@ -1668,8 +1668,8 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
             <div className="flex flex-col gap-[9px]">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.phoneLabel}</p>
               <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                Tel +54 261 4299962<br />
-                Mobile USA +1 (305) 988 5992
+                Argentina +54 261 4299962<br />
+                USA +1 (305) 988 5992
               </p>
             </div>
             <div className="col-span-2 flex flex-col gap-[9px]">
