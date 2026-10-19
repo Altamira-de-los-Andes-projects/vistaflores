@@ -808,14 +808,6 @@ function Home({ onNav }: { onNav: Nav }) {
             {t.home.heroCta}
           </button>
         </div>
-        <div className="absolute bottom-[38px] left-5 sm:left-8 lg:left-12 flex items-center gap-4">
-          <div className="border border-on-dark/[0.5] rounded-full size-[32px] flex items-center justify-center">
-            <span className="text-on-dark/[0.85] text-[12px]">↓</span>
-          </div>
-          <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-on-dark/[0.7]">
-            {t.home.discover}
-          </span>
-        </div>
       </section>
 
       {/* "Unique wines" — scene-setting square pair (no wines on the Home) */}
@@ -1141,11 +1133,11 @@ function Vinedos() {
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.3)] via-transparent via-[32%] to-[rgba(20,18,15,0.6)]" />
           <div className="absolute inset-x-0 bottom-0 h-[68%] bg-gradient-to-t from-[rgba(20,18,15,0.94)] via-[rgba(20,18,15,0.6)] via-[38%] to-transparent" />
         </div>
-        <div className="relative px-5 sm:px-8 lg:px-12 pb-10 flex flex-col gap-[18px] [text-shadow:0_2px_16px_rgba(0,0,0,0.95)]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.9] hero-line-1">{t.vinedos.heroEyebrow}</p>
-          <h1 className="font-['Cormorant_Garamond:Light'] text-[36px] sm:text-[44px] lg:text-[54px] text-on-dark leading-[1.1] lg:leading-[59.4px] max-w-[760px] hero-line-2">
+        <div className="relative px-5 sm:px-8 lg:px-12 pb-10 flex flex-col gap-[11px] [text-shadow:0_2px_16px_rgba(0,0,0,0.95)]">
+          <h1 className="font-['Cormorant_Garamond:Light'] text-[clamp(27px,3.7vw,46px)] lg:whitespace-nowrap text-on-dark leading-[1.08] hero-line-2">
             {t.vinedos.heroTitle1} {t.vinedos.heroTitle2}
           </h1>
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9px] sm:text-[9.5px] tracking-[2.28px] text-on-dark/[0.85] hero-line-1">{t.vinedos.heroEyebrow}</p>
         </div>
       </section>
 
