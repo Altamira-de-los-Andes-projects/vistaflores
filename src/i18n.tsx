@@ -5,7 +5,7 @@ export const LANGS: Lang[] = ['es', 'en', 'pt'];
 
 // ─── Copy (ES source of truth) ────────────────────────────────────────────────
 const es = {
-  nav: { home: 'Inicio', vinos: 'Nuestros Vinos', vinedos: 'Viñedos', novedades: 'Novedades', contacto: 'Contacto' },
+  nav: { home: 'Inicio', vinos: 'Nuestros Vinos', vinedos: 'Nuestros Viñedos', galeria: 'Galería', novedades: 'Novedades', contacto: 'Contacto' },
   a11y: { toDark: 'Activar modo oscuro', toLight: 'Activar modo claro', dark: 'Modo oscuro', light: 'Modo claro', langOf: (l: string) => `Ver el sitio en ${l}` },
   gate: {
     line1: 'Vinos de altura del Valle de Uco,',
@@ -267,7 +267,7 @@ export type Copy = typeof es;
 
 // ─── English ──────────────────────────────────────────────────────────────────
 const en: Copy = {
-  nav: { home: 'Home', vinos: 'Our Wines', vinedos: 'Vineyards', novedades: 'News', contacto: 'Contact' },
+  nav: { home: 'Home', vinos: 'Our Wines', vinedos: 'Our Vineyards', galeria: 'Gallery', novedades: 'News', contacto: 'Contact' },
   a11y: { toDark: 'Switch to dark mode', toLight: 'Switch to light mode', dark: 'Dark mode', light: 'Light mode', langOf: (l: string) => `View the site in ${l}` },
   gate: {
     line1: 'High-altitude wines from the Uco Valley,',
@@ -527,7 +527,7 @@ const en: Copy = {
 
 // ─── Português ────────────────────────────────────────────────────────────────
 const pt: Copy = {
-  nav: { home: 'Início', vinos: 'Nossos Vinhos', vinedos: 'Vinhedos', novedades: 'Novidades', contacto: 'Contato' },
+  nav: { home: 'Início', vinos: 'Nossos Vinhos', vinedos: 'Nossos Vinhedos', galeria: 'Galeria', novedades: 'Novidades', contacto: 'Contato' },
   a11y: { toDark: 'Ativar modo escuro', toLight: 'Ativar modo claro', dark: 'Modo escuro', light: 'Modo claro', langOf: (l: string) => `Ver o site em ${l}` },
   gate: {
     line1: 'Vinhos de altitude do Vale de Uco,',

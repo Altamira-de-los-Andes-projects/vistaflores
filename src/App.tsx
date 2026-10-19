@@ -3,7 +3,7 @@ import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
 import { ARG_REST, ARG_MENDOZA, CHILE } from './mapdata';
 import { UCO_H, UCO_RIVER, UCO_ZONES, UCO_PT, UCO_KM5 } from './ucomap';
 
-type Page = 'home' | 'vinos' | 'vinedos' | 'novedades' | 'contacto' | 'wine-detail' | 'privacidad';
+type Page = 'home' | 'vinos' | 'vinedos' | 'galeria' | 'novedades' | 'contacto' | 'wine-detail' | 'privacidad';
 type Nav = (p: Page, wineId?: string, anchor?: string) => void;
 
 const A = `${import.meta.env.BASE_URL}assets`;
@@ -335,6 +335,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     ['home', t.nav.home],
     ['vinos', t.nav.vinos],
     ['vinedos', t.nav.vinedos],
+    ['galeria', t.nav.galeria],
     ['novedades', t.nav.novedades],
     ['contacto', t.nav.contacto],
   ].filter(([p]) => SHOW_NEWS || p !== 'novedades') as [Page, string][];
@@ -635,7 +636,7 @@ const GALLERY = [0.75, 1.5, 0.817, 1.334, 0.68, 0.75, 1.059, 0.75, 1.334, 0.68, 
   ar,
 }));
 
-function Gallery() {
+function Gallery({ showHeading = true }: { showHeading?: boolean }) {
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
@@ -682,10 +683,12 @@ function Gallery() {
 
   return (
     <section className="bg-surface pt-16 lg:pt-[110px] pb-14 lg:pb-[90px]">
-      <div className="flex flex-col gap-[18px] px-5 sm:px-8 lg:px-12 reveal">
-        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.galleryEyebrow}</p>
-        <h2 className="font-['Cormorant_Garamond:Light'] text-[28px] sm:text-[34px] lg:text-[40px] text-ink leading-[1.14]">{t.home.galleryTitle}</h2>
-      </div>
+      {showHeading && (
+        <div className="flex flex-col gap-[18px] px-5 sm:px-8 lg:px-12 reveal">
+          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.galleryEyebrow}</p>
+          <h2 className="font-['Cormorant_Garamond:Light'] text-[28px] sm:text-[34px] lg:text-[40px] text-ink leading-[1.14]">{t.home.galleryTitle}</h2>
+        </div>
+      )}
       <div
         ref={ref}
         role="group"
@@ -697,7 +700,7 @@ function Gallery() {
         onPointerCancel={endDrag}
         onKeyDown={onKeyDown}
         onScroll={updateBar}
-        className="mt-9 flex gap-3 sm:gap-4 overflow-x-auto scroll-px-5 sm:scroll-px-8 lg:scroll-px-12 px-5 sm:px-8 lg:px-12 snap-x snap-mandatory cursor-grab active:cursor-grabbing outline-none overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        className={`${showHeading ? 'mt-9' : 'mt-2 lg:mt-6'} flex gap-3 sm:gap-4 overflow-x-auto scroll-px-5 sm:scroll-px-8 lg:scroll-px-12 px-5 sm:px-8 lg:px-12 snap-x snap-mandatory cursor-grab active:cursor-grabbing outline-none overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}
       >
         {GALLERY.map((g, i) => (
           <figure
@@ -707,7 +710,7 @@ function Gallery() {
           >
             <img
               src={g.src}
-              alt={`${t.home.galleryTitle} — ${i + 1}`}
+              alt={`${t.home.galleryTitle} - ${i + 1}`}
               loading="lazy"
               decoding="async"
               draggable={false}
@@ -724,6 +727,22 @@ function Gallery() {
         />
       </div>
     </section>
+  );
+}
+
+function Galeria() {
+  useReveal();
+  const t = useT();
+  return (
+    <div className="bg-surface w-full">
+      <section className="border-b border-ink/[0.12] px-5 sm:px-8 lg:px-12 pt-20 pb-12 lg:pt-24 lg:pb-16">
+        <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">{t.nav.galeria}</p>
+        <h1 className="mt-5 max-w-[760px] font-['Cormorant_Garamond:Light'] text-[clamp(42px,6vw,76px)] leading-[1.02] text-ink reveal reveal-d1">
+          {t.home.galleryTitle}
+        </h1>
+      </section>
+      <Gallery showHeading={false} />
+    </div>
   );
 }
 
@@ -923,9 +942,7 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* Gallery — a horizontal film-strip of the estate, spaced so no two photos share a hard edge */}
-      <Gallery />
-
-      {/* Awards */}
+      {/* AWARDS */}
       <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
         <div className="flex flex-col gap-[23px] items-center text-center mb-[27px] reveal">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.awardsEyebrow}</p>
@@ -1868,7 +1885,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
 }
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
-const PAGES: Page[] = ['home', 'vinos', 'vinedos', 'novedades', 'contacto', 'wine-detail', 'privacidad'];
+const PAGES: Page[] = ['home', 'vinos', 'vinedos', 'galeria', 'novedades', 'contacto', 'wine-detail', 'privacidad'];
 
 function parseHash(): { page: Page; wineId?: string } {
   if (typeof window === 'undefined') return { page: 'home' };
@@ -1943,7 +1960,7 @@ function Site() {
     }
   }
 
-  const showFullFooter = page !== 'contacto' && page !== 'vinos' && page !== 'novedades' && page !== 'vinedos' && page !== 'privacidad';
+  const showFullFooter = page !== 'contacto' && page !== 'vinos' && page !== 'novedades' && page !== 'vinedos' && page !== 'galeria' && page !== 'privacidad';
 
   return (
     <div className="min-h-screen w-full bg-surface">
@@ -1959,6 +1976,7 @@ function Site() {
           <Header page={page} onNav={navigate} />
           {page === 'vinos' && <Vinos onNav={navigate} />}
           {page === 'vinedos' && <Vinedos />}
+          {page === 'galeria' && <Galeria />}
           {SHOW_NEWS && page === 'novedades' && <Novedades />}
           {page === 'contacto' && <Contacto onNav={navigate} inquiryWineId={inquiry} />}
           {page === 'privacidad' && <Privacidad />}
