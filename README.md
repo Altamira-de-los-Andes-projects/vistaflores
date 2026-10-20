@@ -131,6 +131,7 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
 - **Secuencia:** cumbres → vuelo → viñedo → uvas → manos → copa → atardecer en la montaña → cumbres (cierra en bucle).
 - Los clips fuente de Mixkit no están en el repo; estaban en una carpeta temporal `hd/`. Se identifican por su número de Mixkit: 4396, 51689, 8292, 29340, 17782, 24754, 22734 y 4695.
 - **Uvas tintas (12/10/2026):** el clip **24754** (manos con uvas **verdes**) se tapó con la foto C45 del cliente (racimo tinto) con un zoom lento, usando `tools/hero/swap_grapes.sh` sobre el video publicado (tramo 14,5–18,1 s). El recorte está en `tools/hero/c45-red-grapes.jpg`. Si algún día se regenera el video desde los clips con `build_hero.sh`, hay que volver a correr `swap_grapes.sh` después.
+- **Uvas en movimiento de vuelta (19/10/2026):** Sinclair aclaró que solo quería quitar la foto fija/primer plano (C45), no el clip de uvas. Se partió del video anterior a `16974bd` y se cortó solo el tramo de C45 (14,5–18,1 s): el clip 17782 (racimo tinto entre hojas) vuelve y funde directo al servido de la copa. Duración 22,5 s.
 
 ---
 
