@@ -11,6 +11,8 @@ const A = `${import.meta.env.BASE_URL}assets`;
 // News is hidden for now (client request); flip to true to bring back the nav item, the Home
 // section and the #/novedades page.
 const SHOW_NEWS = false;
+// Gallery is hidden for now; flip to true to bring back the nav item and the #/galeria page.
+const SHOW_GALLERY = false;
 const SHOW_AWARDS = false;
 
 // Themed replacements for stock images that didn't reference wine/vineyards
@@ -339,7 +341,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     ['galeria', t.nav.galeria],
     ['novedades', t.nav.novedades],
     ['contacto', t.nav.contacto],
-  ].filter(([p]) => SHOW_NEWS || p !== 'novedades') as [Page, string][];
+  ].filter(([p]) => (SHOW_NEWS || p !== 'novedades') && (SHOW_GALLERY || p !== 'galeria')) as [Page, string][];
   return (
     <header
       className={`z-50 flex items-center justify-between px-5 sm:px-8 lg:px-12 py-5 ${
@@ -1099,7 +1101,6 @@ function Vinos({ onNav }: { onNav: Nav }) {
                     </div>
                   </div>
                   <div className="px-2 lg:px-3 pt-6 pb-8 flex flex-col items-center gap-[10px]">
-                    <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] lg:text-[9px] tracking-[1.5px] text-ink/[0.55]">{wine.gridRegion}</p>
                     <p className="font-['Cormorant_Garamond:Regular'] text-[21px] lg:text-[clamp(18px,1.6vw,24px)] text-ink leading-[1.12]">
                       {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
                     </p>
@@ -1878,6 +1879,7 @@ function parseHash(): { page: Page; wineId?: string } {
   if (!h || h === 'home') return { page: 'home' };
   if (h.startsWith('wine/')) return { page: 'wine-detail', wineId: h.slice(5) || 'dama' };
   if (h === 'novedades' && !SHOW_NEWS) return { page: 'home' };
+  if (h === 'galeria' && !SHOW_GALLERY) return { page: 'home' };
   return PAGES.includes(h as Page) && h !== 'wine-detail' ? { page: h as Page } : { page: 'home' };
 }
 
@@ -1961,7 +1963,7 @@ function Site() {
           <Header page={page} onNav={navigate} />
           {page === 'vinos' && <Vinos onNav={navigate} />}
           {page === 'vinedos' && <Vinedos />}
-          {page === 'galeria' && <Galeria />}
+          {SHOW_GALLERY && page === 'galeria' && <Galeria />}
           {SHOW_NEWS && page === 'novedades' && <Novedades />}
           {page === 'contacto' && <Contacto onNav={navigate} inquiryWineId={inquiry} />}
           {page === 'privacidad' && <Privacidad />}
