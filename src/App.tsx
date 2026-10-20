@@ -1142,8 +1142,9 @@ function Vinedos() {
         </div>
       </section>
 
-      <section className="border-b border-ink/[0.12] px-5 sm:px-8 lg:px-12 py-14 lg:py-16">
-        <p className="max-w-[880px] font-['Archivo:Light'] text-[clamp(18px,1.6vw,22px)] text-ink/[0.84] leading-[1.7] reveal" style={{ fontVariationSettings: '"wdth" 100' }}>
+      <section className="border-b border-ink/[0.12] px-5 sm:px-8 lg:px-12 py-14 lg:py-16 flex flex-col gap-6">
+        <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(30px,3.4vw,46px)] text-ink leading-[1.12] reveal">{t.vinedos.introTitle}</h2>
+        <p className="max-w-[880px] font-['Archivo:Light'] text-[clamp(18px,1.6vw,22px)] text-ink/[0.84] leading-[1.7] reveal reveal-d1" style={{ fontVariationSettings: '"wdth" 100' }}>
           {t.vinedos.intro1}
         </p>
       </section>
@@ -1185,6 +1186,7 @@ function Vinedos() {
         <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.vinedos.narrative.vinesEyebrow}</p>
         <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px]">{t.vinedos.narrative.vinesTitle}</h2>
         <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody1}</p>
+        <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody2}</p>
       </SquareSplit>
 
       {/* Craftsmanship — hand-harvested, minimal intervention */}
@@ -1193,6 +1195,8 @@ function Vinedos() {
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.vinedos.narrative.craftEyebrow}</p>
           <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(26px,2.8vw,38px)] text-on-dark leading-[1.18] max-w-[500px]">{t.vinedos.narrative.craftTitle}</h2>
           <p className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody1}</p>
+          <p className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody2}</p>
+          <p className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody3}</p>
         </SquareSplit>
       </div>
     </div>
