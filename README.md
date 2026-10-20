@@ -188,7 +188,10 @@ Usar los scripts de `tools/map/` (Python con numpy y Pillow):
 Después hay que copiar `uco-sat.webp` a `public/assets/`.
 
 - Overpass (la API de OSM) suele estar caído. El espejo que funcionó fue `https://maps.mail.ru/osm/tools/overpass/api/interpreter`.
-- Las zonas muestran la **región oficial**, no la finca exacta. **Faltan las coordenadas reales de cada finca**: hay que pedírselas al cliente si quiere marcarlas.
+- ~~Las zonas muestran la región oficial, no la finca exacta.~~ **Desde el 20/10/2026 el mapa es un acercamiento a las tres fincas** (pedido de John):
+  - Coordenadas de la lista de Google Maps "Fincas Altamira de los Andes" (de Leonardo Gerbi): Altamira 33°45'37.1"S 69°09'59.2"W, Vista Flores 33°39'06.8"S 69°11'59.2"W, La Consulta 33°43'18.9"S 69°08'57.6"W. Están a menos de 15 km entre sí (Altamira–Vista Flores 12,4 km).
+  - `tools/map/build_fincas.py` baja la misma capa Sentinel‑2 2016 a zoom 14 solo alrededor de las fincas, la gira (Andes arriba) y escribe `public/assets/uco-fincas-wup.webp` y `src/ucofincas.ts`. Los tiles quedan en `tools/map/s2z14/` (ignorado por git).
+  - El encuadre se ajusta a la caja: en escritorio la sección mide la altura de la pantalla (menos el menú) y el mapa entra completo sin scroll. Se ven pines por finca (clic → tarjeta), el río Tunuyán y la escala de 2 km. Las zonas IG (`UCO_ZONES` en `ucomap.ts`) ya no se dibujan, pero los datos siguen ahí.
 
 ---
 

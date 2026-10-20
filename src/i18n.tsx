@@ -117,7 +117,7 @@ const es = {
     mapLabel: 'UBICACIÓN',
     mapPlace1: 'Valle de Uco',
     mapPlace2: 'Mendoza',
-    mapDesc: 'Los tres viñedos se distribuyen en el Valle de Uco, a menos de 30 km entre sí.',
+    mapDesc: 'Los tres viñedos se distribuyen en el Valle de Uco, a menos de 15 km entre sí.',
     mapPoints: ['Viñedos Altamira', 'Viñedos Vista Flores', 'Viñedos La Consulta'],
     mapArt: {
       chile: 'CHILE',
@@ -382,7 +382,7 @@ const en: Copy = {
     mapLabel: 'LOCATION',
     mapPlace1: 'Uco Valley',
     mapPlace2: 'Mendoza',
-    mapDesc: 'The three vineyards are spread across the Uco Valley, less than 30 km apart.',
+    mapDesc: 'The three vineyards are spread across the Uco Valley, less than 15 km apart.',
     mapPoints: ['Altamira Vineyard', 'Vista Flores Vineyard', 'La Consulta Vineyard'],
     mapArt: {
       chile: 'CHILE',
@@ -645,7 +645,7 @@ const pt: Copy = {
     mapLabel: 'LOCALIZAÇÃO',
     mapPlace1: 'Vale de Uco',
     mapPlace2: 'Mendoza',
-    mapDesc: 'Os três vinhedos se distribuem pelo Vale de Uco, a menos de 30 km entre si.',
+    mapDesc: 'Os três vinhedos se distribuem pelo Vale de Uco, a menos de 15 km entre si.',
     mapPoints: ['Vinhedos Altamira', 'Vinhedos Vista Flores', 'Vinhedos La Consulta'],
     mapArt: {
       chile: 'CHILE',
