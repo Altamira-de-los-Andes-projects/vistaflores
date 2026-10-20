@@ -1402,7 +1402,7 @@ function UcoMap() {
             <div className="flex min-h-0 flex-1 items-start gap-3">
               <UcoInset className="h-full max-h-[400px] w-auto min-w-0 shrink" />
               <div className="flex flex-col gap-[2px] pt-2">
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] uppercase text-[#9cc46e]">{art.valley}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] uppercase whitespace-nowrap text-[#9cc46e]">{art.valley}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-on-dark/70">{art.argentina}</span>
               </div>
@@ -1559,7 +1559,7 @@ function UcoMap() {
             <UcoScale vw={vw} />
             <div className="flex items-start gap-3">
               <div className="flex flex-col items-end gap-[2px] pt-1 text-right">
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] uppercase text-[#9cc46e]">{art.valley}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] uppercase whitespace-nowrap text-[#9cc46e]">{art.valley}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
               </div>
