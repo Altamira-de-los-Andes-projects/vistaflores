@@ -1403,13 +1403,14 @@ function UcoMap() {
 
   return (
     <section id="mapa" className="relative scroll-mt-[72px] overflow-hidden border-t border-on-dark/[0.12] bg-[#0b0907] text-on-dark">
-      <div className="lg:grid lg:h-[clamp(560px,calc(100svh-72px),900px)] lg:grid-cols-[minmax(280px,0.3fr)_minmax(0,1.7fr)]">
-      <div className="flex flex-col justify-between gap-8 px-5 sm:px-8 pt-16 pb-8 lg:min-h-0 lg:px-[clamp(24px,4vw,64px)] lg:py-[clamp(28px,6vh,64px)]">
+      <div className="lg:grid lg:h-[clamp(560px,calc(100svh-72px),900px)] lg:grid-cols-[minmax(320px,0.32fr)_minmax(0,1.68fr)]">
+      <div className="flex flex-col gap-8 px-5 sm:px-8 pt-16 pb-8 lg:min-h-0 lg:gap-[clamp(16px,3vh,32px)] lg:overflow-hidden lg:px-[clamp(24px,2.6vw,48px)] lg:py-[clamp(24px,5vh,56px)]">
         {header}
         {!mobile && (
-          <div className="flex flex-col gap-6">
-            <div className="flex items-start gap-3">
-              <UcoInset className="h-[clamp(150px,calc(100svh-560px),340px)] w-auto shrink-0" />
+          <div className="flex min-h-0 flex-1 flex-col justify-end gap-[clamp(14px,2.5vh,24px)]">
+            {/* the Argentina inset takes whatever height is left, so the column never overflows the map */}
+            <div className="flex min-h-0 flex-1 items-start gap-3">
+              <UcoInset className="h-full max-h-[340px] w-auto min-w-0 shrink" />
               <div className="flex flex-col pt-2">
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-on-dark/70">{art.argentina}</span>
