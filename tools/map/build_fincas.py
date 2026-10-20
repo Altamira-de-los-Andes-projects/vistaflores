@@ -13,7 +13,7 @@ ROOT = os.path.abspath(os.path.join(D, '..', '..'))
 LON_W, LON_E, LAT_N, LAT_S = -69.52, -68.90, -33.54, -33.89   # uco-sat.webp frame (build_v2.py)
 Z_BASE, W_BASE = 13, 2400
 Z = 14
-PX_PER_UNIT = 2.2   # output pixels per ucomap unit (one unit ≈ 24 m)
+PX_PER_UNIT = 2.0   # output pixels per ucomap unit (one unit ≈ 24 m)
 
 def merc(lon, lat, z):
     n = 2 ** z * 256
@@ -39,7 +39,7 @@ FINCAS = {
 }
 
 # image extent in north-up ucomap units (x = east, y = south)
-UX0, UX1, UY0, UY1 = 600, 1800, 69, 1479
+UX0, UX1, UY0, UY1 = 250, 1800, 0, 1629
 
 tx0, ty0 = int((BX0 + UX0 / S) * K // 256), int((BY0 + UY0 / S) * K // 256)
 tx1, ty1 = int((BX0 + UX1 / S) * K // 256), int((BY0 + UY1 / S) * K // 256)

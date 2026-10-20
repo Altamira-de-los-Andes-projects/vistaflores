@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
-import { ARG_REST, ARG_MENDOZA, CHILE } from './mapdata';
+import { ARG_REST, ARG_MENDOZA, ARG_UCO, CHILE } from './mapdata';
 import { UCO_H, UCO_RIVER, UCO_KM5 } from './ucomap';
 import { FINCAS_IMG, FINCAS_PT } from './ucofincas';
 
@@ -1265,10 +1265,12 @@ function Novedades() {
 // fits on one screen, with the Andes foothills on top descending east to the vineyards.
 // Shown west-up: ucomap.ts stays north-up; rotated space is X' = UCO_H - y, Y' = x.
 const UCO_ROT = `matrix(0 1 -1 0 ${UCO_H} 0)`;
-// the area that must always be visible (west-up units); the frame grows around it to fill the box
-const UCO_FOCUS_DESKTOP = [440, 930, 830, 630] as const;
-const UCO_FOCUS_MOBILE = [520, 1010, 670, 540] as const;
+// the area that must always be visible (west-up units); the frame grows around it to fill the box.
+// Pulled back enough to show the estates sitting at the foot of the Andes.
+const UCO_FOCUS_DESKTOP = [300, 600, 1110, 980] as const;
+const UCO_FOCUS_MOBILE = [380, 790, 950, 810] as const;
 const UCO_GOLD = '#f0d6a0';
+const UCO_GREEN = '#9cc46e';
 const UCO_WATER = '#bfe0ea';
 // index ↔ t.vinedos.cards (Altamira, Vista Flores, La Consulta); the label side keeps the names apart
 const UCO_FINCAS = [
@@ -1312,20 +1314,8 @@ function UcoInset({ className }: { className?: string }) {
       <path d={CHILE} fill="none" stroke="#f2ede4" strokeOpacity="0.22" strokeWidth="1.4" strokeLinejoin="round" />
       <path d={ARG_REST} fill="#f2ede4" fillOpacity="0.1" stroke="#f2ede4" strokeOpacity="0.5" strokeWidth="1.4" strokeLinejoin="round" />
       <path d={ARG_MENDOZA} fill={UCO_GOLD} stroke={UCO_GOLD} strokeWidth="1.4" strokeLinejoin="round" />
+      <path d={ARG_UCO} fill={UCO_GREEN} stroke={UCO_GREEN} strokeWidth="0.8" strokeLinejoin="round" />
     </svg>
-  );
-}
-
-function UcoAltitude({ className = '' }: { className?: string }) {
-  const t = useT();
-  return (
-    <div className={`flex flex-col ${className}`}>
-      <p className="font-['Cormorant_Garamond:Light'] text-[clamp(44px,4.6vw,68px)] leading-[0.9] text-on-dark [text-shadow:0_2px_18px_rgba(0,0,0,0.6)]">
-        {t.home.stats[0].num}
-        <span className="ml-1 font-['Cormorant_Garamond:Light_Italic'] italic text-[0.5em] text-[#f0d6a0]">m</span>
-      </p>
-      <p className="mt-2 font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.22em] uppercase text-on-dark/70">{t.vinedos.mapArt.asl}</p>
-    </div>
   );
 }
 
@@ -1407,16 +1397,16 @@ function UcoMap() {
       <div className="flex flex-col gap-8 px-5 sm:px-8 pt-16 pb-8 lg:min-h-0 lg:gap-[clamp(16px,3vh,32px)] lg:overflow-hidden lg:px-[clamp(24px,2.6vw,48px)] lg:py-[clamp(24px,5vh,56px)]">
         {header}
         {!mobile && (
-          <div className="flex min-h-0 flex-1 flex-col justify-end gap-[clamp(14px,2.5vh,24px)]">
+          <div className="flex min-h-0 flex-1 flex-col justify-end">
             {/* the Argentina inset takes whatever height is left, so the column never overflows the map */}
             <div className="flex min-h-0 flex-1 items-start gap-3">
-              <UcoInset className="h-full max-h-[340px] w-auto min-w-0 shrink" />
-              <div className="flex flex-col pt-2">
+              <UcoInset className="h-full max-h-[400px] w-auto min-w-0 shrink" />
+              <div className="flex flex-col gap-[2px] pt-2">
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] uppercase text-[#9cc46e]">{art.valley}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[12px] tracking-[0.2em] text-on-dark/70">{art.argentina}</span>
               </div>
             </div>
-            <UcoAltitude />
           </div>
         )}
       </div>
@@ -1566,12 +1556,10 @@ function UcoMap() {
       {mobile && (
         <div className="flex flex-col gap-6 px-5 sm:px-8 pb-14 pt-6">
           <div className="flex items-end justify-between gap-6">
-            <div className="flex flex-col gap-5">
-              <UcoAltitude />
-              <UcoScale vw={vw} />
-            </div>
+            <UcoScale vw={vw} />
             <div className="flex items-start gap-3">
-              <div className="flex flex-col items-end pt-1 text-right">
+              <div className="flex flex-col items-end gap-[2px] pt-1 text-right">
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] uppercase text-[#9cc46e]">{art.valley}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
               </div>
