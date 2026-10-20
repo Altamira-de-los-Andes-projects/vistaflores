@@ -1314,7 +1314,9 @@ function UcoInset({ className }: { className?: string }) {
       <path d={CHILE} fill="none" stroke="#f2ede4" strokeOpacity="0.22" strokeWidth="1.4" strokeLinejoin="round" />
       <path d={ARG_REST} fill="#f2ede4" fillOpacity="0.1" stroke="#f2ede4" strokeOpacity="0.5" strokeWidth="1.4" strokeLinejoin="round" />
       <path d={ARG_MENDOZA} fill={UCO_GOLD} stroke={UCO_GOLD} strokeWidth="1.4" strokeLinejoin="round" />
-      <path d={ARG_UCO} fill={UCO_GREEN} stroke={UCO_GREEN} strokeWidth="0.8" strokeLinejoin="round" />
+      {/* the valley is a thin strip at this scale: a soft halo and a firm edge keep it readable */}
+      <path d={ARG_UCO} fill={UCO_GREEN} stroke={UCO_GREEN} strokeOpacity="0.35" strokeWidth="5" strokeLinejoin="round" />
+      <path d={ARG_UCO} fill={UCO_GREEN} stroke={UCO_GREEN} strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
   );
 }
