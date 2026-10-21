@@ -1044,7 +1044,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
 
   return (
     <div className="bg-surface w-full">
-      <section className="relative h-[340px] overflow-hidden flex items-center">
+      <section className="relative h-[340px] overflow-hidden flex items-center max-sm:items-stretch">
         {/* on phones the photo is scaled up and raised so the dark band of the mountains sits behind the title */}
         <img src={`${A}/vinos-hero.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_40%] max-sm:inset-auto max-sm:left-0 max-sm:top-[-10%] max-sm:h-[150%]" />
         {/* a light overall veil so the photo sits back behind the text */}
@@ -1055,10 +1055,14 @@ function Vinos({ onNav }: { onNav: Nav }) {
         />
         {/* on phones the text spans the whole bright photo: an even veil keeps it readable */}
         <div className="absolute inset-0 bg-[rgba(20,18,15,0.24)] sm:hidden" aria-hidden="true" />
-        <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.75),0_2px_16px_rgba(0,0,0,0.55)]">
-          <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.92] hero-line-1">{t.vinos.heroEyebrow}</p>
-          {/* one line in every language: on smaller screens the size follows the width (PT is the longest) */}
-          <h1 className="font-['Cormorant_Garamond:Light'] whitespace-nowrap text-[calc(6.8vw-3px)] sm:text-[min(44px,calc(6.8vw-4px))] lg:text-[52px] text-on-dark leading-[1.12] lg:leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
+        {/* on phones the title sits up on the blue sky and the paragraph down on the brown foot of the
+            mountains, so no white text lands on the snow */}
+        <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4 max-sm:w-full max-sm:justify-between max-sm:py-6 [text-shadow:0_1px_3px_rgba(0,0,0,0.75),0_2px_16px_rgba(0,0,0,0.55)]">
+          <div className="flex flex-col gap-4">
+            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.92] hero-line-1">{t.vinos.heroEyebrow}</p>
+            {/* one line in every language: on smaller screens the size follows the width (PT is the longest) */}
+            <h1 className="font-['Cormorant_Garamond:Light'] whitespace-nowrap text-[calc(6.8vw-3px)] sm:text-[min(44px,calc(6.8vw-4px))] lg:text-[52px] text-on-dark leading-[1.12] lg:leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
+          </div>
           <p className="font-['Archivo:Light'] text-[15px] text-on-dark leading-[25.5px] max-w-[540px] hero-line-3" style={{ fontVariationSettings: '"wdth" 100' }}>
             {t.vinos.heroPara}
           </p>
@@ -1595,7 +1599,7 @@ function UcoMap() {
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
               </div>
-              <UcoInset className="h-[220px] w-auto shrink-0" />
+              <UcoInset className="h-[270px] w-auto shrink-0" />
             </div>
           </div>
         </div>
