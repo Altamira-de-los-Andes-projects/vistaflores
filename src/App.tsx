@@ -1090,7 +1090,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
           <div key={`${cols}-${r}-${filter}`} className="relative">
             {/* the landscape the bottles stand in: mountains above, vineyard ground below */}
             <div className={`absolute inset-x-0 top-0 overflow-hidden ${STAGE_H}`} aria-hidden="true">
-              <img src={STAGE_IMG} alt="" className="absolute inset-0 size-full object-cover object-[50%_54%]" />
+              <img src={STAGE_IMG} alt="" className="absolute inset-0 size-full object-cover object-[50%_42%]" />
               <div className="absolute inset-0 bg-black/[0.28]" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/0 from-[55%] to-black/30" />
             </div>
