@@ -1809,9 +1809,10 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
           )}
 
           <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[2px] text-ink/[0.55] mb-1">{t.wineDetail.fichaLabel}</p>
-          <dl className="grid grid-cols-2 gap-x-10">
+          {/* one column on phones so values like "18 months · French oak" stay on one line */}
+          <dl className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-10">
             {wine.ficha.map((s) => (
-              <div key={s.label} className={`border-t border-ink/[0.16] py-[16px] ${s.value.length > 24 ? 'col-span-2' : ''}`}>
+              <div key={s.label} className={`border-t border-ink/[0.16] py-[16px] ${s.value.length > 24 ? 'sm:col-span-2' : ''}`}>
                 <dt className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1.4px] text-ink/[0.5] mb-[6px]">{s.label}</dt>
                 <dd className="font-['Cormorant_Garamond:Regular'] text-[20px] text-ink leading-[1.25]">{s.value}</dd>
               </div>
