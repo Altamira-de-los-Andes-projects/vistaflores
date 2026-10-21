@@ -1293,12 +1293,14 @@ const UCO_FOCUS_DESKTOP = [300, 600, 1110, 980] as const;
 const UCO_FOCUS_MOBILE = [380, 790, 950, 810] as const;
 const UCO_GOLD = '#f0d6a0';
 const UCO_GREEN = '#9cc46e';
-const UCO_WATER = '#bfe0ea';
+const UCO_WATER = '#3f97d6';
+const UCO_WATER_CORE = '#6cbcf0';
 // index ↔ t.vinedos.cards (Altamira, Vista Flores, La Consulta); the label side keeps the names apart
 const UCO_FINCAS = [
-  { key: 'altamira', name: 'Altamira', pt: FINCAS_PT.altamira, below: false },
-  { key: 'vistaFlores', name: 'Vista Flores', pt: FINCAS_PT.vistaFlores, below: false },
-  { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, below: true },
+  { key: 'altamira', name: 'Altamira', pt: FINCAS_PT.altamira, below: false, toLeft: false },
+  { key: 'vistaFlores', name: 'Vista Flores', pt: FINCAS_PT.vistaFlores, below: false, toLeft: false },
+  // La Consulta sits right by the Tunuyán: its name runs to the left of the pin, clear of the river
+  { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, below: true, toLeft: true },
 ] as const;
 // a point on the Tunuyán between the estates and the river's heading there (west-up)
 const UCO_RIVER_LABEL = { pt: [944, 1590], angle: 58 } as const;
@@ -1460,14 +1462,14 @@ function UcoMap() {
             </filter>
           </defs>
           <g transform={UCO_ROT}>
-            <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.4" strokeWidth="7" filter="url(#uco-glow)" />
-            <path d={UCO_RIVER} fill="none" stroke="#eaf7fb" strokeOpacity="0.85" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.6" strokeWidth="8" filter="url(#uco-glow)" />
+            <path d={UCO_RIVER} fill="none" stroke={UCO_WATER_CORE} strokeOpacity="0.95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           </g>
         </svg>
 
         {/* context labels */}
         <span
-          className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(13px,1.15vw,17px)] tracking-[0.06em] text-[#dff1f6] ${shadow}`}
+          className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(13px,1.15vw,17px)] tracking-[0.06em] text-[#9fd3f5] ${shadow}`}
           style={{ ...at(UCO_RIVER_LABEL.pt), transform: `translate(-50%,-50%) rotate(${UCO_RIVER_LABEL.angle}deg) translateY(-14px)` }}
         >
           {art.river}
@@ -1512,7 +1514,7 @@ function UcoMap() {
                 {!dim && <span className="uco-pulse" />}
               </span>
               <span
-                className={`pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(16px,1.5vw,22px)] leading-none text-white ${shadow} ${f.below ? 'top-[calc(100%+6px)]' : 'bottom-[calc(100%+6px)]'}`}
+                className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(16px,1.5vw,22px)] leading-none text-white ${shadow} ${f.toLeft ? 'right-[calc(50%-4px)]' : 'left-1/2 -translate-x-1/2'} ${f.below ? 'top-[calc(100%+6px)]' : 'bottom-[calc(100%+6px)]'}`}
               >
                 {art.vineyards[i]}
               </span>
