@@ -818,10 +818,14 @@ function Home({ onNav }: { onNav: Nav }) {
       <section className="bg-surface px-5 sm:px-8 lg:px-12 py-20 lg:py-[130px] dark:bg-panel">
         <div className="mx-auto flex max-w-[820px] flex-col items-center gap-7 text-center reveal">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.estateEyebrow}</p>
-          <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(28px,3.4vw,48px)] text-ink leading-[1.16]">
+          <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(26px,2.7vw,40px)] text-ink leading-[1.28] text-balance">
             {t.home.estateTitle1}
-            <br />
-            {t.home.estateTitle2}
+            {t.home.estateTitle2 && (
+              <>
+                <br />
+                {t.home.estateTitle2}
+              </>
+            )}
           </h2>
           <span className="h-px w-14 bg-ink/[0.25]" aria-hidden="true" />
           <p className="font-['Archivo:Light'] text-[clamp(15px,1.35vw,19px)] text-ink/[0.82] leading-[1.85]" style={{ fontVariationSettings: '"wdth" 100' }}>
@@ -1161,9 +1165,9 @@ function Vinedos() {
             <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.7] leading-[25px] max-w-[420px]" style={{ fontVariationSettings: '"wdth" 100' }}>{v.desc}</p>
             <div className="mt-2 max-w-[420px]">
               {v.specs.map((sp, j) => (
-                <div key={sp.l} className={`flex justify-between py-[11px] border-t border-ink/[0.14] ${j === v.specs.length - 1 ? 'border-b' : ''}`}>
-                  <span className="font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-ink/[0.5]">{sp.l}</span>
-                  <span className="font-['Cormorant_Garamond:Regular'] text-[14px] text-ink">{sp.v}</span>
+                <div key={sp.l} className={`flex items-baseline justify-between gap-6 py-[11px] border-t border-ink/[0.14] ${j === v.specs.length - 1 ? 'border-b' : ''}`}>
+                  <span className="shrink-0 font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-ink/[0.5]">{sp.l}</span>
+                  <span className="text-right font-['Cormorant_Garamond:Regular'] text-[15px] leading-[1.35] text-ink">{sp.v}</span>
                 </div>
               ))}
             </div>
@@ -1193,7 +1197,25 @@ function Vinedos() {
 
       {/* Craftsmanship — hand-harvested, minimal intervention */}
       <div className="bg-panel">
-        <SquareSplit imgRight img={`${A}/vinedos-hands.jpg`} alt={t.vinedos.narrative.craftTitle} imgClass="object-[50%_45%]">
+        <SquareSplit
+          imgRight
+          alt={t.vinedos.narrative.craftTitle}
+          media={
+            <>
+              <img
+                src={`${A}/vinedos-hands.jpg`}
+                alt={t.vinedos.narrative.craftTitle}
+                className="absolute inset-0 size-full object-cover object-[50%_45%] transition-transform duration-700 group-hover:scale-105"
+              />
+              {/* caption right under the hand-picking photo, before the Craftsmanship text */}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-24 sm:px-10 sm:pb-8">
+                <p className="max-w-[540px] font-['Cormorant_Garamond:Italic'] italic text-[clamp(17px,1.55vw,22px)] leading-[1.4] text-white">
+                  {t.vinedos.narrative.craftCaption}
+                </p>
+              </div>
+            </>
+          }
+        >
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.5]">{t.vinedos.narrative.craftEyebrow}</p>
           <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(26px,2.8vw,38px)] text-on-dark leading-[1.18] max-w-[500px]">{t.vinedos.narrative.craftTitle}</h2>
           <p className="font-['Archivo:Light'] text-[15px] text-on-dark/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.craftBody1}</p>
@@ -1538,9 +1560,9 @@ function UcoMap() {
             </p>
             <dl className="mt-4">
               {cards[open].specs.map((s) => (
-                <div key={s.l} className="flex justify-between border-t border-on-dark/[0.14] py-[9px] last:border-b">
-                  <dt className="font-['IBM_Plex_Mono:Regular'] text-[9px] tracking-[0.12em] text-on-dark/55">{s.l}</dt>
-                  <dd className="font-['Cormorant_Garamond:Regular'] text-[15px] text-on-dark">{s.v}</dd>
+                <div key={s.l} className="flex items-baseline justify-between gap-5 border-t border-on-dark/[0.14] py-[9px] last:border-b">
+                  <dt className="shrink-0 font-['IBM_Plex_Mono:Regular'] text-[9px] tracking-[0.12em] text-on-dark/55">{s.l}</dt>
+                  <dd className="text-right font-['Cormorant_Garamond:Regular'] text-[15px] leading-[1.35] text-on-dark">{s.v}</dd>
                 </div>
               ))}
             </dl>
@@ -1750,9 +1772,22 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
             <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-[38px] sm:text-[46px] lg:text-[58px] text-ink leading-[1.04]">{wine.title1}</span>
             <span className="block font-['Cormorant_Garamond:Light'] text-[38px] sm:text-[46px] lg:text-[58px] text-ink leading-[1.04]">{wine.title2}</span>
           </h1>
-          <p className="font-['Archivo:Light'] text-[16px] text-ink/[0.78] leading-[1.8] max-w-[520px] mb-10" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {wine.desc}
-          </p>
+          <div className="max-w-[540px] mb-10 flex flex-col gap-4">
+            {wine.tagline && (
+              <p className="font-['Cormorant_Garamond:Italic'] italic text-[22px] sm:text-[24px] text-accent leading-[1.25] -mt-3">{wine.tagline}</p>
+            )}
+            {wine.lead && (
+              <p className="font-['Cormorant_Garamond:Light'] text-[21px] sm:text-[23px] text-ink/[0.88] leading-[1.4]">{wine.lead}</p>
+            )}
+            {wine.paras.map((para) => (
+              <p key={para} className="font-['Archivo:Light'] text-[16px] text-ink/[0.78] leading-[1.8]" style={{ fontVariationSettings: '"wdth" 100' }}>
+                {para}
+              </p>
+            ))}
+            {wine.closing && (
+              <p className="font-['Cormorant_Garamond:Italic'] italic text-[20px] sm:text-[22px] text-ink leading-[1.35]">{wine.closing}</p>
+            )}
+          </div>
 
           {wine.score && (
             <div className="flex items-center gap-6 mb-11">

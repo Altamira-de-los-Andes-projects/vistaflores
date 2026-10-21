@@ -120,7 +120,7 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
 ### Textos provisionales
 
 - **Suelos de las tarjetas** ("Pedregoso", "Franco-arenoso", "Mineral"): faltan datos reales del cliente.
-- **Altitudes:** Altamira 1.077 m y Vista Flores 1.050 m vienen del cliente (se mantienen en las fichas de cada viñedo). La Consulta no tiene altitud. **Desde el 14/10/2026 la cifra principal del sitio es el promedio 1.050 m (3.445 ft)**, según el "written narrative" del cliente (ver §11).
+- **Altitudes (texto final del cliente, 21/10/2026):** Altamira 1.100 m (3.609 ft), La Consulta 1.050 m (3.445 ft), Vista Flores 1.000 m (3.281 ft). El promedio, 1.050 m (3.445 ft), es la cifra principal del sitio (ver §11 y §12).
 
 ---
 
@@ -302,7 +302,7 @@ Sinclair envió `written narrative for new website.docx` (en `C:\Users\omail\Dow
 
 Decisiones tomadas (confirmadas con John):
 - **Altitud:** cifra principal del sitio = **1.050 m (3.445 ft)** promedio. Fichas de cada viñedo mantienen Altamira 1.077 / Vista Flores 1.050.
-- **Viñas viejas:** **La Consulta pasó a "+85 años"** (y el Malbec viejo de Navigato); **Altamira se mantiene en "+70 años"** (el narrativo no menciona su edad).
+- **Viñas viejas:** las viñas más antiguas son las de **La Consulta, con un promedio de 80 años** (corregido de 85 a 80 por John el 21/10/2026; el Malbec de Navigato también es de viñas de 80 años). Ya no se menciona edad para Altamira.
 - **Se quitó** la línea de fundación "Bill Navigato y Janett, 2007", que no está en el narrativo y no estaba verificada.
 
 Imágenes (sin subir aún):
@@ -311,3 +311,15 @@ Imágenes (sin subir aún):
 - `vinedos-soil.jpg`: **recorte temporal** del suelo pedregoso de C47. Falta foto real de suelo/calicata.
 
 Pendiente con Sinclair: foto real de suelo; confirmar de qué viñedo son los troncos viejos; traducción de los textos aprobada.
+
+---
+
+## 12. Textos finales de vinos y viñedos (21/10/2026)
+
+Sinclair envió (gracias a Leonardo) `6 wines text.docx` y `3 vineyards text .docx` (en la carpeta Descargas de John), más 4 cambios puntuales en el correo. Todo está en ES/EN/PT (EN textual; ES/PT traducción fiel):
+
+- **Nuestros vinos:** el título "Six labels, three terroirs" pasó a **"One Origin. Different Perspectives."** con el párrafo "From the foothills of the Andes…". Ese mismo párrafo se usa en la sección "The origin" de cada ficha (`wineDetail.vyDesc`).
+- **Fichas de los 6 vinos:** cada vino tiene ahora `tagline` (subtítulo, p. ej. "The Spirit of Discovery"), `lead` (primera frase), `paras` (párrafos) y `closing` (frase final). Dama y Cabernet Franc no traen subtítulo. La crianza de la ficha técnica se alineó con el texto final: Dama 18, Navigato 24, Reserva Malbec 12, Reserva Cabernet Franc 12, VAV Malbec 8 y VAV Tres Fincas 8 meses. Las fichas técnicas en PDF las enviará Leonardo.
+- **Inicio:** "Singular wines at…" se reemplazó por "Transforming the immensity of the Andes mountains…".
+- **Viñedos:** cada viñedo tiene el texto nuevo con altitud, suelo y variedades (tarjetas, popup del mapa y filas del Inicio). Al párrafo de suelo se le antepuso "Situated at the highest part of the Tunuyán River…". Bajo la foto de la cosecha a mano va la frase "Every cluster of grapes…" (`narrative.craftCaption`), y el último párrafo de Craftsmanship termina con "With respect for each vineyard…".
+
