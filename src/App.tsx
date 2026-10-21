@@ -1198,7 +1198,24 @@ function Vinedos() {
       </div>
 
       {/* Old vines */}
-      <SquareSplit img={`${A}/vinedos-vines-1.jpg`} alt={t.vinedos.narrative.vinesTitle}>
+      <SquareSplit
+        alt={t.vinedos.narrative.vinesTitle}
+        media={
+          <>
+            <img
+              src={`${A}/vinedos-vines-1.jpg`}
+              alt={t.vinedos.narrative.vinesTitle}
+              className="absolute inset-0 size-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+            />
+            {/* caption on the photo, same treatment as the hand-picking photo below */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-24 sm:px-10 sm:pb-8">
+              <p className="max-w-[540px] font-['Cormorant_Garamond:Italic'] italic text-[clamp(17px,1.55vw,22px)] leading-[1.4] text-white">
+                {t.vinedos.narrative.vinesCaption}
+              </p>
+            </div>
+          </>
+        }
+      >
         <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.vinedos.narrative.vinesEyebrow}</p>
         <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px]">{t.vinedos.narrative.vinesTitle}</h2>
         <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.78] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.vinesBody1}</p>
