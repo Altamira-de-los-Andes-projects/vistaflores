@@ -1045,13 +1045,15 @@ function Vinos({ onNav }: { onNav: Nav }) {
   return (
     <div className="bg-surface w-full">
       <section className="relative h-[340px] overflow-hidden flex items-center">
-        <img src={`${A}/vinos-hero.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_30%]" />
+        <img src={`${A}/vinos-hero.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_40%]" />
+        {/* a light overall veil so the photo sits back behind the text */}
+        <div className="absolute inset-0 bg-[rgba(20,18,15,0.18)]" aria-hidden="true" />
         <div
           className="absolute inset-0"
           style={{ backgroundImage: 'linear-gradient(90deg, rgba(20,18,15,0.62) 0%, rgba(20,18,15,0.3) 46%, rgba(20,18,15,0.08) 100%)' }}
         />
         {/* on phones the text spans the whole bright photo: an even veil keeps it readable */}
-        <div className="absolute inset-0 bg-[rgba(20,18,15,0.38)] sm:hidden" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[rgba(20,18,15,0.24)] sm:hidden" aria-hidden="true" />
         <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.75),0_2px_16px_rgba(0,0,0,0.55)]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.92] hero-line-1">{t.vinos.heroEyebrow}</p>
           <h1 className="font-['Cormorant_Garamond:Light'] text-[34px] sm:text-[44px] lg:text-[52px] text-on-dark leading-[1.12] lg:leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
