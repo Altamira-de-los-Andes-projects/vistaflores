@@ -1057,7 +1057,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
         <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.75),0_2px_16px_rgba(0,0,0,0.55)]">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.92] hero-line-1">{t.vinos.heroEyebrow}</p>
           <h1 className="font-['Cormorant_Garamond:Light'] text-[34px] sm:text-[44px] lg:text-[52px] text-on-dark leading-[1.12] lg:leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
-          <p className="font-['Archivo:Regular'] text-[15px] text-on-dark leading-[25.5px] max-w-[540px] hero-line-3" style={{ fontVariationSettings: '"wdth" 100, "wght" 600' }}>
+          <p className="font-['Archivo:Light'] text-[15px] text-on-dark leading-[25.5px] max-w-[540px] hero-line-3" style={{ fontVariationSettings: '"wdth" 100' }}>
             {t.vinos.heroPara}
           </p>
         </div>
