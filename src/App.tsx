@@ -1639,10 +1639,13 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
   return (
     <div className="bg-surface w-full">
       <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-72px)]">
-        {/* Form left — below lg the client's vineyard photo sits behind it, veiled so the form stays readable */}
-        <div className="relative isolate flex-1 py-20 px-5 sm:px-9 lg:px-14 flex flex-col max-lg:[text-shadow:0_0_10px_var(--surface),0_0_2px_var(--surface)]">
-          <img src={`${A}/contact-mobile-bg.jpg`} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover object-[50%_45%] lg:hidden" />
-          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-surface/[0.68] via-surface/[0.8] to-surface/[0.9] lg:hidden" aria-hidden="true" />
+        {/* Phones: the vineyard-and-Andes photo as a clear band on top (the sign photo closes the page below) */}
+        <div className="relative h-[clamp(240px,62vw,340px)] overflow-hidden bg-panel lg:hidden">
+          <img src={`${A}/contact-mobile-bg.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_42%]" />
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-surface to-transparent" aria-hidden="true" />
+        </div>
+        {/* Form left */}
+        <div className="flex-1 pt-10 pb-20 px-5 sm:px-9 lg:py-20 lg:px-14 flex flex-col">
           <div className="flex flex-col gap-[18px] mb-[25px] reveal">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.contacto.eyebrow}</p>
             <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[46px] text-ink leading-[1.1] lg:leading-[50.6px]">{t.contacto.title}</h1>
@@ -1702,7 +1705,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
         </div>
 
         {/* Image right */}
-        <div className="flex-1 relative overflow-hidden min-h-[440px] lg:min-h-0">
+        <div className="flex-1 relative overflow-hidden bg-panel min-h-[440px] lg:min-h-0">
           <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.1)] to-[rgba(20,18,15,0.6)]" />
           <div className="absolute bottom-0 left-0 right-0 grid grid-cols-2 gap-x-[26px] gap-y-8 p-11">
