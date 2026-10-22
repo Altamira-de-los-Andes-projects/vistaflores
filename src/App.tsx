@@ -986,6 +986,7 @@ function Home({ onNav }: { onNav: Nav }) {
 
 // Our Wines stage: the landscape behind the bottles and the bottle size, tuned together so the
 // bottles stand on the vineyard ground (base at 11% from the stage bottom).
+const WINE_LINE_ORDER: WineLine[] = ['VAV', 'RESERVA', 'DAMA', 'NAVIGATO'];
 const STAGE_IMG = `${A}/vinos-stage.jpg`;
 const STAGE_H = 'h-[360px] sm:h-[440px] lg:h-[clamp(520px,44vw,680px)]';
 const BOTTLE_H = 'h-[230px] sm:h-[290px] lg:h-[clamp(300px,25vw,400px)]';
@@ -997,7 +998,10 @@ function Vinos({ onNav }: { onNav: Nav }) {
   useReveal();
   const t = useT();
   const [filter, setFilter] = useState<'ALL' | WineLine>('ALL');
-  const wines = t.wineCatalog.map((w) => ({ ...w, ...WINE_META[w.id] }));
+  // left to right: VAV, Reserva, Dama, Navigato (the catalog order is kept inside each line)
+  const wines = t.wineCatalog
+    .map((w) => ({ ...w, ...WINE_META[w.id] }))
+    .sort((a, b) => WINE_LINE_ORDER.indexOf(a.line) - WINE_LINE_ORDER.indexOf(b.line));
   const filtered = filter === 'ALL' ? wines : wines.filter((w) => w.line === filter);
   const cols = useGridCols();
   const rows: (typeof filtered)[] = [];
@@ -1047,7 +1051,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
       <div className="border-b border-ink/[0.12] flex flex-wrap items-center gap-x-8 gap-y-3 px-5 sm:px-8 lg:px-12 pt-8 lg:pt-10">
         <span className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[1.9px] text-ink/[0.5] pb-4">{t.vinos.filterLabel}</span>
         <div className="flex flex-wrap gap-x-7 gap-y-2">
-          {(['ALL', 'RESERVA', 'VAV', 'DAMA', 'NAVIGATO'] as const).map((f) => (
+          {(['ALL', ...WINE_LINE_ORDER] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
