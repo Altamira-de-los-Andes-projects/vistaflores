@@ -1190,7 +1190,25 @@ function Vinedos() {
 
       {/* Soil — the alluvial fan (with breathing space below the map) */}
       <div className="pt-14 lg:pt-24">
-      <SquareSplit imgRight img={`${A}/soil-laconsulta.jpg`} imgClass="object-[50%_58%]" alt={t.vinedos.narrative.soilTitle}>
+      <SquareSplit
+        imgRight
+        alt={t.vinedos.narrative.soilTitle}
+        media={
+          <>
+            <img
+              src={`${A}/soil-laconsulta.jpg`}
+              alt={t.vinedos.narrative.soilTitle}
+              className="absolute inset-0 size-full object-cover object-[50%_58%] transition-transform duration-700 group-hover:scale-105"
+            />
+            {/* caption on the photo, same treatment as the old-vines and hand-picking photos */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-6 pb-6 pt-24 sm:px-10 sm:pb-8">
+              <p className="max-w-[540px] font-['Cormorant_Garamond:Italic'] italic text-[clamp(17px,1.55vw,22px)] leading-[1.4] text-white">
+                {t.vinedos.narrative.soilCaption}
+              </p>
+            </div>
+          </>
+        }
+      >
         <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.vinedos.narrative.soilEyebrow}</p>
         <h2 className="font-['Cormorant_Garamond:Light'] text-[clamp(28px,3.2vw,42px)] text-ink leading-[1.14] max-w-[460px]">{t.vinedos.narrative.soilTitle}</h2>
         <p className="font-['Archivo:Light'] text-[15px] text-ink/[0.74] leading-[1.75] max-w-[520px]" style={{ fontVariationSettings: '"wdth" 100' }}>{t.vinedos.narrative.soilBody}</p>
@@ -1603,24 +1621,27 @@ function UcoMap() {
             <UcoScale vw={vw} />
           </div>
         )}
+
+        {/* phones: the Argentina inset floats over the empty Andes at the top of the map (no estates
+            there, and the river runs down the left), the scale sits bottom-left, so no black block below */}
+        {mobile && (
+          <>
+            <div className={`pointer-events-none absolute right-[4%] top-[15%] flex items-start gap-3 transition-opacity duration-500 ${open !== null ? 'opacity-0' : ''}`}>
+              <div className={`flex flex-col items-end gap-[2px] pt-1 text-right ${shadow}`}>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.2em] uppercase whitespace-nowrap text-[#9cc46e]">{art.valley}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.2em] text-on-dark/80">{art.argentina}</span>
+              </div>
+              <UcoInset className="h-[190px] w-auto shrink-0 drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]" />
+            </div>
+            <div className={`pointer-events-none absolute bottom-[4%] left-[4%] transition-opacity duration-500 ${shadow} ${open !== null ? 'opacity-0' : ''}`}>
+              <UcoScale vw={vw} />
+            </div>
+          </>
+        )}
       </div>
       </div>
 
-      {mobile && (
-        <div className="flex flex-col gap-6 px-5 sm:px-8 pb-14 pt-6">
-          <div className="flex items-end justify-between gap-6">
-            <UcoScale vw={vw} />
-            <div className="flex items-start gap-3">
-              <div className="flex flex-col items-end gap-[2px] pt-1 text-right">
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] uppercase whitespace-nowrap text-[#9cc46e]">{art.valley}</span>
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
-              </div>
-              <UcoInset className="h-[270px] w-auto shrink-0" />
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
@@ -1817,17 +1838,6 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
               <p className="font-['Cormorant_Garamond:Italic'] italic text-[20px] sm:text-[22px] text-ink leading-[1.35]">{wine.closing}</p>
             )}
           </div>
-
-          {wine.score && (
-            <div className="flex items-center gap-6 mb-11">
-              <p className="font-['Cormorant_Garamond:Light'] text-[58px] text-accent leading-none">{wine.score.value}</p>
-              <span className="h-11 w-px bg-ink/[0.18]" aria-hidden="true" />
-              <div className="flex flex-col gap-[6px]">
-                <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[1.6px] text-ink/[0.75]">{wine.score.critic}</p>
-                {wine.score.year && <p className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1.6px] text-ink/[0.5]">{wine.score.year}</p>}
-              </div>
-            </div>
-          )}
 
           <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[2px] text-ink/[0.55] mb-1">{t.wineDetail.fichaLabel}</p>
           {/* one column on phones so values like "18 months · French oak" stay on one line */}

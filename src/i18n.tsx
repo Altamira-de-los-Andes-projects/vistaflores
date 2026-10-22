@@ -103,6 +103,7 @@ const es = {
     ],
     narrative: {
       soilEyebrow: 'TERROIR',
+      soilCaption: 'Este aluvión del suelo de Altamira nutre las raíces de nuestras viñas.',
       soilTitle: 'El suelo único del abanico aluvial de Altamira',
       soilBody: 'Situado en la parte más alta del río Tunuyán, el suelo de Altamira de los Andes expresa millones de años de evolución, desde el fondo de los dos océanos más grandes del mundo hasta la formación de la Cordillera de los Andes. Este aluvión del suelo de Altamira nutre las raíces de nuestras viñas, que prosperan en un desierto de altura y logran una expresión singular en cada uno de nuestros vinos. Los tres viñedos de Altamira de los Andes crecen en un suelo aluvial rico, irrigado por el flujo natural del agua de los Andes que no ha cesado en milenios. Esta agua pura, del deshielo andino, sigue aportando al suelo una rica sedimentación de minerales y rocas que nutre nuestras viñas. En concreto, el terroir de los tres viñedos se diferencia por la pedregosidad del suelo de cada uno y por cuánto varía entre elementos graníticos y calcáreos.',
       vinesEyebrow: 'VIÑAS VIEJAS',
@@ -120,7 +121,7 @@ const es = {
     mapLabel: 'UBICACIÓN',
     mapPlace1: 'Valle de Uco',
     mapPlace2: 'Mendoza',
-    mapDesc: 'Los tres viñedos se distribuyen en el Valle de Uco, a menos de 15 km entre sí.',
+    mapDesc: 'Nuestros tres viñedos se encuentran en el corazón del Valle de Uco, a menos de 15 km entre sí.',
     mapPoints: ['Viñedos Altamira', 'Viñedos Vista Flores', 'Viñedos La Consulta'],
     mapArt: {
       chile: 'CHILE',
@@ -175,7 +176,7 @@ const es = {
     desc: 'La esencia misma de la montaña: imponente, misterioso y eternamente elegante. Combina las mejores uvas de nuestros tres terroirs.',
     fichaLabel: 'FICHA TÉCNICA',
     ficha: [
-      { label: 'VARIEDAD', value: 'Malbec 100%' },
+      { label: 'VARIEDAD', value: '100% Malbec' },
       { label: 'TERROIR', value: 'Altamira · Vista Flores · La Consulta' },
       { label: 'CRIANZA', value: '14 meses · roble francés' },
       { label: 'ALCOHOL', value: '14,5%' },
@@ -226,7 +227,7 @@ const es = {
       paras: ['Inspirada en la belleza y la fuerza de los Andes, Dama de los Andes expresa nuestra búsqueda de armonía, profundidad y refinamiento.', 'Elaborado con cuidado y con 18 meses de crianza en barricas de roble, este blend de Malbec refleja la convergencia de distintas expresiones de nuestro paisaje, donde el tiempo aporta equilibrio y carácter.'],
       closing: 'Una expresión elegante de los Andes.',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDAD', value: 'Blend de Malbec' }, { label: 'ORIGEN', value: '60% Altamira · 20% La Consulta · 20% Vista Flores' }, { label: 'COSECHA', value: 'Manual, primera mitad de abril' }, { label: 'CRIANZA', value: '18 meses · roble francés' }],
+      ficha: [{ label: 'VARIEDAD', value: 'Blend de Malbec' }, { label: 'ORIGEN', value: '60% Altamira · 20% La Consulta · 20% Vista Flores' }, { label: 'COSECHA', value: 'A mano' }, { label: 'CRIANZA', value: '18 meses · roble francés' }],
       notes: [{ label: 'VISTA', text: 'Rojo intenso con tonos violáceos.' }, { label: 'NARIZ', text: 'Aromas tostados, vainilla, chocolate y tabaco aportados por la madera.' }, { label: 'BOCA', text: 'Taninos fuertes, redondos y dulces.' }],
     },
     {
@@ -236,7 +237,7 @@ const es = {
       paras: ['Navigato representa el espíritu de exploración, por tierra y por mar, de los ancestros europeos de Altamira, que trajeron su oficio a Mendoza y plantaron los viñedos que hoy nos dan este Malbec excepcional de viñas de 80 años.', 'Cuidadosamente seleccionado y con 24 meses de crianza en barricas de roble, este vino reúne profundidad, complejidad y el carácter único de su origen andino.'],
       closing: 'Un vino que nos invita a descubrir hasta dónde puede llevarnos una perspectiva diferente.',
       score: null,
-      ficha: [{ label: 'VARIEDAD', value: '57% Malbec · 28,5% Petit Verdot · 14,5% Cabernet Franc' }, { label: 'ORIGEN', value: 'La Consulta · Vista Flores' }, { label: 'COSECHA', value: 'Manual en cajas, de fines de marzo a mediados de abril' }, { label: 'CRIANZA', value: '24 meses · roble francés nuevo' }],
+      ficha: [{ label: 'VARIEDAD', value: '57% Malbec · 28,5% Petit Verdot · 14,5% Cabernet Franc' }, { label: 'ORIGEN', value: 'La Consulta · Vista Flores' }, { label: 'COSECHA', value: 'A mano' }, { label: 'CRIANZA', value: '24 meses · roble francés nuevo' }],
       notes: [{ label: 'VISTA', text: 'Color intenso.' }, { label: 'NARIZ', text: 'Frutos rojos brillantes y sustanciosos.' }, { label: 'BOCA', text: 'Sabor sofisticado, con cuerpo y textura aterciopelada. Final largo y suave.' }],
     },
     {
@@ -246,7 +247,7 @@ const es = {
       paras: ['Profundamente arraigado en el corazón del Valle de Uco, nuestro Reserva Malbec refleja su origen andino. Un vino moldeado por la altura, el ritmo de las estaciones y una elaboración cuidadosa.', 'Con 12 meses de crianza en barricas de roble, busca un equilibrio armonioso entre fruta, estructura y complejidad.'],
       closing: '',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDAD', value: 'Malbec 100%' }, { label: 'ORIGEN', value: 'La Consulta' }, { label: 'COSECHA', value: 'Manual en cajas, fines de abril' }, { label: 'CRIANZA', value: '12 meses · roble francés' }],
+      ficha: [{ label: 'VARIEDAD', value: '100% Malbec' }, { label: 'ORIGEN', value: 'La Consulta' }, { label: 'COSECHA', value: 'A mano' }, { label: 'CRIANZA', value: '12 meses · roble francés' }],
       notes: [{ label: 'VISTA', text: 'Rojo intenso con reflejos violáceos.' }, { label: 'NARIZ', text: 'Aromas tostados, vainilla, chocolate y tabaco aportados por la madera.' }, { label: 'BOCA', text: 'Taninos redondos, dulces y con cuerpo.' }],
     },
     {
@@ -256,7 +257,7 @@ const es = {
       paras: ['Nuestro Reserva Cabernet Franc ofrece una interpretación singular del Valle de Uco, que une el carácter de esta uva expresiva con la identidad de nuestro paisaje andino.', 'Con 12 meses de crianza en barricas de roble, reúne frescura, elegancia y estructura, con un toque especiado, en un vino definido por el equilibrio y la personalidad.'],
       closing: '',
       score: null,
-      ficha: [{ label: 'VARIEDAD', value: 'Cabernet Franc 100%' }, { label: 'ORIGEN', value: 'Vista Flores' }, { label: 'COSECHA', value: 'Manual, primera mitad de abril' }, { label: 'CRIANZA', value: '12 meses · roble francés' }],
+      ficha: [{ label: 'VARIEDAD', value: '100% Cabernet Franc' }, { label: 'ORIGEN', value: 'Vista Flores' }, { label: 'COSECHA', value: 'A mano' }, { label: 'CRIANZA', value: '12 meses · roble francés' }],
       notes: [{ label: 'VISTA', text: 'Intenso y profundo.' }, { label: 'NARIZ', text: 'Notas de eucalipto y pimienta verde.' }, { label: 'BOCA', text: 'Final agradable en boca.' }],
     },
     {
@@ -266,7 +267,7 @@ const es = {
       paras: ['Nacido al pie de los Andes, VAV Malbec captura el espíritu vibrante y amable de Mendoza. Expresivo y lleno de carácter, refleja la libertad de descubrir nuevos lugares y compartir momentos memorables.', 'Con 8 meses de crianza en barricas de roble, reúne fruta, frescura y un sutil toque de madera.'],
       closing: '',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDAD', value: 'Malbec 100%' }, { label: 'ORIGEN', value: 'La Consulta' }, { label: 'COSECHA', value: 'Manual, primera mitad de abril' }, { label: 'CRIANZA', value: '8 meses · roble francés' }],
+      ficha: [{ label: 'VARIEDAD', value: '100% Malbec' }, { label: 'ORIGEN', value: 'La Consulta' }, { label: 'COSECHA', value: 'A mano' }, { label: 'CRIANZA', value: '8 meses · roble francés' }],
       notes: [{ label: 'VISTA', text: 'Intenso y púrpura.' }, { label: 'NARIZ', text: 'Definitivamente Malbec, con frutos rojos y azules.' }, { label: 'BOCA', text: 'Suave en boca, buena acidez y estructura, final limpio.' }],
     },
     {
@@ -276,7 +277,7 @@ const es = {
       paras: ['Con uvas de Altamira, Vista Flores y La Consulta, VAV Tres Fincas celebra la diversidad de nuestro paisaje andino. Cada viñedo aporta su propia personalidad a un vino inspirado en el descubrimiento, el equilibrio y el placer de compartir.', 'Con 8 meses de crianza en barricas de roble, este blend ofrece una interpretación fresca y expresiva de nuestro terroir único.'],
       closing: '',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDAD', value: '40% Cabernet Sauvignon · 25% Malbec · 20% Syrah · 10% Petit Verdot · 5% Cabernet Franc' }, { label: 'ORIGEN', value: 'Altamira · Vista Flores · La Consulta' }, { label: 'COSECHA', value: 'Fines de abril' }, { label: 'CRIANZA', value: '8 meses · roble francés' }],
+      ficha: [{ label: 'VARIEDAD', value: '40% Cabernet Sauvignon · 25% Malbec · 20% Syrah · 10% Petit Verdot · 5% Cabernet Franc' }, { label: 'ORIGEN', value: 'Altamira · Vista Flores · La Consulta' }, { label: 'COSECHA', value: 'A mano' }, { label: 'CRIANZA', value: '8 meses · roble francés' }],
       notes: [{ label: 'VISTA', text: 'Rojo intenso con tonos violáceos.' }, { label: 'NARIZ', text: 'Aromas tostados, vainilla, chocolate y tabaco aportados por la madera.' }, { label: 'BOCA', text: 'Taninos con cuerpo, redondos y dulces.' }],
     },
   ],
@@ -384,6 +385,7 @@ const en: Copy = {
     ],
     narrative: {
       soilEyebrow: 'TERROIR',
+      soilCaption: 'This alluvium within Altamira’s soil nourishes the roots of our vines.',
       soilTitle: "The unique soil of Altamira's Alluvial Fan",
       soilBody: 'Situated at the highest part of the Tunuyán River, the soil of Altamira de los Andes expresses millions of years of evolution from the bottom of the world’s two largest oceans to the creation of the Andes range. This alluvium within Altamira’s soil nourishes the roots of our vines, as they thrive in a high-altitude desert, achieving a singular expression in each of our wines. The three vineyards of Altamira de los Andes grow in rich alluvial soil, irrigated by the natural flow of water from the Andes that has continued for millennia. This pure water, from Andean snowmelt, continues to supply rich mineral and rock sediment to the soil that nurtures our vines. Specifically, the terroir of the three vineyards is differentiated by the stoniness of the soil in each, and the extent to which it varies between granitic and calcareous elements.',
       vinesEyebrow: 'OLD VINES',
@@ -401,7 +403,7 @@ const en: Copy = {
     mapLabel: 'LOCATION',
     mapPlace1: 'Uco Valley',
     mapPlace2: 'Mendoza',
-    mapDesc: 'The three vineyards are spread across the Uco Valley, less than 15 km apart.',
+    mapDesc: 'Our three vineyards lie at the heart of the Uco Valley, less than 15 km apart.',
     mapPoints: ['Altamira Vineyard', 'Vista Flores Vineyard', 'La Consulta Vineyard'],
     mapArt: {
       chile: 'CHILE',
@@ -456,7 +458,7 @@ const en: Copy = {
     desc: 'The very essence of the mountain: commanding, mysterious and endlessly elegant. It brings together the finest grapes from our three terroirs.',
     fichaLabel: 'TECHNICAL SHEET',
     ficha: [
-      { label: 'VARIETY', value: 'Malbec 100%' },
+      { label: 'VARIETY', value: '100% Malbec' },
       { label: 'TERROIR', value: 'Altamira · Vista Flores · La Consulta' },
       { label: 'AGEING', value: '14 months · French oak' },
       { label: 'ALCOHOL', value: '14.5%' },
@@ -507,7 +509,7 @@ const en: Copy = {
       paras: ['Inspired by the beauty and strength of the Andes, Dama de los Andes expresses our pursuit of harmony, depth and refinement.', 'Carefully crafted and aged for 18 months in oak barrels, this Malbec blend reflects the convergence of different expressions of our landscape, where time brings balance and character.'],
       closing: 'An elegant expression of the Andes.',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIETY', value: 'Malbec blend' }, { label: 'ORIGIN', value: '60% Altamira · 20% La Consulta · 20% Vista Flores' }, { label: 'HARVEST', value: 'By hand, first half of April' }, { label: 'AGEING', value: '18 months · French oak' }],
+      ficha: [{ label: 'VARIETY', value: 'Malbec blend' }, { label: 'ORIGIN', value: '60% Altamira · 20% La Consulta · 20% Vista Flores' }, { label: 'HARVEST', value: 'By hand' }, { label: 'AGEING', value: '18 months · French oak' }],
       notes: [{ label: 'EYE', text: 'Deep red with violet hues.' }, { label: 'NOSE', text: 'Toasted notes, vanilla, chocolate and tobacco from the oak.' }, { label: 'PALATE', text: 'Firm, round and sweet tannins.' }],
     },
     {
@@ -517,7 +519,7 @@ const en: Copy = {
       paras: ['Navigato represents the spirit of exploration, on land and sea, by Altamira’s European ancestors who brought their craftsmanship to Mendoza and planted the vineyards that today give us this exceptional Malbec from 80 year old vines.', 'Carefully selected and aged for 24 months in oak barrels, this wine brings together depth, complexity and the unique character of its Andean origins.'],
       closing: 'A wine that invites us to discover how far a different perspective can take us.',
       score: null,
-      ficha: [{ label: 'VARIETY', value: '57% Malbec · 28.5% Petit Verdot · 14.5% Cabernet Franc' }, { label: 'ORIGIN', value: 'La Consulta · Vista Flores' }, { label: 'HARVEST', value: 'By hand in crates, late March to mid-April' }, { label: 'AGEING', value: '24 months · new French oak' }],
+      ficha: [{ label: 'VARIETY', value: '57% Malbec · 28.5% Petit Verdot · 14.5% Cabernet Franc' }, { label: 'ORIGIN', value: 'La Consulta · Vista Flores' }, { label: 'HARVEST', value: 'By hand' }, { label: 'AGEING', value: '24 months · new French oak' }],
       notes: [{ label: 'EYE', text: 'Deep colour.' }, { label: 'NOSE', text: 'Bright, generous red fruit.' }, { label: 'PALATE', text: 'Sophisticated and full-bodied, with a velvety texture and a long, smooth finish.' }],
     },
     {
@@ -527,7 +529,7 @@ const en: Copy = {
       paras: ['Deeply rooted in the heart of the Uco Valley, our Reserve Malbec characterizes its Andean origins. A wine shaped by high altitude, the rhythm of the seasons and a careful approach to winemaking.', 'Aged for 12 months in oak barrels, it seeks a harmonious balance between fruit, structure and complexity.'],
       closing: '',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIETY', value: 'Malbec 100%' }, { label: 'ORIGIN', value: 'La Consulta' }, { label: 'HARVEST', value: 'By hand in crates, late April' }, { label: 'AGEING', value: '12 months · French oak' }],
+      ficha: [{ label: 'VARIETY', value: '100% Malbec' }, { label: 'ORIGIN', value: 'La Consulta' }, { label: 'HARVEST', value: 'By hand' }, { label: 'AGEING', value: '12 months · French oak' }],
       notes: [{ label: 'EYE', text: 'Deep red with violet glints.' }, { label: 'NOSE', text: 'Toasted notes, vanilla, chocolate and tobacco from the oak.' }, { label: 'PALATE', text: 'Round, sweet and full-bodied tannins.' }],
     },
     {
@@ -537,7 +539,7 @@ const en: Copy = {
       paras: ['Our Reserve Cabernet Franc offers a distinctive interpretation of the Uco Valley, combining the character of this expressive grape with the identity of our Andean landscape.', 'Aged for 12 months in oak barrels, it brings together freshness, elegance and structure with a hint of spiciness in a wine defined by balance and personality.'],
       closing: '',
       score: null,
-      ficha: [{ label: 'VARIETY', value: 'Cabernet Franc 100%' }, { label: 'ORIGIN', value: 'Vista Flores' }, { label: 'HARVEST', value: 'By hand, first half of April' }, { label: 'AGEING', value: '12 months · French oak' }],
+      ficha: [{ label: 'VARIETY', value: '100% Cabernet Franc' }, { label: 'ORIGIN', value: 'Vista Flores' }, { label: 'HARVEST', value: 'By hand' }, { label: 'AGEING', value: '12 months · French oak' }],
       notes: [{ label: 'EYE', text: 'Deep and intense.' }, { label: 'NOSE', text: 'Eucalyptus and green pepper.' }, { label: 'PALATE', text: 'A pleasant, lingering finish.' }],
     },
     {
@@ -547,7 +549,7 @@ const en: Copy = {
       paras: ['Born in the foothills of the Andes, VAV Malbec captures the vibrant and approachable spirit of Mendoza. Expressive and full of character, it reflects the freedom of discovering new places and sharing memorable moments.', 'Aged for 8 months in oak barrels, it brings together fruit, freshness and a subtle touch of oak.'],
       closing: '',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIETY', value: 'Malbec 100%' }, { label: 'ORIGIN', value: 'La Consulta' }, { label: 'HARVEST', value: 'By hand, first half of April' }, { label: 'AGEING', value: '8 months · French oak' }],
+      ficha: [{ label: 'VARIETY', value: '100% Malbec' }, { label: 'ORIGIN', value: 'La Consulta' }, { label: 'HARVEST', value: 'By hand' }, { label: 'AGEING', value: '8 months · French oak' }],
       notes: [{ label: 'EYE', text: 'Intense purple.' }, { label: 'NOSE', text: 'Unmistakably Malbec, with red and blue fruit.' }, { label: 'PALATE', text: 'Smooth, with good acidity and structure and a clean finish.' }],
     },
     {
@@ -557,7 +559,7 @@ const en: Copy = {
       paras: ['Bringing together grapes from Altamira, Vista Flores and La Consulta, VAV Tres Fincas celebrates the diversity of our Andean landscape. Each vineyard contributes its own personality to a wine inspired by discovery, balance and the pleasure of sharing.', 'Aged for 8 months in oak barrels, this blend offers a fresh and expressive interpretation of our unique terroir.'],
       closing: '',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIETY', value: '40% Cabernet Sauvignon · 25% Malbec · 20% Syrah · 10% Petit Verdot · 5% Cabernet Franc' }, { label: 'ORIGIN', value: 'Altamira · Vista Flores · La Consulta' }, { label: 'HARVEST', value: 'Late April' }, { label: 'AGEING', value: '8 months · French oak' }],
+      ficha: [{ label: 'VARIETY', value: '40% Cabernet Sauvignon · 25% Malbec · 20% Syrah · 10% Petit Verdot · 5% Cabernet Franc' }, { label: 'ORIGIN', value: 'Altamira · Vista Flores · La Consulta' }, { label: 'HARVEST', value: 'By hand' }, { label: 'AGEING', value: '8 months · French oak' }],
       notes: [{ label: 'EYE', text: 'Deep red with violet hues.' }, { label: 'NOSE', text: 'Toasted notes, vanilla, chocolate and tobacco from the oak.' }, { label: 'PALATE', text: 'Full-bodied, round and sweet tannins.' }],
     },
   ],
@@ -663,6 +665,7 @@ const pt: Copy = {
     ],
     narrative: {
       soilEyebrow: 'TERROIR',
+      soilCaption: 'Esse aluvião do solo de Altamira nutre as raízes das nossas videiras.',
       soilTitle: 'O solo único do leque aluvial de Altamira',
       soilBody: 'Situado na parte mais alta do rio Tunuyán, o solo da Altamira de los Andes expressa milhões de anos de evolução, desde o fundo dos dois maiores oceanos do mundo até a formação da Cordilheira dos Andes. Esse aluvião do solo de Altamira nutre as raízes das nossas videiras, que prosperam em um deserto de altitude e alcançam uma expressão singular em cada um dos nossos vinhos. Os três vinhedos da Altamira de los Andes crescem em um solo aluvial rico, irrigado pelo fluxo natural da água dos Andes que não cessou por milênios. Essa água pura, do degelo andino, continua a fornecer ao solo uma rica sedimentação de minerais e rochas que nutre nossas videiras. Especificamente, o terroir dos três vinhedos se diferencia pela pedregosidade do solo de cada um e pelo quanto varia entre elementos graníticos e calcários.',
       vinesEyebrow: 'VIDEIRAS VELHAS',
@@ -680,7 +683,7 @@ const pt: Copy = {
     mapLabel: 'LOCALIZAÇÃO',
     mapPlace1: 'Vale de Uco',
     mapPlace2: 'Mendoza',
-    mapDesc: 'Os três vinhedos se distribuem pelo Vale de Uco, a menos de 15 km entre si.',
+    mapDesc: 'Nossos três vinhedos ficam no coração do Vale de Uco, a menos de 15 km entre si.',
     mapPoints: ['Vinhedos Altamira', 'Vinhedos Vista Flores', 'Vinhedos La Consulta'],
     mapArt: {
       chile: 'CHILE',
@@ -735,7 +738,7 @@ const pt: Copy = {
     desc: 'A própria essência da montanha: imponente, misterioso e eternamente elegante. Reúne as melhores uvas dos nossos três terroirs.',
     fichaLabel: 'FICHA TÉCNICA',
     ficha: [
-      { label: 'VARIEDADE', value: 'Malbec 100%' },
+      { label: 'VARIEDADE', value: '100% Malbec' },
       { label: 'TERROIR', value: 'Altamira · Vista Flores · La Consulta' },
       { label: 'ESTÁGIO', value: '14 meses · carvalho francês' },
       { label: 'ÁLCOOL', value: '14,5%' },
@@ -786,7 +789,7 @@ const pt: Copy = {
       paras: ['Inspirada na beleza e na força dos Andes, Dama de los Andes expressa nossa busca por harmonia, profundidade e refinamento.', 'Elaborado com cuidado e com 18 meses de estágio em barricas de carvalho, este blend de Malbec reflete a convergência de diferentes expressões da nossa paisagem, onde o tempo traz equilíbrio e caráter.'],
       closing: 'Uma expressão elegante dos Andes.',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDADE', value: 'Blend de Malbec' }, { label: 'ORIGEM', value: '60% Altamira · 20% La Consulta · 20% Vista Flores' }, { label: 'COLHEITA', value: 'Manual, primeira quinzena de abril' }, { label: 'AMADURECIMENTO', value: '18 meses · carvalho francês' }],
+      ficha: [{ label: 'VARIEDADE', value: 'Blend de Malbec' }, { label: 'ORIGEM', value: '60% Altamira · 20% La Consulta · 20% Vista Flores' }, { label: 'COLHEITA', value: 'À mão' }, { label: 'AMADURECIMENTO', value: '18 meses · carvalho francês' }],
       notes: [{ label: 'VISUAL', text: 'Vermelho intenso com tons violáceos.' }, { label: 'NARIZ', text: 'Notas tostadas, baunilha, chocolate e tabaco vindos da madeira.' }, { label: 'BOCA', text: 'Taninos firmes, redondos e doces.' }],
     },
     {
@@ -796,7 +799,7 @@ const pt: Copy = {
       paras: ['Navigato representa o espírito de exploração, por terra e por mar, dos ancestrais europeus de Altamira, que trouxeram seu ofício para Mendoza e plantaram os vinhedos que hoje nos dão este Malbec excepcional de videiras de 80 anos.', 'Cuidadosamente selecionado e com 24 meses de estágio em barricas de carvalho, este vinho reúne profundidade, complexidade e o caráter único de sua origem andina.'],
       closing: 'Um vinho que nos convida a descobrir até onde uma perspectiva diferente pode nos levar.',
       score: null,
-      ficha: [{ label: 'VARIEDADE', value: '57% Malbec · 28,5% Petit Verdot · 14,5% Cabernet Franc' }, { label: 'ORIGEM', value: 'La Consulta · Vista Flores' }, { label: 'COLHEITA', value: 'Manual em caixas, do fim de março a meados de abril' }, { label: 'AMADURECIMENTO', value: '24 meses · carvalho francês novo' }],
+      ficha: [{ label: 'VARIEDADE', value: '57% Malbec · 28,5% Petit Verdot · 14,5% Cabernet Franc' }, { label: 'ORIGEM', value: 'La Consulta · Vista Flores' }, { label: 'COLHEITA', value: 'À mão' }, { label: 'AMADURECIMENTO', value: '24 meses · carvalho francês novo' }],
       notes: [{ label: 'VISUAL', text: 'Cor intensa.' }, { label: 'NARIZ', text: 'Frutas vermelhas brilhantes e suculentas.' }, { label: 'BOCA', text: 'Sabor sofisticado, encorpado e aveludado. Final longo e suave.' }],
     },
     {
@@ -806,7 +809,7 @@ const pt: Copy = {
       paras: ['Profundamente enraizado no coração do Vale de Uco, nosso Reserva Malbec reflete sua origem andina. Um vinho moldado pela altitude, pelo ritmo das estações e por uma vinificação cuidadosa.', 'Com 12 meses de estágio em barricas de carvalho, busca um equilíbrio harmonioso entre fruta, estrutura e complexidade.'],
       closing: '',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDADE', value: 'Malbec 100%' }, { label: 'ORIGEM', value: 'La Consulta' }, { label: 'COLHEITA', value: 'Manual em caixas, fim de abril' }, { label: 'AMADURECIMENTO', value: '12 meses · carvalho francês' }],
+      ficha: [{ label: 'VARIEDADE', value: '100% Malbec' }, { label: 'ORIGEM', value: 'La Consulta' }, { label: 'COLHEITA', value: 'À mão' }, { label: 'AMADURECIMENTO', value: '12 meses · carvalho francês' }],
       notes: [{ label: 'VISUAL', text: 'Vermelho intenso com reflexos violáceos.' }, { label: 'NARIZ', text: 'Notas tostadas, baunilha, chocolate e tabaco vindos da madeira.' }, { label: 'BOCA', text: 'Taninos redondos, doces e encorpados.' }],
     },
     {
@@ -816,7 +819,7 @@ const pt: Copy = {
       paras: ['Nosso Reserva Cabernet Franc oferece uma interpretação singular do Vale de Uco, unindo o caráter dessa uva expressiva à identidade da nossa paisagem andina.', 'Com 12 meses de estágio em barricas de carvalho, reúne frescor, elegância e estrutura, com um toque picante, em um vinho definido pelo equilíbrio e pela personalidade.'],
       closing: '',
       score: null,
-      ficha: [{ label: 'VARIEDADE', value: 'Cabernet Franc 100%' }, { label: 'ORIGEM', value: 'Vista Flores' }, { label: 'COLHEITA', value: 'Manual, primeira quinzena de abril' }, { label: 'AMADURECIMENTO', value: '12 meses · carvalho francês' }],
+      ficha: [{ label: 'VARIEDADE', value: '100% Cabernet Franc' }, { label: 'ORIGEM', value: 'Vista Flores' }, { label: 'COLHEITA', value: 'À mão' }, { label: 'AMADURECIMENTO', value: '12 meses · carvalho francês' }],
       notes: [{ label: 'VISUAL', text: 'Intenso e profundo.' }, { label: 'NARIZ', text: 'Notas de eucalipto e pimenta verde.' }, { label: 'BOCA', text: 'Final agradável na boca.' }],
     },
     {
@@ -826,7 +829,7 @@ const pt: Copy = {
       paras: ['Nascido no sopé dos Andes, o VAV Malbec captura o espírito vibrante e acessível de Mendoza. Expressivo e cheio de caráter, reflete a liberdade de descobrir novos lugares e compartilhar momentos memoráveis.', 'Com 8 meses de estágio em barricas de carvalho, reúne fruta, frescor e um sutil toque de madeira.'],
       closing: '',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDADE', value: 'Malbec 100%' }, { label: 'ORIGEM', value: 'La Consulta' }, { label: 'COLHEITA', value: 'Manual, primeira quinzena de abril' }, { label: 'AMADURECIMENTO', value: '8 meses · carvalho francês' }],
+      ficha: [{ label: 'VARIEDADE', value: '100% Malbec' }, { label: 'ORIGEM', value: 'La Consulta' }, { label: 'COLHEITA', value: 'À mão' }, { label: 'AMADURECIMENTO', value: '8 meses · carvalho francês' }],
       notes: [{ label: 'VISUAL', text: 'Intenso e púrpura.' }, { label: 'NARIZ', text: 'Inconfundivelmente Malbec, com frutas vermelhas e azuis.' }, { label: 'BOCA', text: 'Macio, com boa acidez e estrutura e final limpo.' }],
     },
     {
@@ -836,7 +839,7 @@ const pt: Copy = {
       paras: ['Reunindo uvas de Altamira, Vista Flores e La Consulta, o VAV Tres Fincas celebra a diversidade da nossa paisagem andina. Cada vinhedo contribui com sua própria personalidade para um vinho inspirado na descoberta, no equilíbrio e no prazer de compartilhar.', 'Com 8 meses de estágio em barricas de carvalho, este blend oferece uma interpretação fresca e expressiva do nosso terroir único.'],
       closing: '',
       score: { value: '90', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDADE', value: '40% Cabernet Sauvignon · 25% Malbec · 20% Syrah · 10% Petit Verdot · 5% Cabernet Franc' }, { label: 'ORIGEM', value: 'Altamira · Vista Flores · La Consulta' }, { label: 'COLHEITA', value: 'Fim de abril' }, { label: 'AMADURECIMENTO', value: '8 meses · carvalho francês' }],
+      ficha: [{ label: 'VARIEDADE', value: '40% Cabernet Sauvignon · 25% Malbec · 20% Syrah · 10% Petit Verdot · 5% Cabernet Franc' }, { label: 'ORIGEM', value: 'Altamira · Vista Flores · La Consulta' }, { label: 'COLHEITA', value: 'À mão' }, { label: 'AMADURECIMENTO', value: '8 meses · carvalho francês' }],
       notes: [{ label: 'VISUAL', text: 'Vermelho intenso com tons violáceos.' }, { label: 'NARIZ', text: 'Notas tostadas, baunilha, chocolate e tabaco vindos da madeira.' }, { label: 'BOCA', text: 'Taninos encorpados, redondos e doces.' }],
     },
   ],
