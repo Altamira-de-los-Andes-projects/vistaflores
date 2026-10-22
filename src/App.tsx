@@ -1640,9 +1640,17 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
     <div className="bg-surface w-full">
       <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-72px)]">
         {/* Phones: the vineyard-and-Andes photo as a clear band on top (the sign photo closes the page below) */}
-        <div className="relative h-[clamp(240px,62vw,340px)] overflow-hidden bg-surface lg:hidden">
-          <img src={`${A}/contact-mobile-bg.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_42%]" />
-          <div className="absolute inset-x-0 -bottom-px h-[calc(34%+1px)] bg-gradient-to-t from-surface via-surface/60 to-transparent" aria-hidden="true" />
+        <div className="relative h-[clamp(240px,62vw,340px)] lg:hidden">
+          {/* faded out with a mask (not an overlay), so no edge or seam is left where the photo ends */}
+          <img
+            src={`${A}/contact-mobile-bg.jpg`}
+            alt=""
+            className="absolute inset-0 size-full object-cover object-[50%_42%]"
+            style={{
+              WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%)',
+              maskImage: 'linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%)',
+            }}
+          />
         </div>
         {/* Form left */}
         <div className="-mt-px flex-1 bg-surface pt-10 pb-20 px-5 sm:px-9 lg:mt-0 lg:bg-transparent lg:py-20 lg:px-14 flex flex-col">
