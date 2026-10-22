@@ -1645,7 +1645,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
           <div className="absolute inset-x-0 -bottom-px h-[calc(34%+1px)] bg-gradient-to-t from-surface via-surface/60 to-transparent" aria-hidden="true" />
         </div>
         {/* Form left */}
-        <div className="flex-1 pt-10 pb-20 px-5 sm:px-9 lg:py-20 lg:px-14 flex flex-col">
+        <div className="-mt-px flex-1 bg-surface pt-10 pb-20 px-5 sm:px-9 lg:mt-0 lg:bg-transparent lg:py-20 lg:px-14 flex flex-col">
           <div className="flex flex-col gap-[18px] mb-[25px] reveal">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.contacto.eyebrow}</p>
             <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[46px] text-ink leading-[1.1] lg:leading-[50.6px]">{t.contacto.title}</h1>
