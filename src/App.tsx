@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
 import { ARG_REST, ARG_MENDOZA, ARG_UCO, CHILE } from './mapdata';
-import { UCO_H, UCO_RIVER, UCO_KM5 } from './ucomap';
+import { UCO_H, UCO_RIVER } from './ucomap';
 import { FINCAS_IMG, FINCAS_PT } from './ucofincas';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'galeria' | 'novedades' | 'contacto' | 'wine-detail' | 'privacidad';
@@ -870,11 +870,11 @@ function Home({ onNav }: { onNav: Nav }) {
             <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.72] leading-[25.2px] max-w-[380px]" style={{ fontVariationSettings: '"wdth" 100' }}>
               {vyd.desc}
             </p>
-            <div className="border-t border-ink/[0.2] pt-5 flex gap-[38px]">
+            <div className="border-t border-ink/[0.2] pt-5 flex flex-wrap gap-x-[38px] gap-y-5">
               {vyd.stats.map((s) => (
-                <div key={s.l} className="flex flex-col gap-2">
+                <div key={s.l} className={`flex flex-col gap-2 ${s.v.length > 24 ? 'min-w-0 basis-full' : ''}`}>
                   <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.28px] text-ink/[0.45]">{s.l}</p>
-                  <p className="font-['Cormorant_Garamond:Regular'] text-[23px] text-ink">{s.v}</p>
+                  <p className={`font-['Cormorant_Garamond:Regular'] text-ink ${s.v.length > 24 ? 'text-[19px] leading-[1.35]' : 'text-[23px]'}`}>{s.v}</p>
                 </div>
               ))}
             </div>
@@ -1390,22 +1390,6 @@ function UcoInset({ className }: { className?: string }) {
   );
 }
 
-// 2 km bar (UCO_KM5 is 5 km in map units)
-function UcoScale({ vw }: { vw: number }) {
-  return (
-    <div className="flex items-end gap-4" aria-hidden="true">
-      <div className="flex flex-col gap-[6px]">
-        <div className="h-[5px] border-x border-b border-on-dark/70" style={{ width: `${((UCO_KM5 * 0.4) / vw) * 100}cqw` }} />
-        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] text-on-dark/65">2 KM</span>
-      </div>
-      <div className="flex flex-col items-center gap-[2px] pb-[1px]">
-        <svg width="9" height="12" viewBox="0 0 9 12" className="rotate-90"><path d="M4.5 0 9 12 4.5 9 0 12Z" fill="#f2ede4" fillOpacity="0.8" /></svg>
-        <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] text-on-dark/65">N</span>
-      </div>
-    </div>
-  );
-}
-
 function UcoMap() {
   const t = useT();
   const art = t.vinedos.mapArt;
@@ -1616,18 +1600,12 @@ function UcoMap() {
           </div>
         )}
 
-        {!mobile && (
-          <div className={`pointer-events-none absolute bottom-[4%] left-[4%] transition-opacity duration-500 ${shadow} ${open !== null ? 'opacity-0' : ''}`}>
-            <UcoScale vw={vw} />
-          </div>
-        )}
       </div>
       </div>
 
       {mobile && (
         <div className="flex flex-col gap-6 px-5 sm:px-8 pb-14 pt-6">
-          <div className="flex items-end justify-between gap-6">
-            <UcoScale vw={vw} />
+          <div className="flex justify-center">
             <div className="flex items-start gap-3">
               <div className="flex flex-col items-end gap-[2px] pt-1 text-right">
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] uppercase whitespace-nowrap text-[#9cc46e]">{art.valley}</span>
@@ -1660,8 +1638,10 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
   return (
     <div className="bg-surface w-full">
       <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-72px)]">
-        {/* Form left */}
-        <div className="flex-1 py-20 px-5 sm:px-9 lg:px-14 flex flex-col">
+        {/* Form left — below lg the client's vineyard photo sits behind it, veiled so the form stays readable */}
+        <div className="relative isolate flex-1 py-20 px-5 sm:px-9 lg:px-14 flex flex-col max-lg:[text-shadow:0_0_10px_var(--surface),0_0_2px_var(--surface)]">
+          <img src={`${A}/contact-mobile-bg.jpg`} alt="" aria-hidden="true" className="absolute inset-0 -z-20 size-full object-cover object-[50%_45%] lg:hidden" />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-surface/[0.68] via-surface/[0.8] to-surface/[0.9] lg:hidden" aria-hidden="true" />
           <div className="flex flex-col gap-[18px] mb-[25px] reveal">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.contacto.eyebrow}</p>
             <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[46px] text-ink leading-[1.1] lg:leading-[50.6px]">{t.contacto.title}</h1>
