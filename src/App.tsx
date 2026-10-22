@@ -1175,9 +1175,10 @@ function Vinedos() {
             <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.7] leading-[25px] max-w-[420px]" style={{ fontVariationSettings: '"wdth" 100' }}>{v.desc}</p>
             <div className="mt-2 max-w-[420px]">
               {v.specs.map((sp, j) => (
-                <div key={sp.l} className={`flex items-baseline justify-between gap-6 py-[11px] border-t border-ink/[0.14] ${j === v.specs.length - 1 ? 'border-b' : ''}`}>
+                <div key={sp.l} className={`flex items-baseline justify-between gap-4 sm:gap-6 py-[11px] border-t border-ink/[0.14] ${j === v.specs.length - 1 ? 'border-b' : ''}`}>
                   <span className="shrink-0 font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-ink/[0.5]">{sp.l}</span>
-                  <span className="text-right font-['Cormorant_Garamond:Regular'] text-[15px] leading-[1.35] text-ink">{sp.v}</span>
+                  {/* long values (La Consulta soil) drop a size on phones so they stay on one line */}
+                  <span className={`text-right font-['Cormorant_Garamond:Regular'] leading-[1.35] text-ink ${sp.v.length > 40 && sp.v.length < 60 ? 'text-[13px] sm:text-[15px]' : 'text-[15px]'}`}>{sp.v}</span>
                 </div>
               ))}
             </div>
