@@ -1178,7 +1178,7 @@ function Vinedos() {
                 <div key={sp.l} className={`flex items-baseline justify-between gap-4 sm:gap-6 py-[11px] border-t border-ink/[0.14] ${j === v.specs.length - 1 ? 'border-b' : ''}`}>
                   <span className="shrink-0 font-['IBM_Plex_Mono:Regular'] text-[9.5px] text-ink/[0.5]">{sp.l}</span>
                   {/* long values (La Consulta soil) drop a size on phones so they stay on one line */}
-                  <span className={`text-right font-['Cormorant_Garamond:Regular'] leading-[1.35] text-ink ${sp.v.length > 40 && sp.v.length < 60 ? 'text-[13px] sm:text-[15px]' : 'text-[15px]'}`}>{sp.v}</span>
+                  <span className={`text-right font-['Cormorant_Garamond:Regular'] leading-[1.35] text-ink ${sp.v.length > 40 && sp.v.length < 60 ? 'text-[12.5px] sm:text-[15px]' : 'text-[15px]'}`}>{sp.v}</span>
                 </div>
               ))}
             </div>
