@@ -1621,26 +1621,24 @@ function UcoMap() {
             <UcoScale vw={vw} />
           </div>
         )}
+      </div>
+      </div>
 
-        {/* phones: the Argentina inset floats over the empty Andes at the top of the map (no estates
-            there, and the river runs down the left), the scale sits bottom-left, so no black block below */}
-        {mobile && (
-          <>
-            <div className={`pointer-events-none absolute right-[4%] top-[15%] flex items-start gap-3 transition-opacity duration-500 ${open !== null ? 'opacity-0' : ''}`}>
-              <div className={`flex flex-col items-end gap-[2px] pt-1 text-right ${shadow}`}>
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.2em] uppercase whitespace-nowrap text-[#9cc46e]">{art.valley}</span>
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
-                <span className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.2em] text-on-dark/80">{art.argentina}</span>
+      {mobile && (
+        <div className="flex flex-col gap-6 px-5 sm:px-8 pb-14 pt-6">
+          <div className="flex items-end justify-between gap-6">
+            <UcoScale vw={vw} />
+            <div className="flex items-start gap-3">
+              <div className="flex flex-col items-end gap-[2px] pt-1 text-right">
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] uppercase whitespace-nowrap text-[#9cc46e]">{art.valley}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-[#f0d6a0]">{art.mendoza}</span>
+                <span className="font-['IBM_Plex_Mono:Medium'] text-[10.5px] tracking-[0.2em] text-on-dark/55">{art.argentina}</span>
               </div>
-              <UcoInset className="h-[190px] w-auto shrink-0 drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]" />
+              <UcoInset className="h-[270px] w-auto shrink-0" />
             </div>
-            <div className={`pointer-events-none absolute bottom-[4%] left-[4%] transition-opacity duration-500 ${shadow} ${open !== null ? 'opacity-0' : ''}`}>
-              <UcoScale vw={vw} />
-            </div>
-          </>
-        )}
-      </div>
-      </div>
+          </div>
+        </div>
+      )}
 
     </section>
   );
