@@ -39,7 +39,6 @@ const IMG = {
 };
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
-const HOME_VY_IMGS = [`${A}/altamira-home-sq.jpg`, `${A}/estate-home.jpg`, `${A}/laconsulta-home-sq.jpg`];
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
 // Award badges. The James Suckling scores per wine come from the client's previous site;
 // the two Gilbert & Gaillard medals (2024) are not tied to a wine yet.
@@ -845,48 +844,23 @@ function Home({ onNav }: { onNav: Nav }) {
               {t.home.vyTitle1} {t.home.vyTitle2}
             </h2>
           </div>
-          <p
-            className="font-['Archivo:Light'] text-[15px] text-ink/[0.7] leading-[27px] max-w-[440px] reveal reveal-d2"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.vyIntro}
-          </p>
-        </div>
-
-        {/* Vineyard rows — alternating square photo / square text */}
-        {t.home.vyRows.map((vyd, idx) => (
-          <SquareSplit
-            key={vyd.num}
-            dark
-            imgRight={idx % 2 === 1}
-            img={HOME_VY_IMGS[idx]}
-            alt={vyd.name}
-            imgClass="object-center"
-          >
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{vyd.num}</p>
-            <h3 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(30px,3vw,42px)] text-ink leading-[1.12]">
-              {vyd.name}
-            </h3>
-            <p className="font-['Archivo:Light'] text-[14px] text-ink/[0.72] leading-[25.2px] max-w-[380px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-              {vyd.desc}
+          <div className="flex max-w-[440px] flex-col items-start gap-8 reveal reveal-d2">
+            <p
+              className="font-['Archivo:Light'] text-[15px] text-ink/[0.7] leading-[27px]"
+              style={{ fontVariationSettings: '"wdth" 100' }}
+            >
+              {t.home.vyIntro}
             </p>
-            <div className="border-t border-ink/[0.2] pt-5 flex flex-wrap gap-x-[38px] gap-y-5">
-              {vyd.stats.map((s) => (
-                <div key={s.l} className={`flex flex-col gap-2 ${s.v.length > 24 ? 'min-w-0 basis-full' : ''}`}>
-                  <p className="font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.28px] text-ink/[0.45]">{s.l}</p>
-                  <p className={`font-['Cormorant_Garamond:Regular'] text-ink ${s.v.length > 24 ? 'text-[19px] leading-[1.35]' : 'text-[23px]'}`}>{s.v}</p>
-                </div>
-              ))}
-            </div>
+            {/* the three vineyards are described only on the Vineyards page; Home just points there */}
             <button
               onClick={() => onNav('vinedos', undefined, 'mapa')}
-              className="self-start border border-ink/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-ink hover:border-ink/60 dark:hover:border-white/70 transition-colors"
+              className="border border-ink/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-ink hover:border-ink/60 dark:hover:border-white/70 transition-colors"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
               {t.home.vyBtn}
             </button>
-          </SquareSplit>
-        ))}
+          </div>
+        </div>
 
         {/* Stats band — oversized serif numerals over the altitude motif */}
         <div className="relative overflow-hidden border-t border-ink/[0.14] px-5 sm:px-8 lg:px-12 pt-[84px] pb-16 lg:pb-[100px]">
