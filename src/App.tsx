@@ -1614,7 +1614,10 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
           />
         </div>
         {/* Form left */}
-        <div className="-mt-px flex-1 bg-surface pt-10 pb-20 px-5 sm:px-9 lg:mt-0 lg:bg-transparent lg:py-20 lg:px-14 flex flex-col">
+        <div className="relative isolate -mt-px flex-1 bg-surface pt-10 pb-20 px-5 sm:px-9 lg:mt-0 lg:py-20 lg:px-14 flex flex-col lg:[text-shadow:0_0_10px_var(--surface),0_0_2px_var(--surface)]">
+          {/* laptops: the vineyard-and-Andes photo is the form's background, veiled so the form stays readable */}
+          <img src={`${A}/contact-mobile-bg.jpg`} alt="" aria-hidden="true" className="absolute inset-0 -z-20 hidden size-full object-cover object-[50%_40%] lg:block" />
+          <div className="absolute inset-0 -z-10 hidden bg-gradient-to-b from-surface/[0.66] via-surface/[0.78] to-surface/[0.88] lg:block" aria-hidden="true" />
           <div className="flex flex-col gap-[18px] mb-[25px] reveal">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.contacto.eyebrow}</p>
             <h1 className="font-['Cormorant_Garamond:Light_Italic'] italic text-[32px] sm:text-[40px] lg:text-[46px] text-ink leading-[1.1] lg:leading-[50.6px]">{t.contacto.title}</h1>
@@ -1673,14 +1676,10 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
           </form>
         </div>
 
-        {/* Images right: on laptops two photos stacked (vineyard and Andes above, the Altamira sign below with
-            the contact details); on phones the first one is the band above the form */}
-        <div className="flex-1 flex flex-col lg:gap-3 lg:bg-surface">
-        <div className="relative hidden flex-1 overflow-hidden bg-panel lg:block">
-          <img src={`${A}/contact-mobile-bg.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_38%]" />
-        </div>
-        <div className="relative overflow-hidden bg-panel min-h-[440px] lg:min-h-0 lg:flex-1">
-          <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover object-[50%_32%]" />
+        {/* Image beside the form: the Altamira sign with the contact details. (On phones the other photo is the
+            band above the form.) */}
+        <div className="relative flex-1 overflow-hidden bg-panel min-h-[440px] lg:min-h-0">
+          <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.1)] to-[rgba(20,18,15,0.6)]" />
           <div className="absolute bottom-0 left-0 right-0 grid grid-cols-2 gap-x-[26px] gap-y-8 p-11">
             <div className="flex flex-col gap-[9px]">
@@ -1708,7 +1707,6 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
               </a>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
