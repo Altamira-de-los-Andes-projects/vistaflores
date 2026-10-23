@@ -91,15 +91,15 @@ const es = {
     fullInfo: 'Ver información completa',
   },
   vinedos: {
-    heroEyebrow: 'ALTURA MEDIA DEL VIÑEDO: 1.050 METROS (3.445 PIES) SOBRE EL NIVEL DEL MAR',
+    heroEyebrow: 'VALLE DE UCO · MENDOZA · ARGENTINA',
     heroTitle1: 'En el corazón del Valle de Uco,',
     heroTitle2: 'Mendoza',
     introTitle: 'Tres viñedos de altura',
     intro1: 'El terroir específico de cada uno de nuestros tres viñedos de altura presenta leves variaciones de topografía y orientación, que marcan sutiles diferencias de expresión en la producción de cada viñedo. La convergencia de estos tres viñedos excepcionales dentro del abanico aluvial de Altamira da como resultado una propuesta única, que se manifiesta en los premiados Malbec, Cabernet Franc y distintos blends elaborados con las uvas de categoría mundial de Altamira de los Andes.',
     cards: [
       { num: '01 · ALTAMIRA', name: 'Viñedos', italic: ' Altamira', desc: 'Con la mayor altitud de nuestros tres viñedos, Altamira se encuentra en el corazón de una de las Indicaciones Geográficas (IG) más reconocidas de Argentina. La primera capa del suelo de Altamira es predominantemente arena; debajo hay grandes rocas de superficie calcárea, depositadas por glaciares y aluviones hace miles de años. La heterogeneidad de este terroir da a los vinos de Altamira su expresión diferenciada.', specs: [{ l: 'ALTITUD', v: '1.100 m (3.609 ft)' }, { l: 'SUELO', v: 'Arenoso con roca calcárea' }, { l: 'VARIEDADES', v: 'Malbec, Syrah' }] },
-      { num: '02 · VISTA FLORES', name: 'Viñedos', italic: ' Vista Flores', desc: 'Nuestro viñedo con más variedades de uva se distingue además por un lecho seco de río que lo atraviesa por el centro. A lo largo del último siglo, el agua fue depositando materiales diversos que crearon condiciones de suelo distintas en todo Vista Flores. Eso define cómo crecen las viñas en cada parcela y da a las uvas —y, en definitiva, a los vinos— su carácter único.', specs: [{ l: 'ALTITUD', v: '1.000 m (3.281 ft)' }, { l: 'SUELO', v: 'Franco arenoso, grava y cantos rodados' }, { l: 'VARIEDADES', v: 'Cabernet Franc, Cabernet Sauvignon, Malbec, Syrah, Carmenere, Petit Verdot' }] },
       { num: '03 · LA CONSULTA', name: 'Viñedos', italic: ' La Consulta', desc: 'Nuestras viñas más antiguas, con un promedio de 80 años, permiten la máxima concentración con un rendimiento naturalmente más bajo. El suelo de La Consulta también tiene grandes rocas con una capa calcárea, pero a mayor profundidad que en Altamira, lo que da a estas viñas una humedad más sostenida y un paladar distinto.', specs: [{ l: 'ALTITUD', v: '1.050 m (3.445 ft)' }, { l: 'SUELO', v: 'Más arenoso, con granito calcáreo a 1,5 m de profundidad' }, { l: 'VARIEDADES', v: 'Malbec' }] },
+      { num: '02 · VISTA FLORES', name: 'Viñedos', italic: ' Vista Flores', desc: 'Nuestro viñedo con más variedades de uva se distingue además por un lecho seco de río que lo atraviesa por el centro. A lo largo del último siglo, el agua fue depositando materiales diversos que crearon condiciones de suelo distintas en todo Vista Flores. Eso define cómo crecen las viñas en cada parcela y da a las uvas —y, en definitiva, a los vinos— su carácter único.', specs: [{ l: 'ALTITUD', v: '1.000 m (3.281 ft)' }, { l: 'SUELO', v: 'Franco arenoso, grava y cantos rodados' }, { l: 'VARIEDADES', v: 'Cabernet Franc, Cabernet Sauvignon, Malbec, Syrah, Carmenere, Petit Verdot' }] },
     ],
     narrative: {
       soilEyebrow: 'TERROIR',
@@ -241,13 +241,13 @@ const es = {
       notes: [{ label: 'VISTA', text: 'Color intenso.' }, { label: 'NARIZ', text: 'Frutos rojos brillantes y sustanciosos.' }, { label: 'BOCA', text: 'Sabor sofisticado, con cuerpo y textura aterciopelada. Final largo y suave.' }],
     },
     {
-      id: 'reserva-malbec', gridRegion: 'ALTAMIRA · LA CONSULTA', name: 'Reserva', sub: 'Malbec',
-      region: 'LA CONSULTA · MALBEC', title1: 'Reserva', title2: 'Malbec',
+      id: 'reserva-malbec', gridRegion: 'ALTAMIRA', name: 'Reserva', sub: 'Malbec',
+      region: 'ALTAMIRA · MALBEC', title1: 'Reserva', title2: 'Malbec',
       tagline: 'La expresión del origen', lead: 'Los grandes vinos nacen de un sentido de lugar.',
       paras: ['Profundamente arraigado en el corazón del Valle de Uco, nuestro Reserva Malbec refleja su origen andino. Un vino moldeado por la altura, el ritmo de las estaciones y una elaboración cuidadosa.', 'Con 12 meses de crianza en barricas de roble, busca un equilibrio armonioso entre fruta, estructura y complejidad.'],
       closing: '',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDAD', value: '100% Malbec' }, { label: 'ORIGEN', value: 'La Consulta' }, { label: 'COSECHA', value: 'A mano' }, { label: 'CRIANZA', value: '12 meses · roble francés' }],
+      ficha: [{ label: 'VARIEDAD', value: '100% Malbec' }, { label: 'ORIGEN', value: 'Altamira' }, { label: 'COSECHA', value: 'A mano' }, { label: 'CRIANZA', value: '12 meses · roble francés' }],
       notes: [{ label: 'VISTA', text: 'Rojo intenso con reflejos violáceos.' }, { label: 'NARIZ', text: 'Aromas tostados, vainilla, chocolate y tabaco aportados por la madera.' }, { label: 'BOCA', text: 'Taninos redondos, dulces y con cuerpo.' }],
     },
     {
@@ -373,15 +373,15 @@ const en: Copy = {
     fullInfo: 'See full details',
   },
   vinedos: {
-    heroEyebrow: 'AVERAGE VINEYARD ELEVATION: 1,050 METERS (3,445 FEET) ABOVE SEA LEVEL',
+    heroEyebrow: 'UCO VALLEY · MENDOZA · ARGENTINA',
     heroTitle1: 'At the heart of the Uco Valley,',
     heroTitle2: 'Mendoza',
     introTitle: 'Three high-altitude vineyards',
     intro1: 'The specific terroir of each of our three high-altitude vineyards enjoys slight variations in topography and aspect, driving subtle differences of expression in each vineyard’s production. The convergence of these three exceptional vineyards within Altamira’s Alluvial Fan results in a unique offering, manifest in the award-winning Malbec, Cabernet Franc and various blends crafted from the world-class grapes of Altamira de los Andes.',
     cards: [
       { num: '01 · ALTAMIRA', name: '', italic: 'Altamira', desc: 'At the highest elevation of our three vineyards, Altamira lies at the heart of one of the most recognized Geographical Indications (GIs) in Argentina. The first layer of Altamira’s soil is predominantly sand, below which sit large rocks of a calcareous surface, deposited by glaciers and alluvions thousands of years ago. The heterogeneity of this terroir drives the differentiated expression of Altamira’s wines.', specs: [{ l: 'ALTITUDE', v: '1,100 m (3,609 ft)' }, { l: 'SOIL', v: 'Sandy soil and calcareous rock' }, { l: 'VARIETALS', v: 'Malbec, Syrah' }] },
-      { num: '02 · VISTA FLORES', name: '', italic: 'Vista Flores', desc: 'Our most diverse vineyard in terms of grape varieties is also distinguished by a dry riverbed running through its heart. Over the past century, flowing water has deposited a variety of materials, creating distinct soil conditions across Vista Flores. This shapes how the vines grow in each parcel, giving the grapes — and ultimately the wines — their unique character.', specs: [{ l: 'ALTITUDE', v: '1,000 m (3,281 ft)' }, { l: 'SOIL', v: 'Sandy loam, gravel and rounded rocks' }, { l: 'VARIETALS', v: 'Cabernet Franc, Cabernet Sauvignon, Malbec, Syrah, Carmenere, Petit Verdot' }] },
       { num: '03 · LA CONSULTA', name: '', italic: 'La Consulta', desc: 'Our oldest vines, averaging 80 years, enable maximum concentration at a naturally lower yield. La Consulta’s soil also includes large rocks with a calcareous layer, but these are at greater depth than in Altamira, providing these vines with more sustained humidity, resulting in a different palate.', specs: [{ l: 'ALTITUDE', v: '1,050 m (3,445 ft)' }, { l: 'SOIL', v: 'Sandier soil with calcareous granite 1.5 m below ground' }, { l: 'VARIETALS', v: 'Malbec' }] },
+      { num: '02 · VISTA FLORES', name: '', italic: 'Vista Flores', desc: 'Our most diverse vineyard in terms of grape varieties is also distinguished by a dry riverbed running through its heart. Over the past century, flowing water has deposited a variety of materials, creating distinct soil conditions across Vista Flores. This shapes how the vines grow in each parcel, giving the grapes — and ultimately the wines — their unique character.', specs: [{ l: 'ALTITUDE', v: '1,000 m (3,281 ft)' }, { l: 'SOIL', v: 'Sandy loam, gravel and rounded rocks' }, { l: 'VARIETALS', v: 'Cabernet Franc, Cabernet Sauvignon, Malbec, Syrah, Carmenere, Petit Verdot' }] },
     ],
     narrative: {
       soilEyebrow: 'TERROIR',
@@ -523,13 +523,13 @@ const en: Copy = {
       notes: [{ label: 'EYE', text: 'Deep colour.' }, { label: 'NOSE', text: 'Bright, generous red fruit.' }, { label: 'PALATE', text: 'Sophisticated and full-bodied, with a velvety texture and a long, smooth finish.' }],
     },
     {
-      id: 'reserva-malbec', gridRegion: 'ALTAMIRA · LA CONSULTA', name: 'Reserva', sub: 'Malbec',
-      region: 'LA CONSULTA · MALBEC', title1: 'Reserva', title2: 'Malbec',
+      id: 'reserva-malbec', gridRegion: 'ALTAMIRA', name: 'Reserva', sub: 'Malbec',
+      region: 'ALTAMIRA · MALBEC', title1: 'Reserva', title2: 'Malbec',
       tagline: 'The Expression of Origin', lead: 'Great wines begin with a sense of place.',
       paras: ['Deeply rooted in the heart of the Uco Valley, our Reserve Malbec characterizes its Andean origins. A wine shaped by high altitude, the rhythm of the seasons and a careful approach to winemaking.', 'Aged for 12 months in oak barrels, it seeks a harmonious balance between fruit, structure and complexity.'],
       closing: '',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIETY', value: '100% Malbec' }, { label: 'ORIGIN', value: 'La Consulta' }, { label: 'HARVEST', value: 'By hand' }, { label: 'AGEING', value: '12 months · French oak' }],
+      ficha: [{ label: 'VARIETY', value: '100% Malbec' }, { label: 'ORIGIN', value: 'Altamira' }, { label: 'HARVEST', value: 'By hand' }, { label: 'AGEING', value: '12 months · French oak' }],
       notes: [{ label: 'EYE', text: 'Deep red with violet glints.' }, { label: 'NOSE', text: 'Toasted notes, vanilla, chocolate and tobacco from the oak.' }, { label: 'PALATE', text: 'Round, sweet and full-bodied tannins.' }],
     },
     {
@@ -653,15 +653,15 @@ const pt: Copy = {
     fullInfo: 'Ver informação completa',
   },
   vinedos: {
-    heroEyebrow: 'ALTITUDE MÉDIA DO VINHEDO: 1.050 METROS (3.445 PÉS) ACIMA DO NÍVEL DO MAR',
+    heroEyebrow: 'VALE DE UCO · MENDOZA · ARGENTINA',
     heroTitle1: 'No coração do Vale de Uco,',
     heroTitle2: 'Mendoza',
     introTitle: 'Três vinhedos de altitude',
     intro1: 'O terroir específico de cada um dos nossos três vinhedos de altitude apresenta leves variações de topografia e orientação, que marcam sutis diferenças de expressão na produção de cada vinhedo. A convergência desses três vinhedos excepcionais dentro do leque aluvial de Altamira resulta em uma proposta única, que se manifesta nos premiados Malbec, Cabernet Franc e diversos blends elaborados com as uvas de nível mundial da Altamira de los Andes.',
     cards: [
       { num: '01 · ALTAMIRA', name: 'Vinhedos', italic: ' Altamira', desc: 'Com a maior altitude dos nossos três vinhedos, Altamira fica no coração de uma das Indicações Geográficas (IG) mais reconhecidas da Argentina. A primeira camada do solo de Altamira é predominantemente arenosa; abaixo dela há grandes rochas de superfície calcária, depositadas por geleiras e aluviões há milhares de anos. A heterogeneidade desse terroir dá aos vinhos de Altamira sua expressão diferenciada.', specs: [{ l: 'ALTITUDE', v: '1.100 m (3.609 pés)' }, { l: 'SOLO', v: 'Arenoso com rocha calcária' }, { l: 'VARIEDADES', v: 'Malbec, Syrah' }] },
-      { num: '02 · VISTA FLORES', name: 'Vinhedos', italic: ' Vista Flores', desc: 'Nosso vinhedo com mais variedades de uva se distingue também por um leito seco de rio que o atravessa pelo centro. Ao longo do último século, a água foi depositando materiais diversos, criando condições de solo distintas em toda Vista Flores. Isso define como as videiras crescem em cada parcela e dá às uvas — e, no fim, aos vinhos — seu caráter único.', specs: [{ l: 'ALTITUDE', v: '1.000 m (3.281 pés)' }, { l: 'SOLO', v: 'Franco-arenoso, cascalho e seixos rolados' }, { l: 'VARIEDADES', v: 'Cabernet Franc, Cabernet Sauvignon, Malbec, Syrah, Carmenere, Petit Verdot' }] },
       { num: '03 · LA CONSULTA', name: 'Vinhedos', italic: ' La Consulta', desc: 'Nossas videiras mais antigas, com média de 80 anos, permitem a máxima concentração com um rendimento naturalmente mais baixo. O solo de La Consulta também tem grandes rochas com uma camada calcária, mas a maior profundidade do que em Altamira, o que dá a essas videiras uma umidade mais constante e um paladar diferente.', specs: [{ l: 'ALTITUDE', v: '1.050 m (3.445 pés)' }, { l: 'SOLO', v: 'Mais arenoso, com granito calcário a 1,5 m de profundidade' }, { l: 'VARIEDADES', v: 'Malbec' }] },
+      { num: '02 · VISTA FLORES', name: 'Vinhedos', italic: ' Vista Flores', desc: 'Nosso vinhedo com mais variedades de uva se distingue também por um leito seco de rio que o atravessa pelo centro. Ao longo do último século, a água foi depositando materiais diversos, criando condições de solo distintas em toda Vista Flores. Isso define como as videiras crescem em cada parcela e dá às uvas — e, no fim, aos vinhos — seu caráter único.', specs: [{ l: 'ALTITUDE', v: '1.000 m (3.281 pés)' }, { l: 'SOLO', v: 'Franco-arenoso, cascalho e seixos rolados' }, { l: 'VARIEDADES', v: 'Cabernet Franc, Cabernet Sauvignon, Malbec, Syrah, Carmenere, Petit Verdot' }] },
     ],
     narrative: {
       soilEyebrow: 'TERROIR',
@@ -803,13 +803,13 @@ const pt: Copy = {
       notes: [{ label: 'VISUAL', text: 'Cor intensa.' }, { label: 'NARIZ', text: 'Frutas vermelhas brilhantes e suculentas.' }, { label: 'BOCA', text: 'Sabor sofisticado, encorpado e aveludado. Final longo e suave.' }],
     },
     {
-      id: 'reserva-malbec', gridRegion: 'ALTAMIRA · LA CONSULTA', name: 'Reserva', sub: 'Malbec',
-      region: 'LA CONSULTA · MALBEC', title1: 'Reserva', title2: 'Malbec',
+      id: 'reserva-malbec', gridRegion: 'ALTAMIRA', name: 'Reserva', sub: 'Malbec',
+      region: 'ALTAMIRA · MALBEC', title1: 'Reserva', title2: 'Malbec',
       tagline: 'A expressão da origem', lead: 'Grandes vinhos começam com um sentido de lugar.',
       paras: ['Profundamente enraizado no coração do Vale de Uco, nosso Reserva Malbec reflete sua origem andina. Um vinho moldado pela altitude, pelo ritmo das estações e por uma vinificação cuidadosa.', 'Com 12 meses de estágio em barricas de carvalho, busca um equilíbrio harmonioso entre fruta, estrutura e complexidade.'],
       closing: '',
       score: { value: '91', critic: 'JAMES SUCKLING', year: '' },
-      ficha: [{ label: 'VARIEDADE', value: '100% Malbec' }, { label: 'ORIGEM', value: 'La Consulta' }, { label: 'COLHEITA', value: 'À mão' }, { label: 'AMADURECIMENTO', value: '12 meses · carvalho francês' }],
+      ficha: [{ label: 'VARIEDADE', value: '100% Malbec' }, { label: 'ORIGEM', value: 'Altamira' }, { label: 'COLHEITA', value: 'À mão' }, { label: 'AMADURECIMENTO', value: '12 meses · carvalho francês' }],
       notes: [{ label: 'VISUAL', text: 'Vermelho intenso com reflexos violáceos.' }, { label: 'NARIZ', text: 'Notas tostadas, baunilha, chocolate e tabaco vindos da madeira.' }, { label: 'BOCA', text: 'Taninos redondos, doces e encorpados.' }],
     },
     {

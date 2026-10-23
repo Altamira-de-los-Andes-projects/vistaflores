@@ -50,7 +50,7 @@ const HOME_AWARDS: { img: string; critic: string; wineId?: string; note?: string
   { img: `${A}/b1740.png`, critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
   { img: `${A}/226c0.png`, critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
 ];
-const VINEDOS_IMGS = [`${A}/vinedos-poplars-sq.jpg`, `${A}/vistaflores-pond-sq.jpg`, `${A}/la-consulta-vineyard.jpg`];
+const VINEDOS_IMGS = [`${A}/altamira-home-sq.jpg`, `${A}/laconsulta-home-sq.jpg`, `${A}/estate-home.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 
 // Wine catalog scaffolding (bottle image / filter tag / blend flag) keyed by id.
@@ -835,7 +835,7 @@ function Home({ onNav }: { onNav: Nav }) {
 
       {/* Vineyards dark section */}
       <section className="bg-surface dark:bg-panel">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:gap-[60px] justify-center px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[100px] pb-16">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-[60px] justify-center px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[100px] pb-16">
           <div className="flex flex-col gap-[21px] max-w-[562px]">
             <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5] reveal">
               {t.home.vyEyebrow}
@@ -863,7 +863,7 @@ function Home({ onNav }: { onNav: Nav }) {
         </div>
 
         {/* Stats band — oversized serif numerals over the altitude motif */}
-        <div className="relative overflow-hidden border-t border-ink/[0.14] px-5 sm:px-8 lg:px-12 pt-[84px] pb-16 lg:pb-[100px]">
+        <div className="relative overflow-hidden border-t border-ink/[0.14] px-5 sm:px-8 lg:px-12 py-16 lg:py-[84px]">
           <div className="pointer-events-none absolute inset-0 text-ink">
             <Contours className="h-full w-full" lines={10} seed={7} opacity={0.07} />
           </div>
@@ -873,25 +873,6 @@ function Home({ onNav }: { onNav: Nav }) {
           >
             {t.home.statsIntro}
           </p>
-          <div className="relative mt-[68px] grid grid-cols-1 gap-10 sm:grid-cols-3 sm:gap-0 reveal reveal-d1">
-            {t.home.stats.map((s, i) => (
-              <div
-                key={s.label}
-                className={`flex flex-col gap-[18px] sm:px-9 ${i > 0 ? 'sm:border-l sm:border-ink/[0.16]' : 'sm:pl-0'}`}
-              >
-                <span className="flex items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.6px] text-ink/[0.55]">
-                  <span className="h-px w-4 bg-accent" />
-                  {s.label}
-                </span>
-                <span className="font-['Cormorant_Garamond:Light'] text-[clamp(38px,8vw,80px)] leading-[0.86] tracking-[-0.01em] text-ink">
-                  {s.num}
-                </span>
-                <span className="font-['Cormorant_Garamond:Italic'] italic text-[15px] text-ink/[0.6]">
-                  {s.unit}
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -901,8 +882,9 @@ function Home({ onNav }: { onNav: Nav }) {
           <img src={`${A}/quote-bg.jpg`} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
         </div>
-        <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[860px] reveal">
-          <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(28px,3.4vw,42px)] text-on-dark leading-[1.25]">
+        <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[1080px] reveal">
+          {/* balanced wrap: on wide screens the quote sets in three even lines, no lone last word */}
+          <p className="font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(28px,3.4vw,42px)] text-on-dark leading-[1.25] text-balance">
             {t.home.quote}
           </p>
           <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.7px] text-on-dark/[0.7] mt-5">
@@ -1022,9 +1004,10 @@ function Vinos({ onNav }: { onNav: Nav }) {
 
   return (
     <div className="bg-surface w-full">
-      <section className="relative h-[340px] overflow-hidden flex items-center max-sm:items-stretch">
-        {/* on phones the photo is scaled up and raised so the dark band of the mountains sits behind the title */}
-        <img src={`${A}/vinos-hero.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_40%] max-sm:inset-auto max-sm:left-0 max-sm:top-[-10%] max-sm:h-[150%]" />
+      <section className="relative h-[340px] overflow-hidden flex items-stretch">
+        {/* on phones the photo is scaled up and raised so the dark band of the mountains sits behind the title;
+            from tablets up it is anchored to the top so the blue sky stays behind the title */}
+        <img src={`${A}/vinos-hero.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_0%] max-sm:inset-auto max-sm:left-0 max-sm:top-[-10%] max-sm:h-[150%]" />
         {/* a light overall veil so the photo sits back behind the text */}
         <div className="absolute inset-0 bg-[rgba(20,18,15,0.18)]" aria-hidden="true" />
         <div
@@ -1033,15 +1016,16 @@ function Vinos({ onNav }: { onNav: Nav }) {
         />
         {/* on phones the text spans the whole bright photo: an even veil keeps it readable */}
         <div className="absolute inset-0 bg-[rgba(20,18,15,0.24)] sm:hidden" aria-hidden="true" />
-        {/* on phones the title sits up on the blue sky and the paragraph down on the brown foot of the
-            mountains, so no white text lands on the snow */}
-        <div className="relative px-5 sm:px-8 lg:px-12 flex flex-col gap-4 max-sm:w-full max-sm:justify-between max-sm:py-6 [text-shadow:0_1px_3px_rgba(0,0,0,0.75),0_2px_16px_rgba(0,0,0,0.55)]">
+        {/* from tablets up the foot of the photo is darkened so the paragraph reads over the vines */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(20,18,15,0.6)] via-transparent via-[42%] to-transparent max-sm:hidden" aria-hidden="true" />
+        {/* the title sits up on the blue sky and the paragraph down on the foot of the mountains and the
+            vines, so no white text lands on the snow (same layout on phones and laptops) */}
+        <div className="relative w-full px-5 sm:px-8 lg:px-12 py-6 sm:pt-5 sm:pb-6 flex flex-col justify-between gap-4 [text-shadow:0_1px_3px_rgba(0,0,0,0.75),0_2px_16px_rgba(0,0,0,0.55)]">
           <div className="flex flex-col gap-4">
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-on-dark/[0.92] hero-line-1">{t.vinos.heroEyebrow}</p>
             {/* one line in every language: on smaller screens the size follows the width (PT is the longest) */}
             <h1 className="font-['Cormorant_Garamond:Light'] whitespace-nowrap text-[calc(6.8vw-3px)] sm:text-[min(44px,calc(6.8vw-4px))] lg:text-[52px] text-on-dark leading-[1.12] lg:leading-[57.2px] hero-line-2">{t.vinos.heroTitle}</h1>
           </div>
-          <p className="font-['Archivo:Light'] text-[15px] text-on-dark leading-[25.5px] max-w-[540px] hero-line-3" style={{ fontVariationSettings: '"wdth" 100' }}>
+          <p className="font-['Archivo:Light'] text-[15px] text-on-dark leading-[25.5px] max-w-[540px] text-balance sm:max-w-[820px] hero-line-3" style={{ fontVariationSettings: '"wdth" 100' }}>
             {t.vinos.heroPara}
           </p>
         </div>
@@ -1095,7 +1079,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
                   </div>
                   <div className="px-2 lg:px-3 pt-6 pb-8 flex flex-col items-center gap-[10px]">
                     <p className="font-['Cormorant_Garamond:Regular'] text-[21px] lg:text-[clamp(18px,1.6vw,24px)] text-ink leading-[1.12]">
-                      {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
+                      {wine.name} {wine.sub}
                     </p>
                     <span className="inline-flex items-center gap-2 font-['Archivo:Regular'] text-[11px] tracking-[0.4px] text-accent" style={{ fontVariationSettings: '"wdth" 100' }}>
                       <span className="border-b border-accent/[0.35] pb-[3px] transition-colors group-hover:border-accent">{t.vinos.fullInfo}</span>
@@ -1145,8 +1129,7 @@ function Vinedos() {
 
       <section className="border-t border-ink/[0.12] pb-14 lg:pb-24">
         {t.vinedos.cards.map((v, i) => (
-          <SquareSplit key={v.num} imgRight={i % 2 === 1} img={VINEDOS_IMGS[i]} alt={v.name + v.italic}>
-            <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{v.num}</p>
+          <SquareSplit key={v.italic} imgRight={i % 2 === 1} img={VINEDOS_IMGS[i]} alt={v.name + v.italic}>
             <h3 className="font-['Cormorant_Garamond:Italic'] italic text-[clamp(30px,3vw,44px)] text-ink leading-[1.12]">
               {v.name}<span className="font-['Cormorant_Garamond:Regular'] not-italic">{v.italic}</span>
             </h3>
@@ -1313,7 +1296,7 @@ function Novedades() {
 const UCO_ROT = `matrix(0 1 -1 0 ${UCO_H} 0)`;
 // the area that must always be visible (west-up units); the frame grows around it to fill the box.
 // Pulled back enough to show the estates sitting at the foot of the Andes.
-const UCO_FOCUS_DESKTOP = [300, 600, 1110, 980] as const;
+const UCO_FOCUS_DESKTOP = [300, 680, 1110, 1020] as const;
 const UCO_FOCUS_MOBILE = [380, 790, 950, 810] as const;
 const UCO_GOLD = '#f0d6a0';
 const UCO_GREEN = '#9cc46e';
@@ -1327,7 +1310,7 @@ const UCO_FINCAS = [
   { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, below: true, toLeft: true },
 ] as const;
 // a point on the Tunuyán between the estates and the river's heading there (west-up)
-const UCO_RIVER_LABEL = { pt: [944, 1590], angle: 58 } as const;
+const UCO_RIVER_LABEL = { pt: [560, 1130], angle: 58 } as const;
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -1470,15 +1453,15 @@ function UcoMap() {
             </filter>
           </defs>
           <g transform={UCO_ROT}>
-            <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.6" strokeWidth="8" filter="url(#uco-glow)" />
-            <path d={UCO_RIVER} fill="none" stroke={UCO_WATER_CORE} strokeOpacity="0.95" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.65" strokeWidth="9" filter="url(#uco-glow)" />
+            <path d={UCO_RIVER} fill="none" stroke={UCO_WATER_CORE} strokeOpacity="1" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           </g>
         </svg>
 
         {/* context labels */}
         <span
-          className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Light_Italic'] italic text-[clamp(13px,1.15vw,17px)] tracking-[0.06em] text-[#9fd3f5] ${shadow}`}
-          style={{ ...at(UCO_RIVER_LABEL.pt), transform: `translate(-50%,-50%) rotate(${UCO_RIVER_LABEL.angle}deg) translateY(-14px)` }}
+          className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Regular'] italic text-[clamp(15px,1.5vw,22px)] tracking-[0.08em] text-[#bfe4fb] [text-shadow:0_1px_12px_rgba(0,0,0,0.95),0_0_2px_rgba(0,0,0,0.9)]`}
+          style={{ ...at(UCO_RIVER_LABEL.pt), transform: `translate(-50%,-50%) rotate(${UCO_RIVER_LABEL.angle}deg) translateY(-15px)` }}
         >
           {art.river}
         </span>
@@ -1690,9 +1673,14 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
           </form>
         </div>
 
-        {/* Image right */}
-        <div className="flex-1 relative overflow-hidden bg-panel min-h-[440px] lg:min-h-0">
-          <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover" />
+        {/* Images right: on laptops two photos stacked (vineyard and Andes above, the Altamira sign below with
+            the contact details); on phones the first one is the band above the form */}
+        <div className="flex-1 flex flex-col lg:gap-3 lg:bg-surface">
+        <div className="relative hidden flex-1 overflow-hidden bg-panel lg:block">
+          <img src={`${A}/contact-mobile-bg.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_38%]" />
+        </div>
+        <div className="relative overflow-hidden bg-panel min-h-[440px] lg:min-h-0 lg:flex-1">
+          <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover object-[50%_32%]" />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.1)] to-[rgba(20,18,15,0.6)]" />
           <div className="absolute bottom-0 left-0 right-0 grid grid-cols-2 gap-x-[26px] gap-y-8 p-11">
             <div className="flex flex-col gap-[9px]">
@@ -1720,6 +1708,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
               </a>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
