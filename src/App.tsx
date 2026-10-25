@@ -846,7 +846,7 @@ function Home({ onNav }: { onNav: Nav }) {
           </div>
           <div className="flex max-w-[440px] flex-col items-start gap-8 reveal reveal-d2">
             <p
-              className="font-['Archivo:Light'] text-[15px] text-ink/[0.7] leading-[27px]"
+              className="font-['Archivo:Light'] text-[17px] text-ink/[0.78] leading-[1.75]"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
               {t.home.vyIntro}
@@ -868,7 +868,7 @@ function Home({ onNav }: { onNav: Nav }) {
             <Contours className="h-full w-full" lines={10} seed={7} opacity={0.07} />
           </div>
           <p
-            className="relative max-w-[720px] font-['Archivo:Light'] text-[19px] text-ink/[0.78] leading-[1.75] reveal"
+            className="relative max-w-[720px] font-['Archivo:Light'] text-[17px] text-ink/[0.78] leading-[1.75] reveal"
             style={{ fontVariationSettings: '"wdth" 100' }}
           >
             {t.home.statsIntro}
