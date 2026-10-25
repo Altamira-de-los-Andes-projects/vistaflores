@@ -532,9 +532,9 @@ function Footer({ onNav }: { onNav: Nav }) {
               className="font-['Archivo:Light'] text-[12px] sm:text-[13.5px] text-on-dark leading-[21px] sm:leading-[24.3px]"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              Argentina +54 261 4299962
+              <span className="whitespace-nowrap">Argentina +54 261 4299962</span>
               <br />
-              USA +1 (305) 988 5992
+              USA +1 305 988 5992
             </p>
           </div>
         </div>
@@ -1678,10 +1678,13 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
 
         {/* Image beside the form: the Altamira sign with the contact details. (On phones the other photo is the
             band above the form.) */}
-        <div className="relative flex-1 overflow-hidden bg-panel min-h-[440px] lg:min-h-0">
-          <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.1)] to-[rgba(20,18,15,0.6)]" />
-          <div className="absolute bottom-0 left-0 right-0 grid grid-cols-2 gap-x-[26px] gap-y-8 p-11">
+        <div className="relative flex-1 overflow-hidden bg-surface min-h-[440px] lg:min-h-0 lg:bg-panel">
+          {/* on phones the photo fades in from the page at its top edge (a mask, so no seam), like the one above the form */}
+          <div className="absolute inset-0 max-lg:[-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,#000_42%)] max-lg:[mask-image:linear-gradient(to_bottom,transparent_0%,#000_42%)]">
+            <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.1)] to-[rgba(20,18,15,0.6)]" />
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 grid grid-cols-1 gap-x-[26px] gap-y-6 p-6 sm:grid-cols-2 sm:gap-y-8 sm:p-11">
             <div className="flex flex-col gap-[9px]">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.officeLabel}</p>
               <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
@@ -1692,11 +1695,11 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
             <div className="flex flex-col gap-[9px]">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.phoneLabel}</p>
               <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                Argentina +54 261 4299962<br />
-                USA +1 (305) 988 5992
+                <span className="whitespace-nowrap">Argentina +54 261 4299962</span><br />
+                USA +1 305 988 5992
               </p>
             </div>
-            <div className="col-span-2 flex flex-col gap-[9px]">
+            <div className="flex flex-col gap-[9px] sm:col-span-2">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.emailLabel}</p>
               <a
                 href="mailto:facundo@altamiradelosandes.com"
