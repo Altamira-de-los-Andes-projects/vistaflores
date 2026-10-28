@@ -572,7 +572,7 @@ function Footer({ onNav }: { onNav: Nav }) {
         </div>
       </div>
 
-      <div className="border-t border-on-dark/[0.2] flex flex-col gap-1 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 pt-[23px] pb-[34px]">
+      <div className="border-t border-on-dark/[0.2] flex flex-col gap-y-1 gap-x-8 md:flex-row md:items-center md:justify-between md:gap-x-16 px-5 sm:px-8 lg:px-12 pt-[23px] pb-[34px]">
         <span className="whitespace-nowrap font-['IBM_Plex_Mono:Regular'] text-[6px] md:text-[9.5px] text-on-dark/[0.6] tracking-[0.25px] md:tracking-[1.33px]">
           {t.footer.copyright}
         </span>
@@ -1997,7 +1997,7 @@ function Site() {
 function FooterBar({ onNav }: { onNav: Nav }) {
   const t = useT();
   return (
-    <footer className="bg-accent-solid flex flex-col gap-1 md:flex-row md:items-center md:justify-between px-5 sm:px-8 lg:px-12 py-[34px]">
+    <footer className="bg-accent-solid flex flex-col gap-y-1 gap-x-8 md:flex-row md:items-center md:justify-between md:gap-x-16 px-5 sm:px-8 lg:px-12 py-[34px]">
       <span className="whitespace-nowrap font-['IBM_Plex_Mono:Regular'] text-[6px] md:text-[9.5px] tracking-[0.25px] md:tracking-[1.33px] text-on-dark/[0.7]">
         {t.footer.copyright}
       </span>
