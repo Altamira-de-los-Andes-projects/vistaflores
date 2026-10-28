@@ -42,14 +42,17 @@ const es = {
     vyEyebrow: 'NUESTROS VIÑEDOS',
     vyTitle1: 'En el corazón del Valle de Uco,',
     vyTitle2: 'Mendoza',
-    vyIntro: 'Nuestros tres viñedos se encuentran en el corazón de Altamira, dentro del mundialmente reconocido Valle de Uco, la región vitivinícola más famosa de Mendoza, a lo largo del río Tunuyán, al pie de la Cordillera de los Andes. El valle goza de una larga temporada de crecimiento —más de 250 días de sol al año—, escasas lluvias y marcadas diferencias de temperatura entre el día y la noche: un entorno natural excepcional para cultivar algunas de las mejores uvas del mundo.',
+    vyParas: [
+      'Los tres viñedos de Altamira de los Andes se encuentran en el mundialmente reconocido Valle de Uco, la región vitivinícola más famosa de Mendoza, a lo largo del río Tunuyán, al pie de la Cordillera de los Andes. El Valle de Uco goza de una larga temporada de crecimiento —más de 250 días de sol al año— y escasas lluvias: un entorno natural excepcional.',
+      'Los tres viñedos de Altamira de los Andes (Vista Flores, La Consulta y Altamira) se sitúan a una altitud media de 1.050 metros (3.445 pies) sobre el nivel del mar. A estas alturas, la diferencia de temperatura entre el día y la noche es muy marcada.',
+      'Cada viñedo goza del terroir perfecto para el cultivo de la vid: un suelo complejo, irrigado por el agua más pura y templado por un clima benigno (temperatura media de 14 °C / 57,2 °F). Junto con la abundante luz solar y la poda a un rendimiento extremadamente bajo, Altamira de los Andes produce uvas de la más alta calidad.',
+    ],
     vyRows: [
       { num: '01 / 03', name: 'Viñedos Altamira', desc: 'Con la mayor altitud de nuestros tres viñedos, Altamira se encuentra en el corazón de una de las Indicaciones Geográficas (IG) más reconocidas de Argentina. La primera capa del suelo de Altamira es predominantemente arena; debajo hay grandes rocas de superficie calcárea, depositadas por glaciares y aluviones hace miles de años. La heterogeneidad de este terroir da a los vinos de Altamira su expresión diferenciada.', stats: [{ l: 'ALTITUD', v: '1.100 m' }, { l: 'VARIEDADES', v: 'Malbec · Syrah' }] },
       { num: '02 / 03', name: 'Viñedos Vista Flores', desc: 'Nuestro viñedo con más variedades de uva se distingue además por un lecho seco de río que lo atraviesa por el centro. A lo largo del último siglo, el agua fue depositando materiales diversos que crearon condiciones de suelo distintas en todo Vista Flores. Eso define cómo crecen las viñas en cada parcela y da a las uvas —y, en definitiva, a los vinos— su carácter único.', stats: [{ l: 'ALTITUD', v: '1.000 m' }, { l: 'VARIEDADES', v: 'Cabernet Franc · Cabernet Sauvignon · Malbec · Syrah · Carmenere · Petit Verdot' }] },
       { num: '03 / 03', name: 'Viñedos La Consulta', desc: 'Nuestras viñas más antiguas, con un promedio de 80 años, permiten la máxima concentración con un rendimiento naturalmente más bajo. El suelo de La Consulta también tiene grandes rocas con una capa calcárea, pero a mayor profundidad que en Altamira, lo que da a estas viñas una humedad más sostenida y un paladar distinto.', stats: [{ l: 'ALTITUD', v: '1.050 m' }, { l: 'VARIEDAD', v: 'Malbec' }, { l: 'EDAD (PROM.)', v: '80 años' }] },
     ],
     vyBtn: 'Ver ubicaciones de viñedos',
-    statsIntro: 'La altitud de nuestros viñedos provoca una gran diferencia térmica entre el día y la noche. Junto con la abundante luz solar, los suelos excepcionales y la poda a rendimiento extremadamente bajo, entrega uvas de la más alta calidad.',
     stats: [
       { label: 'ALTITUD', num: '1.050', unit: 'metros s.n.m. (prom.)' },
       { label: 'RENDIMIENTO', num: '2,25', unit: 'toneladas / acre' },
@@ -322,14 +325,17 @@ const en: Copy = {
     vyEyebrow: 'OUR VINEYARDS',
     vyTitle1: 'At the heart of the Uco Valley,',
     vyTitle2: 'Mendoza',
-    vyIntro: "Our three vineyards lie at the heart of Altamira within the world-renowned Uco Valley, Mendoza's most famous wine-growing region, situated along the Tunuyán River in the foothills of the Andes. The valley enjoys a long growing season — over 250 days of sunshine a year — little rain and significant day-to-night temperature differences: an exceptional natural environment for growing some of the best grapes in the world.",
+    vyParas: [
+      'The three vineyards of Altamira de los Andes are located within the world-renowned Uco Valley, Mendoza’s most famous wine-growing region, situated along the Tunuyán River in the foothills of the Andes. The Uco Valley enjoys a long growing season — over 250 days of sunshine per year — with little rain: an exceptional natural environment.',
+      'Altamira de los Andes’s three vineyards (Vista Flores, La Consulta and Altamira) sit at an average elevation of 1,050 meters (3,445 feet) above sea level. These high altitudes experience a wide temperature swing between day and night.',
+      'Each vineyard benefits from the perfect grape-growing terroir of complex soil, irrigated by the purest water and nurtured by a temperate climate (average temperature of 14°C / 57.2°F). Together with abundant sunlight and pruning to an extremely low yield, Altamira de los Andes produces grapes of the very highest quality.',
+    ],
     vyRows: [
       { num: '01 / 03', name: 'Altamira Vineyard', desc: 'At the highest elevation of our three vineyards, Altamira lies at the heart of one of the most recognized Geographical Indications (GIs) in Argentina. The first layer of Altamira’s soil is predominantly sand, below which sit large rocks of a calcareous surface, deposited by glaciers and alluvions thousands of years ago. The heterogeneity of this terroir drives the differentiated expression of Altamira’s wines.', stats: [{ l: 'ALTITUDE', v: '1,100 m' }, { l: 'VARIETALS', v: 'Malbec · Syrah' }] },
       { num: '02 / 03', name: 'Vista Flores Vineyard', desc: 'Our most diverse vineyard in terms of grape varieties is also distinguished by a dry riverbed running through its heart. Over the past century, flowing water has deposited a variety of materials, creating distinct soil conditions across Vista Flores. This shapes how the vines grow in each parcel, giving the grapes — and ultimately the wines — their unique character.', stats: [{ l: 'ALTITUDE', v: '1,000 m' }, { l: 'VARIETALS', v: 'Cabernet Franc · Cabernet Sauvignon · Malbec · Syrah · Carmenere · Petit Verdot' }] },
       { num: '03 / 03', name: 'La Consulta Vineyard', desc: 'Our oldest vines, averaging 80 years, enable maximum concentration at a naturally lower yield. La Consulta’s soil also includes large rocks with a calcareous layer, but these are at greater depth than in Altamira, providing these vines with more sustained humidity, resulting in a different palate.', stats: [{ l: 'ALTITUDE', v: '1,050 m' }, { l: 'VARIETAL', v: 'Malbec' }, { l: 'VINE AGE (AVG)', v: '80 yrs' }] },
     ],
     vyBtn: 'See vineyard locations',
-    statsIntro: 'The altitude of our vineyards creates a wide temperature swing between day and night. Together with abundant sunlight, exceptional soils and pruning to an extremely low yield, it delivers grapes of the highest quality.',
     stats: [
       { label: 'ALTITUDE', num: '1,050', unit: 'metres a.s.l. (avg)' },
       { label: 'YIELD', num: '2.25', unit: 'tonnes / acre' },
@@ -600,14 +606,17 @@ const pt: Copy = {
     vyEyebrow: 'NOSSOS VINHEDOS',
     vyTitle1: 'No coração do Vale de Uco,',
     vyTitle2: 'Mendoza',
-    vyIntro: 'Nossos três vinhedos ficam no coração de Altamira, dentro do mundialmente reconhecido Vale de Uco, a região vitivinícola mais famosa de Mendoza, ao longo do rio Tunuyán, no sopé da Cordilheira dos Andes. O vale desfruta de uma longa temporada de cultivo —mais de 250 dias de sol por ano—, poucas chuvas e marcadas diferenças de temperatura entre o dia e a noite: um ambiente natural excepcional para cultivar algumas das melhores uvas do mundo.',
+    vyParas: [
+      'Os três vinhedos da Altamira de los Andes ficam no mundialmente reconhecido Vale de Uco, a região vitivinícola mais famosa de Mendoza, ao longo do rio Tunuyán, no sopé da Cordilheira dos Andes. O Vale de Uco desfruta de uma longa temporada de cultivo — mais de 250 dias de sol por ano — e poucas chuvas: um ambiente natural excepcional.',
+      'Os três vinhedos da Altamira de los Andes (Vista Flores, La Consulta e Altamira) situam-se a uma altitude média de 1.050 metros (3.445 pés) acima do nível do mar. Nessas altitudes, a diferença de temperatura entre o dia e a noite é muito marcada.',
+      'Cada vinhedo desfruta do terroir perfeito para o cultivo da videira: um solo complexo, irrigado pela água mais pura e temperado por um clima ameno (temperatura média de 14 °C / 57,2 °F). Junto com a abundante luz solar e a poda a um rendimento extremamente baixo, a Altamira de los Andes produz uvas da mais alta qualidade.',
+    ],
     vyRows: [
       { num: '01 / 03', name: 'Vinhedos Altamira', desc: 'Com a maior altitude dos nossos três vinhedos, Altamira fica no coração de uma das Indicações Geográficas (IG) mais reconhecidas da Argentina. A primeira camada do solo de Altamira é predominantemente arenosa; abaixo dela há grandes rochas de superfície calcária, depositadas por geleiras e aluviões há milhares de anos. A heterogeneidade desse terroir dá aos vinhos de Altamira sua expressão diferenciada.', stats: [{ l: 'ALTITUDE', v: '1.100 m' }, { l: 'VARIEDADES', v: 'Malbec · Syrah' }] },
       { num: '02 / 03', name: 'Vinhedos Vista Flores', desc: 'Nosso vinhedo com mais variedades de uva se distingue também por um leito seco de rio que o atravessa pelo centro. Ao longo do último século, a água foi depositando materiais diversos, criando condições de solo distintas em toda Vista Flores. Isso define como as videiras crescem em cada parcela e dá às uvas — e, no fim, aos vinhos — seu caráter único.', stats: [{ l: 'ALTITUDE', v: '1.000 m' }, { l: 'VARIEDADES', v: 'Cabernet Franc · Cabernet Sauvignon · Malbec · Syrah · Carmenere · Petit Verdot' }] },
       { num: '03 / 03', name: 'Vinhedos La Consulta', desc: 'Nossas videiras mais antigas, com média de 80 anos, permitem a máxima concentração com um rendimento naturalmente mais baixo. O solo de La Consulta também tem grandes rochas com uma camada calcária, mas a maior profundidade do que em Altamira, o que dá a essas videiras uma umidade mais constante e um paladar diferente.', stats: [{ l: 'ALTITUDE', v: '1.050 m' }, { l: 'VARIEDADE', v: 'Malbec' }, { l: 'IDADE (MÉD.)', v: '80 anos' }] },
     ],
     vyBtn: 'Ver localizações dos vinhedos',
-    statsIntro: 'A altitude de nossos vinhedos provoca uma grande amplitude térmica entre o dia e a noite. Junto com a abundante luz solar, os solos excepcionais e a poda a rendimento extremamente baixo, entrega uvas da mais alta qualidade.',
     stats: [
       { label: 'ALTITUDE', num: '1.050', unit: 'metros s.n.m. (méd.)' },
       { label: 'RENDIMENTO', num: '2,25', unit: 'toneladas / acre' },

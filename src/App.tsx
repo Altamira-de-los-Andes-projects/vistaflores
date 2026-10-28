@@ -841,17 +841,20 @@ function Home({ onNav }: { onNav: Nav }) {
               {t.home.vyTitle1} {t.home.vyTitle2}
             </h2>
           </div>
-          <div className="flex max-w-[440px] flex-col items-start gap-8 reveal reveal-d2">
-            <p
-              className="font-['Archivo:Light'] text-[17px] text-ink/[0.78] leading-[1.75]"
-              style={{ fontVariationSettings: '"wdth" 100' }}
-            >
-              {t.home.vyIntro}
-            </p>
+          <div className="flex max-w-[520px] flex-col items-start gap-5 reveal reveal-d2">
+            {t.home.vyParas.map((para) => (
+              <p
+                key={para}
+                className="font-['Archivo:Light'] text-[17px] text-ink/[0.78] leading-[1.75]"
+                style={{ fontVariationSettings: '"wdth" 100' }}
+              >
+                {para}
+              </p>
+            ))}
             {/* the three vineyards are described only on the Vineyards page; Home just points there */}
             <button
               onClick={() => onNav('vinedos', undefined, 'mapa')}
-              className="border border-ink/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-ink hover:border-ink/60 dark:hover:border-white/70 transition-colors"
+              className="mt-3 border border-ink/[0.45] px-[29px] py-[14px] font-['Archivo:Regular'] text-[10.5px] tracking-[1.26px] uppercase text-ink hover:border-ink/60 dark:hover:border-white/70 transition-colors"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
               {t.home.vyBtn}
@@ -859,18 +862,6 @@ function Home({ onNav }: { onNav: Nav }) {
           </div>
         </div>
 
-        {/* Stats band — oversized serif numerals over the altitude motif */}
-        <div className="relative overflow-hidden border-t border-ink/[0.14] px-5 sm:px-8 lg:px-12 py-16 lg:py-[84px]">
-          <div className="pointer-events-none absolute inset-0 text-ink">
-            <Contours className="h-full w-full" lines={10} seed={7} opacity={0.07} />
-          </div>
-          <p
-            className="relative max-w-[720px] font-['Archivo:Light'] text-[17px] text-ink/[0.78] leading-[1.75] reveal"
-            style={{ fontVariationSettings: '"wdth" 100' }}
-          >
-            {t.home.statsIntro}
-          </p>
-        </div>
       </section>
 
       {/* Quote section */}
