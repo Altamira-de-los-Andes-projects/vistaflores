@@ -1344,6 +1344,9 @@ function UcoMap() {
   const t = useT();
   const art = t.vinedos.mapArt;
   const cards = t.vinedos.cards;
+  // the cards array and the pins are in different orders, so match each finca to its card by name
+  const cardFor = (i: number) =>
+    cards.find((c) => c.num.toUpperCase().includes(UCO_FINCAS[i].name.toUpperCase())) ?? cards[i];
   const mobile = useMedia('(max-width: 1023px)');
   const boxRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<[number, number]>(() =>
@@ -1508,7 +1511,7 @@ function UcoMap() {
             aria-label={art.vineyards[open]}
             onClick={(e) => e.stopPropagation()}
             className={`uco-card absolute z-20 border border-[#f0d6a0]/25 bg-[#0d0b08]/[0.9] p-6 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-md ${
-              mobile ? 'inset-x-3 bottom-3' : 'w-[330px]'
+              mobile ? 'inset-x-3 bottom-3 max-h-[78svh] overflow-y-auto' : 'w-[330px] max-h-[calc(100%-32px)] overflow-y-auto'
             }`}
             style={
               mobile
@@ -1518,7 +1521,7 @@ function UcoMap() {
                       sel[0] > vx + vw / 2
                         ? `clamp(16px, calc(${px(sel[0])} - 380px), calc(100% - 346px))`
                         : `clamp(16px, calc(${px(sel[0])} + 50px), calc(100% - 346px))`,
-                    top: `clamp(16px, calc(${py(sel[1])} - 190px), calc(100% - 390px))`,
+                    top: `clamp(16px, calc(${py(sel[1])} - 190px), calc(100% - 490px))`,
                   }
             }
           >
@@ -1537,10 +1540,10 @@ function UcoMap() {
             </div>
             <h3 className="mt-2 font-['Cormorant_Garamond:Light'] text-[30px] leading-[1.05] text-on-dark">{art.vineyards[open]}</h3>
             <p className="mt-3 font-['Archivo:Light'] text-[13px] leading-[22px] text-on-dark/75" style={{ fontVariationSettings: '"wdth" 100' }}>
-              {cards[open].desc}
+              {cardFor(open).desc}
             </p>
             <dl className="mt-4">
-              {cards[open].specs.map((s) => (
+              {cardFor(open).specs.map((s) => (
                 <div key={s.l} className="flex items-baseline justify-between gap-5 border-t border-on-dark/[0.14] py-[9px] last:border-b">
                   <dt className="shrink-0 font-['IBM_Plex_Mono:Regular'] text-[9px] tracking-[0.12em] text-on-dark/55">{s.l}</dt>
                   <dd className="text-right font-['Cormorant_Garamond:Regular'] text-[15px] leading-[1.35] text-on-dark">{s.v}</dd>
