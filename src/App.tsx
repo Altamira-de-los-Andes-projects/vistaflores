@@ -827,9 +827,6 @@ function Home({ onNav }: { onNav: Nav }) {
             )}
           </h2>
           <span className="h-px w-14 bg-ink/[0.25]" aria-hidden="true" />
-          <p className="font-['Archivo:Light'] text-[clamp(15px,1.35vw,19px)] text-ink/[0.82] leading-[1.85]" style={{ fontVariationSettings: '"wdth" 100' }}>
-            {t.home.estatePara1} {t.home.estatePara2}
-          </p>
         </div>
       </section>
 
