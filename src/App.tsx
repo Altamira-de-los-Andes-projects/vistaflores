@@ -1066,8 +1066,8 @@ function Vinos({ onNav }: { onNav: Nav }) {
                     </div>
                   </div>
                   <div className="px-2 lg:px-3 pt-6 pb-8 flex flex-col items-center gap-[10px]">
-                    <p className="font-['Cormorant_Garamond:Regular'] text-[21px] lg:text-[clamp(18px,1.6vw,24px)] text-ink leading-[1.12]">
-                      {wine.name} {wine.sub}
+                    <p className="font-['Cormorant_Garamond:Regular'] text-[21px] lg:text-[clamp(18px,1.6vw,24px)] text-ink leading-[1.12] text-balance">
+                      {wine.name}{wine.sub && <> <span className="whitespace-nowrap">{wine.sub}</span></>}
                     </p>
                     <span className="inline-flex items-center gap-2 font-['Archivo:Regular'] text-[11px] tracking-[0.4px] text-accent" style={{ fontVariationSettings: '"wdth" 100' }}>
                       <span className="border-b border-accent/[0.35] pb-[3px] transition-colors group-hover:border-accent">{t.vinos.fullInfo}</span>
