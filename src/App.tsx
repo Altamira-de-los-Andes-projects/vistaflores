@@ -1298,7 +1298,7 @@ const UCO_FINCAS = [
   { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, below: true, toLeft: true },
 ] as const;
 // a point on the Tunuyán between the estates and the river's heading there (west-up)
-const UCO_RIVER_LABEL = { pt: [560, 1130], angle: 58 } as const;
+const UCO_RIVER_LABEL = { pt: [560, 1130], angle: 0 } as const;
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
