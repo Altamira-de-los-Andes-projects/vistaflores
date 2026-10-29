@@ -549,7 +549,7 @@ function Footer({ onNav }: { onNav: Nav }) {
               className="border-b border-on-dark/[0.35] pb-[5px] font-['Archivo:Light'] text-[13.5px] text-on-dark text-left leading-[24.3px] hover:border-white/60 transition-colors self-start"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              facundo@altamiradelosandes.com
+              inquiries@altamiradelosandes.com
             </button>
           </div>
           <div className="flex flex-col gap-[10px]">
@@ -1689,11 +1689,11 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
             <div className="flex flex-col gap-[9px] sm:col-span-2">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.emailLabel}</p>
               <a
-                href="mailto:facundo@altamiradelosandes.com"
+                href="mailto:inquiries@altamiradelosandes.com"
                 className="self-start border-b border-on-dark/[0.4] pb-[5px] font-['Archivo:Light'] text-[13.5px] text-on-dark hover:border-white/70 transition-colors"
                 style={{ fontVariationSettings: '"wdth" 100' }}
               >
-                facundo@altamiradelosandes.com
+                inquiries@altamiradelosandes.com
               </a>
             </div>
           </div>
