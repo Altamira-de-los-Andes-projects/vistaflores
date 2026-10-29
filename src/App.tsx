@@ -211,7 +211,7 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
       className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-panel px-6 text-on-dark`}
     >
       <img
-        src={`${A}/gate-c28.jpg`}
+        src={`${A}/gate-mountain.png`}
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 size-full object-cover kenburns"
