@@ -1457,8 +1457,8 @@ function UcoMap() {
           {art.river}
         </span>
         <span
-          className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[clamp(9px,0.8vw,11px)] uppercase tracking-[0.5em] text-on-dark/85 ${shadow}`}
-          style={{ left: '50%', top: '9%' }}
+          className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[clamp(11px,1.1vw,15px)] uppercase tracking-[0.5em] text-on-dark ${shadow}`}
+          style={{ left: '42%', top: '9%' }}
         >
           {art.andes}
         </span>

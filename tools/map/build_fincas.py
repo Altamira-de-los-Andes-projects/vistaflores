@@ -63,6 +63,31 @@ r, b = mpx(UX1, UY1)
 crop = mos.crop((round(l), round(t), round(r), round(b)))
 crop = crop.resize((round((UX1 - UX0) * PX_PER_UNIT), round((UY1 - UY0) * PX_PER_UNIT)), Image.LANCZOS)
 
+# Relief: the client wants the Andes to stand out beside the estates. Hillshade from the z12 DEM
+# (fetch_dem.py), stronger than uco-sat's, plus a lift on high ground; the flat valley stays untouched.
+import numpy as np
+m12 = eval(open(os.path.join(D, 'elev_meta.txt')).read())
+elev12 = np.load(os.path.join(D, 'elev.npy')).astype(np.float32)
+dx0, dy0 = (BX0 + UX0 / S) / 2 - m12['px0'], (BY0 + UY0 / S) / 2 - m12['py0']
+dx1, dy1 = (BX0 + UX1 / S) / 2 - m12['px0'], (BY0 + UY1 / S) / 2 - m12['py0']
+e = np.asarray(Image.fromarray(elev12, mode='F').transform(crop.size, Image.EXTENT, (dx0, dy0, dx1, dy1), Image.BICUBIC), dtype=np.float64)
+def blur(a, s):
+    r = int(3 * s); k = np.exp(-0.5 * (np.arange(-r, r + 1) / s) ** 2); k /= k.sum()
+    p = np.pad(a, r, mode='edge')
+    p = np.apply_along_axis(lambda v: np.convolve(v, k, 'valid'), 1, p)
+    return np.apply_along_axis(lambda v: np.convolve(v, k, 'valid'), 0, p)
+cell = 156543.03 * math.cos(math.radians(-33.72)) / 2 ** Z_BASE / S / PX_PER_UNIT   # metres per output pixel
+gy, gx = np.gradient(blur(e, 6), cell)
+slope = np.arctan(2.4 * np.hypot(gx, gy)); aspect = np.arctan2(-gx, gy)
+def shade(az, alt):
+    az, alt = math.radians(az), math.radians(alt)
+    return np.clip(np.sin(alt) * np.cos(slope) + np.cos(alt) * np.sin(slope) * np.cos(az - aspect), 0, 1)
+hs = (0.75 * shade(315, 35) + 0.25 * shade(250, 55)) / (0.75 * math.sin(math.radians(35)) + 0.25 * math.sin(math.radians(55)))
+high = np.clip((blur(e, 6) - 1100) / 1400, 0, 1)   # 0 on the valley floor → 1 well up the range
+rel = np.clip(0.42 + 0.85 * hs, 0.3, 1.45) * (1 + 0.35 * high)
+arr = np.asarray(crop, dtype=np.float64) * rel[..., None]
+crop = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
+
 # same gentle grade as uco-sat (a touch of warmth and contrast, still natural)
 px = crop.load()
 lut_r = [min(255, max(0, round(((v - 128) * 1.06 + 128) * 1.03))) for v in range(256)]

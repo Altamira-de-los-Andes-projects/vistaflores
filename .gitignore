@@ -26,3 +26,5 @@ tools/map/s2z14/
 
 # graphify
 graphify-out/
+tools/map/tiles/
+tools/map/elev*
