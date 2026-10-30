@@ -22,7 +22,7 @@ logs/
 
 .vercel
 .env*.local
-tools/map/s2z14/
+tools/map/s2z*/
 
 # graphify
 graphify-out/

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
 import { ARG_REST, ARG_MENDOZA, ARG_UCO, CHILE } from './mapdata';
-import { UCO_H, UCO_RIVER } from './ucomap';
+import { UCO_RIVER } from './ucomap';
 import { FINCAS_IMG, FINCAS_PT } from './ucofincas';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'galeria' | 'novedades' | 'contacto' | 'wine-detail' | 'privacidad';
@@ -1279,26 +1279,23 @@ function Novedades() {
 // Natural satellite view (Sentinel-2, see ucofincas.ts) framed on the three estates, pinned at the
 // coordinates of the Google Maps list "Fincas Altamira de los Andes". Each pin opens a card with its
 // copy from the Vineyards page. The frame is fitted to the box it sits in, so the whole map always
-// fits on one screen, with the Andes foothills on top descending east to the vineyards.
-// Shown west-up: ucomap.ts stays north-up; rotated space is X' = UCO_H - y, Y' = x.
-const UCO_ROT = `matrix(0 1 -1 0 ${UCO_H} 0)`;
-// the area that must always be visible (west-up units); the frame grows around it to fill the box.
-// Pulled back enough to show the estates sitting at the foot of the Andes.
-const UCO_FOCUS_DESKTOP = [300, 680, 1110, 1020] as const;
-const UCO_FOCUS_MOBILE = [380, 790, 950, 810] as const;
+// fits on one screen. North-up like the client's Google Maps view: the Andes fill the west and the
+// estates sit at their foot, on the east.
+// the area that must always be visible (ucomap units); the frame grows around it to fill the box.
+const UCO_FOCUS_DESKTOP = [-1050, 250, 2950, 1150] as const;
+const UCO_FOCUS_MOBILE = [340, 450, 1400, 800] as const;
 const UCO_GOLD = '#f0d6a0';
 const UCO_GREEN = '#9cc46e';
 const UCO_WATER = '#3f97d6';
 const UCO_WATER_CORE = '#6cbcf0';
 // index ↔ t.vinedos.cards (Altamira, Vista Flores, La Consulta); the label side keeps the names apart
 const UCO_FINCAS = [
-  { key: 'altamira', name: 'Altamira', pt: FINCAS_PT.altamira, below: false, toLeft: false },
+  { key: 'altamira', name: 'Altamira', pt: FINCAS_PT.altamira, below: true, toLeft: false },
   { key: 'vistaFlores', name: 'Vista Flores', pt: FINCAS_PT.vistaFlores, below: false, toLeft: false },
-  // La Consulta sits right by the Tunuyán: its name runs to the left of the pin, clear of the river
-  { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, below: true, toLeft: true },
+  { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, below: false, toLeft: false },
 ] as const;
-// a point on the Tunuyán between the estates and the river's heading there (west-up)
-const UCO_RIVER_LABEL = { pt: [560, 1130], angle: 0 } as const;
+// a point on the Tunuyán between the estates and the river's heading there
+const UCO_RIVER_LABEL = { pt: [800, 1330], angle: 0 } as const;
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -1425,7 +1422,7 @@ function UcoMap() {
         onClick={() => setOpen(null)}
       >
         <img
-          src={`${A}/uco-fincas-wup.webp`}
+          src={`${A}/uco-fincas.webp`}
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -1442,8 +1439,16 @@ function UcoMap() {
             <filter id="uco-glow" x="-10%" y="-10%" width="120%" height="120%">
               <feGaussianBlur stdDeviation="4" />
             </filter>
+            {/* ucomap's river stops inside the range: fade it in from there */}
+            <linearGradient id="uco-river-fade" gradientUnits="userSpaceOnUse" x1="180" y1="0" x2="460" y2="0">
+              <stop offset="0" stopColor="#fff" stopOpacity="0" />
+              <stop offset="1" stopColor="#fff" />
+            </linearGradient>
+            <mask id="uco-river-mask" maskUnits="userSpaceOnUse" x="-2000" y="-1000" width="6000" height="4000">
+              <rect x="-2000" y="-1000" width="6000" height="4000" fill="url(#uco-river-fade)" />
+            </mask>
           </defs>
-          <g transform={UCO_ROT}>
+          <g mask="url(#uco-river-mask)">
             <path d={UCO_RIVER} fill="none" stroke={UCO_WATER} strokeOpacity="0.65" strokeWidth="9" filter="url(#uco-glow)" />
             <path d={UCO_RIVER} fill="none" stroke={UCO_WATER_CORE} strokeOpacity="1" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           </g>
@@ -1457,18 +1462,18 @@ function UcoMap() {
           {art.river}
         </span>
         <span
-          className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap font-['IBM_Plex_Mono:Medium'] text-[clamp(11px,1.1vw,15px)] uppercase tracking-[0.5em] text-on-dark ${shadow}`}
-          style={{ left: '42%', top: '9%' }}
+          className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-on-dark/25 bg-[#0b0907]/70 px-5 py-2 font-['IBM_Plex_Mono:Medium'] text-[clamp(11px,1.1vw,15px)] uppercase tracking-[0.5em] text-on-dark backdrop-blur-sm ${shadow}`}
+          style={{ left: '22%', top: '12%' }}
         >
           {art.andes}
         </span>
         {!mobile && (
           <span
             className={`pointer-events-none absolute right-[2.5%] flex -translate-y-1/2 items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[0.2em] uppercase text-on-dark/80 ${shadow}`}
-            style={{ top: '62%' }}
+            style={{ top: '8%' }}
           >
             {art.toMendoza}
-            <svg width="10" height="8" viewBox="0 0 10 8" aria-hidden="true"><path d="M10 4 5 8V5H0V3h5V0Z" fill="currentColor" /></svg>
+            <svg width="10" height="8" viewBox="0 0 10 8" className="-rotate-90" aria-hidden="true"><path d="M10 4 5 8V5H0V3h5V0Z" fill="currentColor" /></svg>
           </span>
         )}
 
@@ -1491,12 +1496,12 @@ function UcoMap() {
               className={`group absolute z-10 -translate-x-1/2 -translate-y-1/2 outline-none transition-opacity duration-500 ${dim ? 'opacity-45' : ''}`}
               style={at(f.pt)}
             >
-              <span className={`relative grid size-[30px] place-items-center rounded-full transition-colors duration-300 ${active ? 'bg-[#f0d6a0]/25' : 'bg-black/25'} group-focus-visible:ring-2 group-focus-visible:ring-[#f0d6a0]`}>
-                <span className={`relative block rounded-full border-2 border-[#0b0907] bg-[#f0d6a0] shadow-[0_0_0_1px_rgba(240,214,160,0.6),0_4px_14px_rgba(0,0,0,0.6)] transition-all duration-300 ${active ? 'size-[16px]' : 'size-[13px]'}`} />
+              <span className={`relative grid size-[46px] place-items-center rounded-full border border-[#f0d6a0]/60 transition-colors duration-300 ${active ? 'bg-[#f0d6a0]/40' : 'bg-black/45'} group-focus-visible:ring-2 group-focus-visible:ring-[#f0d6a0]`}>
+                <span className={`relative block rounded-full border-2 border-[#0b0907] bg-[#f0d6a0] shadow-[0_0_0_1px_rgba(240,214,160,0.6),0_4px_14px_rgba(0,0,0,0.6)] transition-all duration-300 ${active ? 'size-[24px]' : 'size-[20px]'}`} />
                 {!dim && <span className="uco-pulse" />}
               </span>
               <span
-                className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(16px,1.5vw,22px)] leading-none text-white ${shadow} ${f.toLeft ? 'right-[calc(50%-4px)]' : 'left-1/2 -translate-x-1/2'} ${f.below ? 'top-[calc(100%+6px)]' : 'bottom-[calc(100%+6px)]'}`}
+                className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(16px,1.5vw,22px)] leading-none text-white ${shadow} ${f.toLeft ? 'right-[calc(50%-4px)]' : 'left-1/2 -translate-x-1/2'} ${f.below ? 'top-[calc(100%+2px)]' : 'bottom-[calc(100%+2px)]'}`}
               >
                 {art.vineyards[i]}
               </span>
