@@ -1739,6 +1739,7 @@ function Privacidad() {
 function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
   useReveal();
   const t = useT();
+  const { lang } = useLang();
   const wine = t.wineCatalog.find((w) => w.id === wineId) ?? t.wineCatalog[0];
   return (
     <div className="bg-surface w-full">
@@ -1811,12 +1812,15 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
             >
               {t.wineDetail.ctaInfo}
             </button>
-            <button
+            <a
+              href={`${A}/fichas/${lang}/${wine.id}.pdf`}
+              target="_blank"
+              rel="noopener"
               className="border border-ink/[0.4] px-[31px] py-[16px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-ink hover:border-ink transition-colors"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
               {t.wineDetail.downloadPdf}
-            </button>
+            </a>
           </div>
         </div>
       </section>
