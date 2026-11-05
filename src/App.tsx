@@ -1295,7 +1295,7 @@ const UCO_FINCAS = [
   { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, below: false, toLeft: false },
 ] as const;
 // a point on the Tunuyán between the estates and the river's heading there
-const UCO_RIVER_LABEL = { pt: [800, 1330], angle: 0 } as const;
+const UCO_RIVER_LABEL = { pt: [720, 1010], angle: 0 } as const;
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -1463,7 +1463,7 @@ function UcoMap() {
         </span>
         <span
           className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-on-dark/25 bg-[#0b0907]/70 px-5 py-2 font-['IBM_Plex_Mono:Medium'] text-[clamp(11px,1.1vw,15px)] uppercase tracking-[0.5em] text-on-dark backdrop-blur-sm ${shadow}`}
-          style={{ left: '22%', top: '12%' }}
+          style={{ left: mobile ? '50%' : '22%', top: '12%' }}
         >
           {art.andes}
         </span>
@@ -1598,16 +1598,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
       <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-72px)]">
         {/* Phones: the vineyard-and-Andes photo as a clear band on top (the sign photo closes the page below) */}
         <div className="relative h-[clamp(240px,62vw,340px)] lg:hidden">
-          {/* faded out with a mask (not an overlay), so no edge or seam is left where the photo ends */}
-          <img
-            src={`${A}/contact-mobile-bg.jpg`}
-            alt=""
-            className="absolute inset-0 size-full object-cover object-[50%_42%]"
-            style={{
-              WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%)',
-              maskImage: 'linear-gradient(to bottom, #000 0%, #000 58%, transparent 96%)',
-            }}
-          />
+          <img src={`${A}/contact-mobile-bg.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_42%]" />
         </div>
         {/* Form left */}
         <div className="relative isolate -mt-px flex-1 bg-surface pt-10 pb-20 px-5 sm:px-9 lg:mt-0 lg:py-20 lg:px-14 flex flex-col">
@@ -1672,8 +1663,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
         {/* Image beside the form: the Altamira sign with the contact details. (On phones the other photo is the
             band above the form.) */}
         <div className="relative flex-1 overflow-hidden bg-surface min-h-[440px] lg:min-h-0 lg:bg-panel">
-          {/* on phones the photo fades in from the page at its top edge (a mask, so no seam), like the one above the form */}
-          <div className="absolute inset-0 max-lg:[-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,#000_42%)] max-lg:[mask-image:linear-gradient(to_bottom,transparent_0%,#000_42%)]">
+          <div className="absolute inset-0">
             {/* phones: the Altamira sign closes the page; laptops: the vineyard-and-Andes photo (one photo, not two) */}
             <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover lg:hidden" />
             <img src={`${A}/contact-mobile-bg.jpg`} alt="" className="absolute inset-0 hidden size-full object-cover object-[50%_42%] lg:block" />
