@@ -1283,19 +1283,28 @@ function Novedades() {
 // estates sit at their foot, on the east.
 // the area that must always be visible (ucomap units); the frame grows around it to fill the box.
 const UCO_FOCUS_DESKTOP = [-1050, 250, 2950, 1150] as const;
-const UCO_FOCUS_MOBILE = [340, 450, 1400, 800] as const;
+const UCO_FOCUS_MOBILE = [500, 450, 1400, 800] as const;
 const UCO_GOLD = '#f0d6a0';
 const UCO_GREEN = '#9cc46e';
-const UCO_WATER = '#3f97d6';
-const UCO_WATER_CORE = '#6cbcf0';
+const UCO_WATER = '#2f6f99';
+const UCO_WATER_CORE = '#5d9ac0';
 // index ↔ t.vinedos.cards (Altamira, Vista Flores, La Consulta); the label side keeps the names apart
 const UCO_FINCAS = [
-  { key: 'altamira', name: 'Altamira', pt: FINCAS_PT.altamira, below: true, toLeft: false },
-  { key: 'vistaFlores', name: 'Vista Flores', pt: FINCAS_PT.vistaFlores, below: false, toLeft: false },
-  { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, below: false, toLeft: false },
+  { key: 'altamira', name: 'Altamira', pt: FINCAS_PT.altamira, pref: 'below' },
+  { key: 'vistaFlores', name: 'Vista Flores', pt: FINCAS_PT.vistaFlores, pref: 'above' },
+  { key: 'laConsulta', name: 'La Consulta', pt: FINCAS_PT.laConsulta, pref: 'leftHigh' },
 ] as const;
+// the Tunuyán as points in ucomap units, to keep every pin name off the blue line
+const UCO_RIVER_PTS = [...UCO_RIVER.matchAll(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g)].map((m) => [+m[1], +m[2]] as const);
+// where a pin name can sit, relative to the pin: [anchor x, anchor y, shift x, shift y] (shifts × label size)
+const UCO_LABEL_SPOTS = {
+  leftHigh: [-0.95, -0.15, -1, -1], rightLow: [0.95, 0, 0, -0.25], belowNear: [-0.6, 1, 0, 0], below: [0, 1, -0.5, 0], above: [0, -1, -0.5, -1], aboveLeft: [-1, -1, -1, -1], belowLeft: [-1, 1, -1, 0],
+  belowRight: [1, 1, 0, 0], aboveRight: [1, -1, 0, -1], left: [-1, 0, -1, -0.5], right: [1, 0, 0, -0.5],
+} as const;
+type UcoSpot = keyof typeof UCO_LABEL_SPOTS;
+const UCO_WRAP_W = 96;
 // a point on the Tunuyán between the estates and the river's heading there
-const UCO_RIVER_LABEL = { pt: [720, 1010], angle: 0 } as const;
+const UCO_RIVER_LABEL = { pt: [850, 960], angle: 0 } as const;
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -1346,9 +1355,14 @@ function UcoMap() {
     cards.find((c) => c.num.toUpperCase().includes(UCO_FINCAS[i].name.toUpperCase())) ?? cards[i];
   const mobile = useMedia('(max-width: 1023px)');
   const boxRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState<[number, number]>(() =>
-    typeof window === 'undefined' ? [1160, 780] : [window.innerWidth, Math.max(window.innerHeight - 72, 1)],
-  );
+  // first guess of the map box (the ResizeObserver below replaces it): the grid's 1.68fr column, or the full width on phones
+  const [size, setSize] = useState<[number, number]>(() => {
+    if (typeof window === 'undefined') return [1160, 780];
+    const { innerWidth: iw, innerHeight: ih } = window;
+    return iw < 1024
+      ? [iw, Math.min(ih * 0.72, 600)]
+      : [iw - Math.max(320, iw * 0.16), Math.min(Math.max(ih - 72, 560), 900)];
+  });
   useEffect(() => {
     const el = boxRef.current;
     if (!el) return;
@@ -1361,6 +1375,12 @@ function UcoMap() {
   }, []);
   const [vx, vy, vw, vh] = ucoFrame(mobile ? UCO_FOCUS_MOBILE : UCO_FOCUS_DESKTOP, size[0], size[1]);
   const [ix, iy, iw] = FINCAS_IMG;
+  const [winW, setWinW] = useState(() => (typeof window === 'undefined' ? 1280 : window.innerWidth));
+  useEffect(() => {
+    const on = () => setWinW(window.innerWidth);
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, []);
   const [open, setOpen] = useState<number | null>(null);
   const [hover, setHover] = useState<number | null>(null);
   const px = (v: number) => `${((v - vx) / vw) * 100}%`;
@@ -1375,6 +1395,53 @@ function UcoMap() {
   }, [open]);
 
   const sel = open !== null ? UCO_FINCAS[open].pt : null;
+  // each pin name takes its preferred spot unless that crosses the river or leaves the map; then the first spot that doesn't
+  const fontPx = Math.min(22, Math.max(16, winW * 0.015));
+  // the "Andes Range" pill is an obstacle too: [x, y, w, h]
+  const pillPx = Math.min(15, Math.max(11, winW * 0.011));
+  const [pillW, pillH] = [art.andes.length * pillPx * (mobile ? 0.95 : 1.15) + (mobile ? 32 : 44), pillPx * 1.4 + 16];
+  const pill = [(mobile ? 0.5 : 0.22) * size[0] - pillW / 2, 0.12 * size[1] - pillH / 2, pillW, pillH];
+  // returns the spot and whether the name wraps onto two lines (UCO_WRAP_W wide) to fit beside a pin near the map edge
+  const labelSpot = (i: number): [UcoSpot, boolean] => {
+    const sx = size[0] / vw;
+    const sy = size[1] / vh;
+    const [cx, cy] = [(UCO_FINCAS[i].pt[0] - vx) * sx, (UCO_FINCAS[i].pt[1] - vy) * sy];
+    const wFull = art.vineyards[i].length * fontPx * 0.48;
+    const gap = 26;
+    const clear = (k: UcoSpot, wrap: boolean) => {
+      const w = wrap ? Math.min(wFull, UCO_WRAP_W) : wFull;
+      const h = fontPx * 1.15 * (wrap && wFull > UCO_WRAP_W ? 2 : 1);
+      const [ax, ay, tx, ty] = UCO_LABEL_SPOTS[k];
+      const x0 = cx + ax * gap + tx * w;
+      const y0 = cy + ay * gap + ty * h;
+      if (x0 < 6 || x0 + w > size[0] - 6 || y0 < 4 || y0 + h > size[1] - 4) return false;
+      if (x0 < pill[0] + pill[2] + 6 && x0 + w > pill[0] - 6 && y0 < pill[1] + pill[3] + 6 && y0 + h > pill[1] - 6) return false;
+      const hitsPin = UCO_FINCAS.some((o, j) => {
+        if (j === i) return false;
+        const [ox, oy] = [(o.pt[0] - vx) * sx, (o.pt[1] - vy) * sy];
+        return x0 < ox + 28 && x0 + w > ox - 28 && y0 < oy + 28 && y0 + h > oy - 28;
+      });
+      if (hitsPin) return false;
+      return !UCO_RIVER_PTS.some(([rx, ry], j) => {
+        const pts = j ? [[rx, ry], [(rx + UCO_RIVER_PTS[j - 1][0]) / 2, (ry + UCO_RIVER_PTS[j - 1][1]) / 2]] : [[rx, ry]];
+        return pts.some(([qx, qy]) => {
+          const x = (qx - vx) * sx;
+          const y = (qy - vy) * sy;
+          return x > x0 - 4 && x < x0 + w + 4 && y > y0 - 4 && y < y0 + h + 4;
+        });
+      });
+    };
+    // beside the pin first (same side of the river as the pin), one line then two, then anywhere that is clear
+    const near = [UCO_FINCAS[i].pref, 'belowNear', 'belowRight', 'right', 'aboveRight'] as UcoSpot[];
+    const tries: [UcoSpot, boolean][] = [
+      [UCO_FINCAS[i].pref, false],
+      [UCO_FINCAS[i].pref, true],
+      ...near.map((k): [UcoSpot, boolean] => [k, false]),
+      ...near.map((k): [UcoSpot, boolean] => [k, true]),
+      ...(Object.keys(UCO_LABEL_SPOTS) as UcoSpot[]).map((k): [UcoSpot, boolean] => [k, false]),
+    ];
+    return tries.find(([k, wrap]) => clear(k, wrap)) ?? [UCO_FINCAS[i].pref, false];
+  };
   const shadow = '[text-shadow:0_1px_10px_rgba(0,0,0,0.85)]';
 
   const header = (
@@ -1462,7 +1529,7 @@ function UcoMap() {
           {art.river}
         </span>
         <span
-          className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-on-dark/25 bg-[#0b0907]/70 px-5 py-2 font-['IBM_Plex_Mono:Medium'] text-[clamp(11px,1.1vw,15px)] uppercase tracking-[0.5em] text-on-dark backdrop-blur-sm ${shadow}`}
+          className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-on-dark/25 bg-[#0b0907]/70 px-4 py-2 font-['IBM_Plex_Mono:Medium'] text-[clamp(11px,1.1vw,15px)] uppercase tracking-[0.3em] lg:px-5 lg:tracking-[0.5em] text-on-dark backdrop-blur-sm ${shadow}`}
           style={{ left: mobile ? '50%' : '22%', top: '12%' }}
         >
           {art.andes}
@@ -1496,12 +1563,22 @@ function UcoMap() {
               className={`group absolute z-10 -translate-x-1/2 -translate-y-1/2 outline-none transition-opacity duration-500 ${dim ? 'opacity-45' : ''}`}
               style={at(f.pt)}
             >
-              <span className={`relative grid size-[46px] place-items-center rounded-full border border-[#f0d6a0]/60 transition-colors duration-300 ${active ? 'bg-[#f0d6a0]/40' : 'bg-black/45'} group-focus-visible:ring-2 group-focus-visible:ring-[#f0d6a0]`}>
+              <span className={`relative grid size-[46px] place-items-center rounded-full border border-[#f0d6a0]/60 transition-colors duration-300 ${active ? 'bg-[#f0d6a0]/40' : 'bg-black/10'} group-focus-visible:ring-2 group-focus-visible:ring-[#f0d6a0]`}>
                 <span className={`relative block rounded-full border-2 border-[#0b0907] bg-[#f0d6a0] shadow-[0_0_0_1px_rgba(240,214,160,0.6),0_4px_14px_rgba(0,0,0,0.6)] transition-all duration-300 ${active ? 'size-[24px]' : 'size-[20px]'}`} />
                 {!dim && <span className="uco-pulse" />}
               </span>
               <span
-                className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(16px,1.5vw,22px)] leading-none text-white ${shadow} ${f.toLeft ? 'right-[calc(50%-4px)]' : 'left-1/2 -translate-x-1/2'} ${f.below ? 'top-[calc(100%+2px)]' : 'bottom-[calc(100%+2px)]'}`}
+                className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Regular'] text-[clamp(16px,1.5vw,22px)] leading-none text-white ${shadow}`}
+                style={(() => {
+                  const [spot, wrap] = labelSpot(i);
+                  const [ax, ay, tx, ty] = UCO_LABEL_SPOTS[spot];
+                  return {
+                    left: `calc(50% + ${ax * 26}px)`,
+                    top: `calc(50% + ${ay * 26}px)`,
+                    transform: `translate(${tx * 100}%, ${ty * 100}%)`,
+                    ...(wrap && { whiteSpace: 'normal' as const, width: UCO_WRAP_W, lineHeight: 1.1, textAlign: 'left' as const }),
+                  };
+                })()}
               >
                 {art.vineyards[i]}
               </span>
@@ -1755,7 +1832,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
           <span className="absolute bottom-[34px] lg:bottom-[62px] left-1/2 h-[18px] w-[150px] lg:w-[190px] -translate-x-1/2 rounded-[50%] bg-black/[0.5] blur-[12px]" aria-hidden="true" />
           <img
             src={WINE_META[wine.id].img}
-            alt={`${wine.title1} ${wine.title2}`}
+            alt={`${wine.title1} ${wine.title2}`.trim()}
             className="relative h-[460px] lg:h-full lg:max-h-[640px] w-auto object-contain object-bottom drop-shadow-[0_24px_30px_rgba(0,0,0,0.35)] reveal"
           />
         </div>
@@ -1764,7 +1841,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
           <p className="font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[2.2px] text-ink/[0.55] mb-6">{wine.region}</p>
           <h1 className="mb-8">
             <span className="block font-['Cormorant_Garamond:Light_Italic'] italic text-[38px] sm:text-[46px] lg:text-[58px] text-ink leading-[1.04]">{wine.title1}</span>
-            <span className="block font-['Cormorant_Garamond:Light'] text-[38px] sm:text-[46px] lg:text-[58px] text-ink leading-[1.04]">{wine.title2}</span>
+            <span className={`block text-[38px] sm:text-[46px] lg:text-[58px] text-ink leading-[1.04] ${wine.id === 'dama' ? "font-['Cormorant_Garamond:Light_Italic'] italic" : "font-['Cormorant_Garamond:Light']"}`}>{wine.title2}</span>
           </h1>
           <div className="max-w-[540px] mb-10 flex flex-col gap-4">
             {wine.tagline && (
