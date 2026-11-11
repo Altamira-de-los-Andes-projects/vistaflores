@@ -36,8 +36,15 @@ export type Cms = {
 };
 
 const L = '{language, value}';
+// `$pages`: the site's visitors get everything in one request; inside the Studio the preview asks only for the page on
+// screen (plus the menu and footer), because the Studio can't follow a live query that touches ~350 documents.
+export const ALL_PAGES = ['home', 'vinos', 'wineDetail', 'vinedos', 'novedades', 'galeria', 'contacto', 'legal', 'nav', 'a11y', 'gate', 'footer'];
+const PAGE_OF_HASH: Record<string, string[]> = {
+  '': ['home'], home: ['home'], vinos: ['vinos'], wine: ['wineDetail', 'vinos'], vinedos: ['vinedos'], novedades: ['novedades'], galeria: ['galeria'], contacto: ['contacto'], privacidad: ['legal'],
+};
+export const pagesFor = (hash: string) => [...(PAGE_OF_HASH[hash.replace(/^#\/?/, '').split('/')[0]] ?? ['home']), 'nav', 'a11y', 'footer'];
 export const CMS_QUERY = `{
-  "texts": *[_type == "uiText"]{key, "value": value[]${L}},
+  "texts": *[_type == "uiText" && page in $pages]{key, "value": value[]${L}},
   "wines": *[_type == "wine" && defined(slug.current)] | order(order asc){
     _id, "id": slug.current, active, line,
     "name": name[]${L}, "sub": sub[]${L}, "gridRegion": gridRegion[]${L}, "region": region[]${L},
@@ -49,7 +56,7 @@ export const CMS_QUERY = `{
     "bottle": bottle.asset->url, "background": background.asset->url,
     "sheets": technicalSheet[]{language, "url": value.asset->url}
   },
-  "media": *[_type == "siteMedia"]{_id, file, "url": image.asset->url},
+  "media": *[_type == "siteMedia" && page in $pages]{_id, file, "url": image.asset->url},
   "languages": *[_type == "language" && defined(code)] | order(order asc){code, title, active, "flag": flag.asset->url},
   "settings": *[_type == "siteSettings"][0]{
     "name": siteName, "logo": headerLogo.asset->url, "subtitle": headerSubtitle[]${L}, "favicon": favicon.asset->url,
@@ -97,7 +104,7 @@ export function cachedCms(): Cms | null {
 
 export async function fetchCms(): Promise<Cms | null> {
   try {
-    const res = await fetch(`${API}?query=${encodeURIComponent(CMS_QUERY)}`);
+    const res = await fetch(`${API}?query=${encodeURIComponent(CMS_QUERY)}&$pages=${encodeURIComponent(JSON.stringify(ALL_PAGES))}`);
     if (!res.ok) return null;
     const { result } = (await res.json()) as { result: Cms };
     try {
