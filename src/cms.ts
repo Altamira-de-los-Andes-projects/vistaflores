@@ -4,7 +4,7 @@
 import type { Copy, Lang } from './i18n';
 
 export const SANITY = { projectId: '65z18eah', dataset: 'production', apiVersion: '2025-02-19' };
-export const STUDIO_URL = 'https://altamira-de-los-andes.sanity.studio';
+export const STUDIO_URL = 'https://cms.altamiradelosandes.com';
 // the live API (not apicdn): the CDN keeps answers for a minute or more, and editors expect a published change to show right away
 const API = `https://${SANITY.projectId}.api.sanity.io/v${SANITY.apiVersion}/data/query/${SANITY.dataset}`;
 const CACHE_KEY = 'vf-cms';
