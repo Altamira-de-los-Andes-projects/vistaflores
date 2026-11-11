@@ -765,6 +765,20 @@ function Home({ onNav }: { onNav: Nav }) {
   const reduceMotion =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // iPhones in Low Power Mode refuse to autoplay and draw their own big Play button over the video. When that
+  // happens we cover the video with its poster instead, and start it on the visitor's first touch or scroll.
+  const heroVideo = useRef<HTMLVideoElement>(null);
+  const [heroBlocked, setHeroBlocked] = useState(false);
+  useEffect(() => {
+    const v = heroVideo.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => setHeroBlocked(true));
+    const retry = () => v.play().then(() => setHeroBlocked(false)).catch(() => {});
+    const events = ['touchstart', 'scroll', 'click'] as const;
+    events.forEach((e) => window.addEventListener(e, retry, { once: true, passive: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, retry));
+  }, [site.heroVideo]);
   return (
     <div className="bg-surface w-full">
       {/* HERO — vineyard film (Valle de Uco) with a poster fallback */}
@@ -778,18 +792,26 @@ function Home({ onNav }: { onNav: Nav }) {
               className="absolute inset-0 size-full object-cover"
             />
           ) : (
-            <video
-              className="absolute inset-0 size-full object-cover hero-fade"
-              autoPlay
-              muted
-              loop
-              playsInline
-              poster={site.heroPoster ?? `${A}/hero-andes.jpg`}
-              key={site.heroVideo ?? 'bundled'}
-              {...editAttr('siteSettings', 'siteSettings', 'heroVideo')}
-            >
-              <source src={site.heroVideo ?? `${A}/hero-andes.mp4`} type="video/mp4" />
-            </video>
+            <>
+              <video
+                ref={heroVideo}
+                className="hero-video absolute inset-0 size-full object-cover hero-fade"
+                autoPlay
+                muted
+                loop
+                playsInline
+                disablePictureInPicture
+                preload="auto"
+                poster={site.heroPoster ?? `${A}/hero-andes.jpg`}
+                key={site.heroVideo ?? 'bundled'}
+                {...editAttr('siteSettings', 'siteSettings', 'heroVideo')}
+              >
+                <source src={site.heroVideo ?? `${A}/hero-andes.mp4`} type="video/mp4" />
+              </video>
+              {heroBlocked && (
+                <img src={site.heroPoster ?? `${A}/hero-andes.jpg`} alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 size-full object-cover" />
+              )}
+            </>
           )}
           <div
             className="absolute inset-0"

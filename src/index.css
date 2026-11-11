@@ -256,3 +256,7 @@ html { scroll-behavior: smooth; }
   padding: 1px 6px;
 }
 .leaflet-control-attribution a { color: rgba(242, 237, 228, 0.8) !important; }
+
+/* Safari draws a native Play button over a video that can't autoplay (Low Power Mode); the hero never shows it */
+.hero-video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
+.hero-video::-webkit-media-controls { display: none !important; }
