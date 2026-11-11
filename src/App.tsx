@@ -1755,6 +1755,13 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
                 style={{ fontVariationSettings: '"wdth" 100' }}
               />
             </div>
+            <p className="mb-6 font-['Archivo:Light'] text-[12px] leading-[20px] text-ink/[0.55]" style={{ fontVariationSettings: '"wdth" 100' }}>
+              {t.contacto.consentPre}
+              <button type="button" onClick={() => onNav('privacidad')} className="underline underline-offset-4 hover:text-ink">
+                {t.contacto.consentLink}
+              </button>
+              .
+            </p>
             <button
               type="submit"
               className="self-start bg-panel px-[34px] py-[15px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:bg-panel-2 transition-colors"
@@ -1762,13 +1769,6 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
             >
               {t.contacto.submit}
             </button>
-            <p className="mt-6 font-['Archivo:Light'] text-[12px] leading-[20px] text-ink/[0.55]" style={{ fontVariationSettings: '"wdth" 100' }}>
-              {t.contacto.consentPre}
-              <button type="button" onClick={() => onNav('privacidad')} className="underline underline-offset-4 hover:text-ink">
-                {t.contacto.consentLink}
-              </button>
-              .
-            </p>
           </form>
         </div>
 
