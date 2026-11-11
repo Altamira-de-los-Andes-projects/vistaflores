@@ -814,7 +814,7 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>
 
       {/* "Unique wines" — text-only pause between the hero and the vineyards (no photo, no wines) */}
-      <section className="bg-surface px-5 sm:px-8 lg:px-12 py-20 lg:py-[130px] dark:bg-panel">
+      <section className="bg-surface px-5 sm:px-8 lg:px-12 pt-20 pb-14 lg:pt-[130px] lg:pb-[80px] dark:bg-panel">
         <div className="mx-auto flex max-w-[820px] flex-col items-center gap-7 text-center reveal">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.estateEyebrow}</p>
           <h2 className="font-['Cormorant_Garamond:Regular'] text-[clamp(26px,2.7vw,40px)] text-ink leading-[1.28] text-balance">
@@ -829,6 +829,15 @@ function Home({ onNav }: { onNav: Nav }) {
           <span className="h-px w-14 bg-ink/[0.25]" aria-hidden="true" />
         </div>
       </section>
+
+      {/* the vineyards and the Andes behind them, filling the pause above (hard edges, no fade) */}
+      <img
+        src={`${A}/vineyard-autumn-andes.jpg`}
+        alt={t.home.vineyardsPhotoAlt}
+        loading="lazy"
+        decoding="async"
+        className="block h-[clamp(240px,46vw,620px)] w-full object-cover object-[50%_40%]"
+      />
 
       {/* Vineyards dark section */}
       <section className="bg-surface dark:bg-panel">
