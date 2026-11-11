@@ -10,7 +10,7 @@ const LANGS: Lang[] = ['es', 'en', 'pt'];
 // ─── Copy (ES source of truth) ────────────────────────────────────────────────
 const es = {
   nav: { home: 'Inicio', vinos: 'Nuestros Vinos', vinedos: 'Nuestros Viñedos', galeria: 'Galería', novedades: 'Novedades', contacto: 'Contacto' },
-  a11y: { toDark: 'Activar modo oscuro', toLight: 'Activar modo claro', dark: 'Modo oscuro', light: 'Modo claro', langOf: (l: string) => `Ver el sitio en ${l}` },
+  a11y: { toDark: 'Activar modo oscuro', toLight: 'Activar modo claro', dark: 'Modo oscuro', light: 'Modo claro', langOf: 'Ver el sitio en {lang}', openMenu: 'Abrir menú', closeMenu: 'Cerrar menú' },
   gate: {
     line1: 'Vinos de altura del Valle de Uco,',
     line2: 'a 1.050 metros sobre el nivel del mar.',
@@ -70,6 +70,14 @@ const es = {
     galleryTitle: 'Altamira de los Andes en fotos',
     awardsEyebrow: 'PREMIOS Y PUNTAJES',
     awardsTitle: 'El reconocimiento de nuestros vinos',
+    awardsList: [
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+      { critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+    ],
     awardAlt: 'Premio',
     newsEyebrow: 'ÚLTIMAS',
     newsTitle: 'Novedades',
@@ -170,7 +178,7 @@ const es = {
     phoneLabel: 'TELÉFONO',
     emailLabel: 'EMAIL',
     regarding: 'CONSULTA SOBRE',
-    inquiry: (wine: string) => `Me gustaría recibir más información sobre ${wine}.`,
+    inquiry: 'Me gustaría recibir más información sobre {wine}.',
     consentPre: 'Al enviar este formulario aceptas nuestra ',
     consentLink: 'política de privacidad',
   },
@@ -295,7 +303,7 @@ export type Copy = Omit<typeof es, 'wineCatalog'> & { wineCatalog: Wine[] };
 // ─── English ──────────────────────────────────────────────────────────────────
 const en: Copy = {
   nav: { home: 'Home', vinos: 'Our Wines', vinedos: 'Our Vineyards', galeria: 'Gallery', novedades: 'News', contacto: 'Contact' },
-  a11y: { toDark: 'Switch to dark mode', toLight: 'Switch to light mode', dark: 'Dark mode', light: 'Light mode', langOf: (l: string) => `View the site in ${l}` },
+  a11y: { toDark: 'Switch to dark mode', toLight: 'Switch to light mode', dark: 'Dark mode', light: 'Light mode', langOf: 'View the site in {lang}', openMenu: 'Open menu', closeMenu: 'Close menu' },
   gate: {
     line1: 'High-altitude wines from the Uco Valley,',
     line2: '1,050 metres above sea level.',
@@ -355,6 +363,14 @@ const en: Copy = {
     galleryTitle: 'Altamira de los Andes in pictures',
     awardsEyebrow: 'AWARDS & SCORES',
     awardsTitle: 'The recognition of our wines',
+    awardsList: [
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+      { critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+    ],
     awardAlt: 'Award',
     newsEyebrow: 'LATEST',
     newsTitle: 'News',
@@ -455,7 +471,7 @@ const en: Copy = {
     phoneLabel: 'PHONE',
     emailLabel: 'EMAIL',
     regarding: 'ENQUIRY ABOUT',
-    inquiry: (wine: string) => `I would like more information about ${wine}.`,
+    inquiry: 'I would like more information about {wine}.',
     consentPre: 'By sending this form you accept our ',
     consentLink: 'privacy policy',
   },
@@ -577,7 +593,7 @@ const en: Copy = {
 // ─── Português ────────────────────────────────────────────────────────────────
 const pt: Copy = {
   nav: { home: 'Início', vinos: 'Nossos Vinhos', vinedos: 'Nossos Vinhedos', galeria: 'Galeria', novedades: 'Novidades', contacto: 'Contato' },
-  a11y: { toDark: 'Ativar modo escuro', toLight: 'Ativar modo claro', dark: 'Modo escuro', light: 'Modo claro', langOf: (l: string) => `Ver o site em ${l}` },
+  a11y: { toDark: 'Ativar modo escuro', toLight: 'Ativar modo claro', dark: 'Modo escuro', light: 'Modo claro', langOf: 'Ver o site em {lang}', openMenu: 'Abrir menu', closeMenu: 'Fechar menu' },
   gate: {
     line1: 'Vinhos de altitude do Vale de Uco,',
     line2: 'a 1.050 metros acima do nível do mar.',
@@ -637,6 +653,14 @@ const pt: Copy = {
     galleryTitle: 'Altamira de los Andes em fotos',
     awardsEyebrow: 'PRÊMIOS E PONTUAÇÕES',
     awardsTitle: 'O reconhecimento dos nossos vinhos',
+    awardsList: [
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'James Suckling', note: '' },
+      { critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+      { critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+    ],
     awardAlt: 'Prêmio',
     newsEyebrow: 'ÚLTIMAS',
     newsTitle: 'Novidades',
@@ -737,7 +761,7 @@ const pt: Copy = {
     phoneLabel: 'TELEFONE',
     emailLabel: 'EMAIL',
     regarding: 'CONSULTA SOBRE',
-    inquiry: (wine: string) => `Gostaria de receber mais informações sobre ${wine}.`,
+    inquiry: 'Gostaria de receber mais informações sobre {wine}.',
     consentPre: 'Ao enviar este formulário você aceita a nossa ',
     consentLink: 'política de privacidade',
   },

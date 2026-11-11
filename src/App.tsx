@@ -34,15 +34,14 @@ const IMG = {
 
 // Language-neutral scaffolding (images / flags) — text comes from the i18n copy.
 const HOME_NEWS_IMGS = [`${A}/5e611.png`, `${A}/28b42.png`];
-// Award badges. The James Suckling scores per wine come from the client's previous site;
-// the two Gilbert & Gaillard medals (2024) are not tied to a wine yet.
-const HOME_AWARDS: { img: string; critic: string; wineId?: string; note?: string }[] = [
-  { img: `${A}/d7200.png`, critic: 'James Suckling', wineId: 'dama' },
-  { img: `${A}/5b74e.png`, critic: 'James Suckling', wineId: 'reserva-malbec' },
-  { img: `${A}/fb3eb.png`, critic: 'James Suckling', wineId: 'vav-malbec' },
-  { img: `${A}/36671.png`, critic: 'James Suckling', wineId: 'tres-fincas' },
-  { img: `${A}/b1740.png`, critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
-  { img: `${A}/226c0.png`, critic: 'Gilbert & Gaillard', note: 'International Challenge 2024' },
+// Award badges: the images and the wine each one links to; the critic and note texts are in the copy (home.awardsList).
+const HOME_AWARDS: { img: string; wineId?: string }[] = [
+  { img: `${A}/d7200.png`, wineId: 'dama' },
+  { img: `${A}/5b74e.png`, wineId: 'reserva-malbec' },
+  { img: `${A}/fb3eb.png`, wineId: 'vav-malbec' },
+  { img: `${A}/36671.png`, wineId: 'tres-fincas' },
+  { img: `${A}/b1740.png` },
+  { img: `${A}/226c0.png` },
 ];
 const VINEDOS_IMGS = [`${A}/altamira-home-sq.jpg`, `${A}/laconsulta-home-sq.jpg`, `${A}/estate-home.jpg`];
 const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
@@ -416,7 +415,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
                 <button
                   onClick={() => setLang(code as Lang)}
                   aria-current={activeLang ? 'true' : undefined}
-                  aria-label={t.a11y.langOf(code.toUpperCase())}
+                  aria-label={t.a11y.langOf.replace('{lang}', code.toUpperCase())}
                   className={`flex items-center gap-[7px] font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[1px] px-[9px] py-[7px] transition-opacity ${
                     activeLang
                       ? isHome
@@ -452,7 +451,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
 
         <button
           onClick={() => setMenuOpen((o) => !o)}
-          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          aria-label={menuOpen ? t.a11y.closeMenu : t.a11y.openMenu}
           aria-expanded={menuOpen}
           className={`lg:hidden grid place-items-center size-[34px] ${isHome ? 'text-white' : 'text-ink'}`}
         >
@@ -482,7 +481,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
                 key={code}
                 onClick={() => setLang(code as Lang)}
                 aria-current={code === lang ? 'true' : undefined}
-                aria-label={t.a11y.langOf(code.toUpperCase())}
+                aria-label={t.a11y.langOf.replace('{lang}', code.toUpperCase())}
                 className={`flex items-center gap-2 font-['IBM_Plex_Mono:Medium'] text-[11px] tracking-[1px] px-3 py-2 rounded transition-colors ${
                   code === lang ? 'text-ink border border-ink/[0.3]' : 'text-ink/[0.45] border border-transparent'
                 }`}
@@ -923,19 +922,20 @@ function Home({ onNav }: { onNav: Nav }) {
         <div className="mx-auto grid max-w-[1180px] grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
           {HOME_AWARDS.map((a, i) => {
             const wine = a.wineId ? t.wineCatalog.find((w) => w.id === a.wineId) : undefined;
+            const info = t.home.awardsList[i] ?? { critic: '', note: '' };
             const inner = (
               <>
                 <span className="flex size-[124px] items-center justify-center rounded-full border border-ink/[0.16] transition-colors group-hover:border-ink/[0.4] lg:size-[clamp(112px,10vw,150px)]">
-                  <img {...md(a.img)} alt={`${a.critic}${wine ? ' — ' + wine.name : ''}`} className="size-[80px] object-contain lg:size-[clamp(72px,6.6vw,100px)]" />
+                  <img {...md(a.img)} alt={`${info.critic}${wine ? ' — ' + wine.name : ''}`} className="size-[80px] object-contain lg:size-[clamp(72px,6.6vw,100px)]" />
                 </span>
-                <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.4px] uppercase text-ink/[0.5]">{a.critic}</span>
+                <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.4px] uppercase text-ink/[0.5]">{info.critic}</span>
                 <span className="mt-1 font-['Cormorant_Garamond:Regular'] text-[16px] leading-[1.25] text-ink">
                   {wine ? (
                     <>
                       {wine.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{wine.sub}</span>
                     </>
                   ) : (
-                    <span className="text-ink/[0.6]">{a.note}</span>
+                    <span className="text-ink/[0.6]">{info.note}</span>
                   )}
                 </span>
               </>
@@ -1750,7 +1750,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
               <textarea
                 id="cf-msg"
                 key={inquiryName}
-                defaultValue={inquiryName ? t.contacto.inquiry(inquiryName) : ''}
+                defaultValue={inquiryName ? t.contacto.inquiry.replace('{wine}', inquiryName) : ''}
                 className="border-b border-ink/[0.28] bg-transparent outline-none font-['Archivo:Light'] text-[14px] text-ink py-2 resize-none h-[80px] focus:border-ink transition-colors"
                 style={{ fontVariationSettings: '"wdth" 100' }}
               />
