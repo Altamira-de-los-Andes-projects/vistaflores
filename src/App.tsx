@@ -50,7 +50,7 @@ const NOVEDADES_ARTICLE_IMGS = [IMG.prowein, IMG.vendimia, IMG.catas];
 type WineLine = 'RESERVA' | 'VAV' | 'DAMA' | 'NAVIGATO';
 const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; line: WineLine }> = {
   dama: { img: `${A}/5c918.png`, tag: 'ALTAMIRA', line: 'DAMA' },
-  navigato: { img: `${A}/3d3ec.png`, tag: 'ALTAMIRA', line: 'NAVIGATO' },
+  navigato: { img: `${A}/navigato.png`, tag: 'ALTAMIRA', line: 'NAVIGATO' },
   'reserva-malbec': { img: `${A}/reserva-malbec.png`, tag: 'ALTAMIRA', line: 'RESERVA' },
   'reserva-cf': { img: `${A}/reserva-cf.png`, tag: 'ALTAMIRA', line: 'RESERVA' },
   'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', line: 'VAV' },
@@ -1745,7 +1745,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
                 />
               </div>
             ))}
-            <div className="flex flex-col gap-[9px] mb-12">
+            <div className="flex flex-col gap-[9px] mb-7">
               <label htmlFor="cf-msg" className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.contacto.messageLabel}</label>
               <textarea
                 id="cf-msg"
