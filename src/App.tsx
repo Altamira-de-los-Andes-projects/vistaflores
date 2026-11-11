@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { LangProvider, useLang, useT, LANGS, type Lang } from './i18n';
+import { LangProvider, useLang, useSite, useT, type Lang } from './i18n';
+import { clean, editAttr, md, PREVIEW, type Site } from './cms';
 import { ARG_REST, ARG_MENDOZA, ARG_UCO, CHILE } from './mapdata';
 import { UCO_RIVER } from './ucomap';
 import { FINCAS_IMG, FINCAS_PT } from './ucofincas';
@@ -8,13 +9,6 @@ type Page = 'home' | 'vinos' | 'vinedos' | 'galeria' | 'novedades' | 'contacto' 
 type Nav = (p: Page, wineId?: string, anchor?: string) => void;
 
 const A = `${import.meta.env.BASE_URL}assets`;
-
-// News is hidden for now (client request); flip to true to bring back the nav item, the Home
-// section and the #/novedades page.
-const SHOW_NEWS = false;
-// Gallery is hidden for now; flip to true to bring back the nav item and the #/galeria page.
-const SHOW_GALLERY = false;
-const SHOW_AWARDS = false;
 
 // Themed replacements for stock images that didn't reference wine/vineyards
 const IMG = {
@@ -63,6 +57,15 @@ const WINE_META: Record<string, { img: string; tag: 'ALTAMIRA' | 'VAV'; line: Wi
   'vav-malbec': { img: `${A}/4600e.png`, tag: 'VAV', line: 'VAV' },
   'tres-fincas': { img: `${A}/73703.png`, tag: 'VAV', line: 'VAV' },
 };
+
+// wines added in the CMS have no bundled entry: their line comes from the CMS
+function wineMeta(w: { id: string; line?: string }) {
+  const line = (w.line ?? WINE_META[w.id]?.line ?? 'RESERVA') as WineLine;
+  return { img: WINE_META[w.id]?.img ?? '', tag: line === 'VAV' ? ('VAV' as const) : ('ALTAMIRA' as const), line };
+}
+function bottle(w: { id: string; docId?: string; bottle?: string }) {
+  return { src: w.bottle ?? wineMeta(w).img, ...editAttr(w.docId, 'wine', 'bottle') };
+}
 
 // Bottles per row on Our Wines, matching the sm / lg breakpoints: all six in one row on desktop.
 function useGridCols() {
@@ -201,6 +204,7 @@ function Contours({
 // ─── Age gate — sober, branded first impression ───────────────────────────────
 function AgeGate({ onEnter }: { onEnter: () => void }) {
   const t = useT();
+  const site = useSite();
   const [leaving, setLeaving] = useState(false);
   const enter = () => {
     setLeaving(true);
@@ -211,7 +215,7 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
       className={`gate ${leaving ? 'gate--leaving' : ''} fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-panel px-6 text-on-dark`}
     >
       <img
-        src={`${A}/gate-mountain.png`}
+        {...md(`${A}/gate-mountain.png`)}
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 size-full object-cover kenburns"
@@ -226,10 +230,10 @@ function AgeGate({ onEnter }: { onEnter: () => void }) {
       <div className="relative flex max-w-[560px] flex-col items-center gap-8 text-center">
         <div className="flex flex-col items-center leading-none">
           <span className="font-['Cormorant_Garamond:Regular'] text-[clamp(26px,5.4vw,44px)] tracking-[0.1em] leading-[1.08]">
-            ALTAMIRA DE LOS ANDES
+            {site.name.toUpperCase()}
           </span>
           <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[10px] tracking-[0.5em] text-on-dark/70">
-            UCO VALLEY · MENDOZA
+            {site.subtitle}
           </span>
         </div>
         <span className="h-px w-14 bg-on-dark/30" />
@@ -268,7 +272,7 @@ function Breath({ label, pre, em, post }: { label: string; pre: string; em: stri
     <section className="relative overflow-hidden bg-surface px-5 sm:px-8 lg:px-12 py-[clamp(96px,15vh,180px)]">
       {/* faint mountain backdrop so "the place" feels grounded, not empty */}
       <img
-        src={`${A}/place-bg.jpg`}
+        {...md(`${A}/place-bg.jpg`)}
         alt=""
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 size-full object-cover object-[50%_42%] opacity-[0.5] dark:opacity-[0.42]"
@@ -296,8 +300,10 @@ function Breath({ label, pre, em, post }: { label: string; pre: string; em: stri
 // ─── Shared header ────────────────────────────────────────────────────────────
 // Language flags as inline SVG (emoji flags don't render on Windows). EN uses the UK flag to
 // match the copy's British spelling.
-function Flag({ code, className = '' }: { code: Lang; className?: string }) {
+function Flag({ code, src, className = '' }: { code: Lang; src?: string | null; className?: string }) {
   const base = `block h-[12px] w-[18px] shrink-0 rounded-[2px] ring-1 ring-black/15 ${className}`;
+  if (src) return <img src={src} alt="" className={`${base} object-cover`} />;
+  if (!['es', 'en', 'pt'].includes(code)) return null;
   if (code === 'es')
     return (
       <svg viewBox="0 0 18 12" className={base} aria-hidden="true">
@@ -327,7 +333,8 @@ function Flag({ code, className = '' }: { code: Lang; className?: string }) {
 function Header({ page, onNav }: { page: Page; onNav: Nav }) {
   const isHome = page === 'home';
   const { theme, toggle } = useTheme();
-  const { lang, setLang } = useLang();
+  const { lang, setLang, langs } = useLang();
+  const site = useSite();
   const t = useT();
   const [menuOpen, setMenuOpen] = useState(false);
   const go = (p: Page) => {
@@ -341,7 +348,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     ['galeria', t.nav.galeria],
     ['novedades', t.nav.novedades],
     ['contacto', t.nav.contacto],
-  ].filter(([p]) => (SHOW_NEWS || p !== 'novedades') && (SHOW_GALLERY || p !== 'galeria')) as [Page, string][];
+  ].filter(([p]) => pageOn(p as Page, site)) as [Page, string][];
   return (
     <header
       className={`z-50 flex items-center justify-between px-5 sm:px-8 lg:px-12 py-5 ${
@@ -352,19 +359,25 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
     >
       <button
         onClick={() => onNav('home')}
-        aria-label="Altamira de los Andes"
+        aria-label={clean(site.name)}
         className={`group flex flex-col items-start shrink-0 leading-none ${isHome ? 'text-white' : 'text-ink'}`}
       >
-        <span className="font-['Cormorant_Garamond:Regular'] text-[15px] sm:text-[18px] lg:text-[22px] leading-[1] tracking-[0.09em] lg:tracking-[0.12em] whitespace-nowrap">
-          ALTAMIRA DE LOS ANDES
-        </span>
-        <span
-          className={`font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.44em] mt-[7px] pl-px transition-opacity group-hover:opacity-100 ${
-            isHome ? 'text-white/70' : 'text-ink/[0.55]'
-          }`}
-        >
-          UCO VALLEY · MENDOZA
-        </span>
+        {site.logo ? (
+          <img src={site.logo} {...editAttr('siteSettings', 'siteSettings', 'headerLogo')} alt={clean(site.name)} className="h-[34px] w-auto max-w-[220px] object-contain lg:h-[42px]" />
+        ) : (
+          <>
+            <span className="font-['Cormorant_Garamond:Regular'] text-[15px] sm:text-[18px] lg:text-[22px] leading-[1] tracking-[0.09em] lg:tracking-[0.12em] whitespace-nowrap">
+              {site.name.toUpperCase()}
+            </span>
+            <span
+              className={`font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[0.44em] mt-[7px] pl-px transition-opacity group-hover:opacity-100 ${
+                isHome ? 'text-white/70' : 'text-ink/[0.55]'
+              }`}
+            >
+              {site.subtitle}
+            </span>
+          </>
+        )}
       </button>
 
       <nav className="hidden lg:flex gap-[30px] items-center">
@@ -393,7 +406,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
 
       <div className="flex items-center gap-3 sm:gap-4">
         <div className="hidden lg:flex gap-0.5 items-center">
-          {LANGS.map((code, i) => {
+          {langs.map(({ code, flag }, i) => {
             const activeLang = code === lang;
             return (
               <span key={code} className="flex items-center">
@@ -414,7 +427,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
                       : 'text-ink/[0.4] hover:text-ink/[0.7]'
                   }`}
                 >
-                  <Flag code={code} className={activeLang ? '' : 'opacity-60'} />
+                  <Flag code={code} src={flag} className={activeLang ? '' : 'opacity-60'} />
                   {code.toUpperCase()}
                 </button>
               </span>
@@ -464,7 +477,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
             );
           })}
           <div className="flex gap-1.5 items-center pt-4">
-            {LANGS.map((code) => (
+            {langs.map(({ code, flag }) => (
               <button
                 key={code}
                 onClick={() => setLang(code as Lang)}
@@ -474,7 +487,7 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
                   code === lang ? 'text-ink border border-ink/[0.3]' : 'text-ink/[0.45] border border-transparent'
                 }`}
               >
-                <Flag code={code} className={code === lang ? '' : 'opacity-60'} />
+                <Flag code={code} src={flag} className={code === lang ? '' : 'opacity-60'} />
                 {code.toUpperCase()}
               </button>
             ))}
@@ -488,16 +501,17 @@ function Header({ page, onNav }: { page: Page; onNav: Nav }) {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer({ onNav }: { onNav: Nav }) {
   const t = useT();
+  const site = useSite();
   return (
     <footer className="bg-accent-solid">
       <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr_1fr] gap-[50px] px-5 sm:px-8 lg:px-12 pt-20 pb-10">
         <div className="flex flex-col gap-[19px]">
           <div className="flex flex-col items-start leading-none text-on-dark">
             <span className="font-['Cormorant_Garamond:Regular'] text-[26px] sm:text-[30px] lg:whitespace-nowrap lg:text-[clamp(20px,2.1vw,30px)] leading-[1.05] tracking-[0.06em]">
-              ALTAMIRA DE LOS ANDES
+              {site.name.toUpperCase()}
             </span>
             <span className="font-['IBM_Plex_Mono:Medium'] text-[9px] tracking-[0.42em] mt-[10px] pl-px text-on-dark/[0.7]">
-              UCO VALLEY · MENDOZA
+              {site.subtitle}
             </span>
           </div>
           <p
@@ -516,12 +530,10 @@ function Footer({ onNav }: { onNav: Nav }) {
               {t.footer.officeLabel}
             </p>
             <p
-              className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]"
+              className="whitespace-pre-line font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              Av. Colón 241
-              <br />
-              (5500) Mendoza, Argentina
+              {site.office}
             </p>
           </div>
           <div className="flex flex-col gap-[9px]">
@@ -532,9 +544,9 @@ function Footer({ onNav }: { onNav: Nav }) {
               className="font-['Archivo:Light'] text-[12px] sm:text-[13.5px] text-on-dark leading-[21px] sm:leading-[24.3px]"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              <span className="whitespace-nowrap">Argentina +54 261 4299962</span>
-              <br />
-              USA +1 305 988 5992
+              {site.phones.map((p) => (
+                <span key={p} className="block whitespace-nowrap">{p}</span>
+              ))}
             </p>
           </div>
         </div>
@@ -549,7 +561,7 @@ function Footer({ onNav }: { onNav: Nav }) {
               className="border-b border-on-dark/[0.35] pb-[5px] font-['Archivo:Light'] text-[13.5px] text-on-dark text-left leading-[24.3px] hover:border-white/60 transition-colors self-start"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              inquiries@altamiradelosandes.com
+              {site.email}
             </button>
           </div>
           <div className="flex flex-col gap-[10px]">
@@ -557,16 +569,15 @@ function Footer({ onNav }: { onNav: Nav }) {
               {t.footer.followLabel}
             </p>
             <div className="flex gap-[10px]">
-              {['IG', 'FB', 'LI'].map((s) => (
-                <div
-                  key={s}
-                  className="border border-on-dark/[0.35] flex items-center justify-center size-[34px] cursor-pointer hover:border-white/60 transition-colors"
-                >
-                  <span className="font-['IBM_Plex_Mono:Medium'] text-[7px] text-on-dark/[0.6]">
-                    {s}
-                  </span>
-                </div>
-              ))}
+              {site.socials.map((s) => {
+                const cls = 'border border-on-dark/[0.35] flex items-center justify-center size-[34px] cursor-pointer hover:border-white/60 transition-colors';
+                const label = <span className="font-['IBM_Plex_Mono:Medium'] text-[7px] text-on-dark/[0.6]">{s.label}</span>;
+                return s.url ? (
+                  <a key={s.label} href={s.url} target="_blank" rel="noopener" aria-label={clean(s.label)} className={cls}>{label}</a>
+                ) : (
+                  <div key={s.label} className={cls}>{label}</div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -613,7 +624,7 @@ function SquareSplit({
         <div className={`group relative aspect-square overflow-hidden lg:aspect-auto ${imgRight ? 'lg:order-2' : ''}`}>
           {media ?? (
             <img
-              src={img}
+              {...md(img ?? '')}
               alt={alt}
               className={`absolute inset-0 size-full object-cover ${imgClass} transition-transform duration-700 group-hover:scale-105`}
             />
@@ -710,7 +721,7 @@ function Gallery({ showHeading = true }: { showHeading?: boolean }) {
             className="relative m-0 h-[68vw] max-h-[560px] min-h-[320px] shrink-0 snap-start overflow-hidden bg-surface-2"
           >
             <img
-              src={g.src}
+              {...md(g.src)}
               alt={`${t.home.galleryTitle} - ${i + 1}`}
               loading="lazy"
               decoding="async"
@@ -751,6 +762,7 @@ function Galeria() {
 function Home({ onNav }: { onNav: Nav }) {
   useReveal();
   const t = useT();
+  const site = useSite();
   const reduceMotion =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -761,7 +773,8 @@ function Home({ onNav }: { onNav: Nav }) {
         <div className="absolute inset-0">
           {reduceMotion ? (
             <img
-              src={`${A}/hero-andes.jpg`}
+              src={site.heroPoster ?? `${A}/hero-andes.jpg`}
+              {...editAttr('siteSettings', 'siteSettings', 'heroPoster')}
               alt={t.home.heroEyebrow}
               className="absolute inset-0 size-full object-cover"
             />
@@ -772,9 +785,11 @@ function Home({ onNav }: { onNav: Nav }) {
               muted
               loop
               playsInline
-              poster={`${A}/hero-andes.jpg`}
+              poster={site.heroPoster ?? `${A}/hero-andes.jpg`}
+              key={site.heroVideo ?? 'bundled'}
+              {...editAttr('siteSettings', 'siteSettings', 'heroVideo')}
             >
-              <source src={`${A}/hero-andes.mp4`} type="video/mp4" />
+              <source src={site.heroVideo ?? `${A}/hero-andes.mp4`} type="video/mp4" />
             </video>
           )}
           <div
@@ -813,6 +828,7 @@ function Home({ onNav }: { onNav: Nav }) {
         </div>
       </section>
 
+      {site.showEstate && (<>
       {/* "Unique wines" — text-only pause between the hero and the vineyards (no photo, no wines) */}
       <section className="bg-surface px-5 sm:px-8 lg:px-12 pt-20 pb-14 lg:pt-[130px] lg:pb-[80px] dark:bg-panel">
         <div className="mx-auto flex max-w-[820px] flex-col items-center gap-7 text-center reveal">
@@ -829,16 +845,20 @@ function Home({ onNav }: { onNav: Nav }) {
           <span className="h-px w-14 bg-ink/[0.25]" aria-hidden="true" />
         </div>
       </section>
+      </>)}
 
+      {site.showHomePhoto && (<>
       {/* the vineyards and the Andes behind them, filling the pause above (hard edges, no fade) */}
       <img
-        src={`${A}/vineyard-autumn-andes.jpg`}
+        {...md(`${A}/vineyard-autumn-andes.jpg`)}
         alt={t.home.vineyardsPhotoAlt}
         loading="lazy"
         decoding="async"
         className="block h-[clamp(240px,46vw,620px)] w-full object-cover object-[50%_40%]"
       />
+      </>)}
 
+      {site.showHomeVineyards && (<>
       {/* Vineyards dark section */}
       <section className="bg-surface dark:bg-panel">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-[60px] justify-center px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[100px] pb-16">
@@ -872,11 +892,13 @@ function Home({ onNav }: { onNav: Nav }) {
         </div>
 
       </section>
+      </>)}
 
+      {site.showQuote && (<>
       {/* Quote section */}
       <section className="relative h-[480px] overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0">
-          <img src={`${A}/quote-bg.jpg`} alt="" className="w-full h-full object-cover" />
+          <img {...md(`${A}/quote-bg.jpg`)} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[rgba(20,18,15,0.6)]" />
         </div>
         <div className="relative text-center px-6 sm:px-12 lg:px-16 max-w-[1080px] reveal">
@@ -889,10 +911,11 @@ function Home({ onNav }: { onNav: Nav }) {
           </p>
         </div>
       </section>
+      </>)}
 
       {/* Gallery — a horizontal film-strip of the estate, spaced so no two photos share a hard edge */}
       {/* AWARDS */}
-      {SHOW_AWARDS && <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
+      {site.showAwards && <section className="px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[110px] pb-10">
         <div className="flex flex-col gap-[23px] items-center text-center mb-[27px] reveal">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[9.5px] tracking-[2.28px] text-ink/[0.5]">{t.home.awardsEyebrow}</p>
           <h2 className="font-['Cormorant_Garamond:Light'] text-[28px] sm:text-[34px] lg:text-[40px] text-ink leading-[1.14] lg:leading-[45.6px]">{t.home.awardsTitle}</h2>
@@ -903,7 +926,7 @@ function Home({ onNav }: { onNav: Nav }) {
             const inner = (
               <>
                 <span className="flex size-[124px] items-center justify-center rounded-full border border-ink/[0.16] transition-colors group-hover:border-ink/[0.4] lg:size-[clamp(112px,10vw,150px)]">
-                  <img src={a.img} alt={`${a.critic}${wine ? ' — ' + wine.name : ''}`} className="size-[80px] object-contain lg:size-[clamp(72px,6.6vw,100px)]" />
+                  <img {...md(a.img)} alt={`${a.critic}${wine ? ' — ' + wine.name : ''}`} className="size-[80px] object-contain lg:size-[clamp(72px,6.6vw,100px)]" />
                 </span>
                 <span className="mt-4 font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.4px] uppercase text-ink/[0.5]">{a.critic}</span>
                 <span className="mt-1 font-['Cormorant_Garamond:Regular'] text-[16px] leading-[1.25] text-ink">
@@ -931,7 +954,7 @@ function Home({ onNav }: { onNav: Nav }) {
       </section>}
 
       {/* News section */}
-      {SHOW_NEWS && (
+      {site.showNews && (
       <section className="bg-surface-2 border-t border-ink/[0.1] px-5 sm:px-8 lg:px-12 pt-16 lg:pt-[101px] pb-16 lg:pb-[100px] mt-16">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div className="flex flex-col gap-[18px]">
@@ -949,7 +972,7 @@ function Home({ onNav }: { onNav: Nav }) {
           {t.home.news.map((article, i) => (
             <button key={article.title} className={`flex-1 flex flex-col gap-[17px] cursor-pointer reveal reveal-d${i + 1} text-left`} onClick={() => onNav('novedades')}>
               <div className="overflow-hidden h-[382px]">
-                <img src={HOME_NEWS_IMGS[i]} alt={article.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                <img {...md(HOME_NEWS_IMGS[i])} alt={article.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{article.date}</p>
               <h3 className="font-['Cormorant_Garamond:Regular'] text-[26px] text-ink leading-[32.24px]">{article.title}</h3>
@@ -979,7 +1002,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
   const [filter, setFilter] = useState<'ALL' | WineLine>('ALL');
   // left to right: VAV, Reserva, Dama, Navigato (the catalog order is kept inside each line)
   const wines = t.wineCatalog
-    .map((w) => ({ ...w, ...WINE_META[w.id] }))
+    .map((w) => ({ ...w, ...wineMeta(w) }))
     .sort((a, b) => WINE_LINE_ORDER.indexOf(a.line) - WINE_LINE_ORDER.indexOf(b.line));
   const filtered = filter === 'ALL' ? wines : wines.filter((w) => w.line === filter);
   const cols = useGridCols();
@@ -1004,7 +1027,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
       <section className="relative h-[340px] overflow-hidden flex items-stretch">
         {/* on phones the photo is scaled up and raised so the dark band of the mountains sits behind the title;
             from tablets up it is anchored to the top so the blue sky stays behind the title */}
-        <img src={`${A}/vinos-hero.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_0%] max-sm:inset-auto max-sm:left-0 max-sm:top-[-10%] max-sm:h-[150%]" />
+        <img {...md(`${A}/vinos-hero.jpg`)} alt="" className="absolute inset-0 size-full object-cover object-[50%_0%] max-sm:inset-auto max-sm:left-0 max-sm:top-[-10%] max-sm:h-[150%]" />
         {/* a light overall veil so the photo sits back behind the text */}
         <div className="absolute inset-0 bg-[rgba(20,18,15,0.18)]" aria-hidden="true" />
         <div
@@ -1053,7 +1076,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
           <div key={`${cols}-${r}-${filter}`} className="relative">
             {/* the landscape the bottles stand in: mountains above, vineyard ground below */}
             <div className={`absolute inset-x-0 top-0 overflow-hidden ${STAGE_H}`} aria-hidden="true">
-              <img src={STAGE_IMG} alt="" className="absolute inset-0 size-full object-cover object-[50%_42%]" />
+              <img {...md(STAGE_IMG)} alt="" className="absolute inset-0 size-full object-cover object-[50%_42%]" />
               <div className="absolute inset-0 bg-black/[0.28]" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/0 from-[55%] to-black/30" />
             </div>
@@ -1068,7 +1091,7 @@ function Vinos({ onNav }: { onNav: Nav }) {
                     <span className={`absolute bottom-[calc(11%-7px)] left-1/2 h-[12px] -translate-x-1/2 rounded-[50%] bg-black/[0.6] blur-[7px] transition-all duration-700 group-hover:bg-black/[0.4] ${row.length === 1 ? 'w-[110px] lg:w-[140px] group-hover:w-[90px]' : 'w-[78px] lg:w-[96px] group-hover:w-[62px]'}`} aria-hidden="true" />
                     <div className="absolute inset-x-0 bottom-[11%] flex justify-center">
                       <img
-                        src={wine.img}
+                        {...bottle(wine)}
                         alt={wine.name}
                         className={`${row.length === 1 ? BOTTLE_H_SOLO : BOTTLE_H} w-auto object-contain object-bottom drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2`}
                       />
@@ -1098,12 +1121,13 @@ function Vinos({ onNav }: { onNav: Nav }) {
 function Vinedos() {
   useReveal();
   const t = useT();
+  const site = useSite();
   return (
     <div className="bg-surface w-full">
       <section className="relative h-[clamp(480px,62vh,620px)] lg:h-[clamp(620px,86vh,900px)] overflow-hidden flex items-end">
         <div className="absolute inset-0">
           <img
-            src={`${A}/la-consulta-real.jpg`}
+            {...md(`${A}/la-consulta-real.jpg`)}
             alt={t.vinedos.heroTitle1 + ' ' + t.vinedos.heroTitle2}
             className="absolute inset-0 size-full object-cover object-[50%_18%]"
           />
@@ -1146,7 +1170,7 @@ function Vinedos() {
       </section>
 
       {/* Map — the Uco Valley in relief, three vineyards side by side */}
-      <UcoMap />
+      {site.showMap && <UcoMap />}
 
       {/* Soil — the alluvial fan (with breathing space below the map) */}
       <div className="pt-14 lg:pt-24">
@@ -1156,7 +1180,7 @@ function Vinedos() {
         media={
           <>
             <img
-              src={`${A}/soil-laconsulta.jpg`}
+              {...md(`${A}/soil-laconsulta.jpg`)}
               alt={t.vinedos.narrative.soilTitle}
               className="absolute inset-0 size-full object-cover object-[50%_58%] transition-transform duration-700 group-hover:scale-105"
             />
@@ -1181,7 +1205,7 @@ function Vinedos() {
         media={
           <>
             <img
-              src={`${A}/vinedos-vines-1.jpg`}
+              {...md(`${A}/vinedos-vines-1.jpg`)}
               alt={t.vinedos.narrative.vinesTitle}
               className="absolute inset-0 size-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
             />
@@ -1208,7 +1232,7 @@ function Vinedos() {
           media={
             <>
               <img
-                src={`${A}/vinedos-hands.jpg`}
+                {...md(`${A}/vinedos-hands.jpg`)}
                 alt={t.vinedos.narrative.craftTitle}
                 className="absolute inset-0 size-full object-cover object-[50%_45%] transition-transform duration-700 group-hover:scale-105"
               />
@@ -1250,7 +1274,7 @@ function Novedades() {
 
       <section className="border-b border-ink/[0.12] grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-[50px] px-5 sm:px-8 lg:px-12 pt-[60px] pb-[41px]">
         <div className="overflow-hidden reveal" style={{ aspectRatio: '630/394' }}>
-          <img src={IMG.vinexpo} alt={t.novedades.featured.title1} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+          <img {...md(IMG.vinexpo, 'news-featured')} alt={t.novedades.featured.title1} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
         </div>
         <div className="flex flex-col gap-[19px] justify-center reveal reveal-d2">
           <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.novedades.featured.tag}</p>
@@ -1270,7 +1294,7 @@ function Novedades() {
         {t.novedades.articles.map((a, i) => (
           <article key={a.title} className={`flex-1 flex flex-col gap-[15px] cursor-pointer reveal reveal-d${i + 1}`}>
             <div className="overflow-hidden" style={{ aspectRatio: '372/248' }}>
-              <img src={NOVEDADES_ARTICLE_IMGS[i]} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+              <img {...md(NOVEDADES_ARTICLE_IMGS[i], `news-${i + 1}`)} alt={a.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
             </div>
             <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5] mt-1">{a.tag}</p>
             <h3 className="font-['Cormorant_Garamond:Regular'] text-[23px] text-ink leading-[28.75px]">{a.title}</h3>
@@ -1409,14 +1433,14 @@ function UcoMap() {
   const fontPx = Math.min(22, Math.max(16, winW * 0.015));
   // the "Andes Range" pill is an obstacle too: [x, y, w, h]
   const pillPx = Math.min(15, Math.max(11, winW * 0.011));
-  const [pillW, pillH] = [art.andes.length * pillPx * (mobile ? 0.95 : 1.15) + (mobile ? 32 : 44), pillPx * 1.4 + 16];
+  const [pillW, pillH] = [clean(art.andes).length * pillPx * (mobile ? 0.95 : 1.15) + (mobile ? 32 : 44), pillPx * 1.4 + 16];
   const pill = [(mobile ? 0.5 : 0.22) * size[0] - pillW / 2, 0.12 * size[1] - pillH / 2, pillW, pillH];
   // returns the spot and whether the name wraps onto two lines (UCO_WRAP_W wide) to fit beside a pin near the map edge
   const labelSpot = (i: number): [UcoSpot, boolean] => {
     const sx = size[0] / vw;
     const sy = size[1] / vh;
     const [cx, cy] = [(UCO_FINCAS[i].pt[0] - vx) * sx, (UCO_FINCAS[i].pt[1] - vy) * sy];
-    const wFull = art.vineyards[i].length * fontPx * 0.48;
+    const wFull = clean(art.vineyards[i]).length * fontPx * 0.48;
     const gap = 26;
     const clear = (k: UcoSpot, wrap: boolean) => {
       const w = wrap ? Math.min(wFull, UCO_WRAP_W) : wFull;
@@ -1671,6 +1695,7 @@ function UcoMap() {
 function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string | null }) {
   useReveal();
   const t = useT();
+  const site = useSite();
   const inquiryWine = inquiryWineId ? t.wineCatalog.find((w) => w.id === inquiryWineId) : undefined;
   const inquiryName = inquiryWine ? `${inquiryWine.name} ${inquiryWine.sub}` : '';
   const CELLAR = `${A}/altamira-vy.jpg`;
@@ -1685,7 +1710,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
       <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-72px)]">
         {/* Phones: the vineyard-and-Andes photo as a clear band on top (the sign photo closes the page below) */}
         <div className="relative h-[clamp(240px,62vw,340px)] lg:hidden">
-          <img src={`${A}/contact-mobile-bg.jpg`} alt="" className="absolute inset-0 size-full object-cover object-[50%_42%]" />
+          <img {...md(`${A}/contact-mobile-bg.jpg`)} alt="" className="absolute inset-0 size-full object-cover object-[50%_42%]" />
         </div>
         {/* Form left */}
         <div className="relative isolate -mt-px flex-1 bg-surface pt-10 pb-20 px-5 sm:px-9 lg:mt-0 lg:py-20 lg:px-14 flex flex-col">
@@ -1699,7 +1724,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
           </p>
           {inquiryWine && (
             <div className="mb-9 flex items-center gap-4 border-y border-ink/[0.14] py-4 reveal reveal-d1">
-              <img src={WINE_META[inquiryWine.id].img} alt="" className="h-[64px] w-auto object-contain" />
+              <img {...bottle(inquiryWine)} alt="" className="h-[64px] w-auto object-contain" />
               <div className="flex flex-col gap-1">
                 <span className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.contacto.regarding}</span>
                 <span className="font-['Cormorant_Garamond:Regular'] text-[20px] leading-[1.2] text-ink">
@@ -1752,33 +1777,33 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
         <div className="relative flex-1 overflow-hidden bg-surface min-h-[440px] lg:min-h-0 lg:bg-panel">
           <div className="absolute inset-0">
             {/* phones: the Altamira sign closes the page; laptops: the vineyard-and-Andes photo (one photo, not two) */}
-            <img src={CELLAR} alt="" className="absolute inset-0 size-full object-cover lg:hidden" />
-            <img src={`${A}/contact-mobile-bg.jpg`} alt="" className="absolute inset-0 hidden size-full object-cover object-[50%_42%] lg:block" />
+            <img {...md(CELLAR)} alt="" className="absolute inset-0 size-full object-cover lg:hidden" />
+            <img {...md(`${A}/contact-mobile-bg.jpg`)} alt="" className="absolute inset-0 hidden size-full object-cover object-[50%_42%] lg:block" />
             <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.1)] to-[rgba(20,18,15,0.6)]" />
           </div>
           <div className="absolute bottom-0 left-0 right-0 grid grid-cols-1 gap-x-[26px] gap-y-6 p-6 sm:grid-cols-2 sm:gap-y-8 sm:p-11">
             <div className="flex flex-col gap-[9px]">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.officeLabel}</p>
-              <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                Av. Colón 241<br />
-                (5500) Mendoza, Argentina
+              <p className="whitespace-pre-line font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
+                {site.office}
               </p>
             </div>
             <div className="flex flex-col gap-[9px]">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.phoneLabel}</p>
               <p className="font-['Archivo:Light'] text-[13.5px] text-on-dark leading-[24.3px]" style={{ fontVariationSettings: '"wdth" 100' }}>
-                <span className="whitespace-nowrap">Argentina +54 261 4299962</span><br />
-                USA +1 305 988 5992
+                {site.phones.map((p) => (
+                  <span key={p} className="block whitespace-nowrap">{p}</span>
+                ))}
               </p>
             </div>
             <div className="flex flex-col gap-[9px] sm:col-span-2">
               <p className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-on-dark/[0.65]">{t.contacto.emailLabel}</p>
               <a
-                href="mailto:inquiries@altamiradelosandes.com"
+                href={`mailto:${clean(site.email)}`}
                 className="self-start border-b border-on-dark/[0.4] pb-[5px] font-['Archivo:Light'] text-[13.5px] text-on-dark hover:border-white/70 transition-colors"
                 style={{ fontVariationSettings: '"wdth" 100' }}
               >
-                inquiries@altamiradelosandes.com
+                {site.email}
               </a>
             </div>
           </div>
@@ -1835,13 +1860,13 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
         <div className="relative isolate flex items-end justify-center pt-12 pb-10 min-h-[560px] lg:sticky lg:top-[72px] lg:h-[calc(100svh-130px)] lg:min-h-[500px] lg:max-h-[860px] lg:self-start lg:pt-8 lg:pb-[72px]">
           {/* landscape and bottle share one panel, so the bottle always stands on the ground */}
           <div className="absolute inset-0 -z-10 overflow-hidden lg:right-auto lg:w-[130%]" aria-hidden="true">
-            <img src={`${A}/wbg-${wine.id}.jpg`} alt="" className="h-[calc(100%-24px)] w-full lg:w-[calc(100%-24px)] object-cover object-[50%_60%] opacity-[0.78] dark:opacity-[0.62]" />
+            <img src={wine.background ?? `${A}/wbg-${wine.id}.jpg`} {...editAttr(wine.docId, 'wine', 'background')} alt="" className="h-[calc(100%-24px)] w-full lg:w-[calc(100%-24px)] object-cover object-[50%_60%] opacity-[0.78] dark:opacity-[0.62]" />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[45%] to-surface lg:bg-gradient-to-r lg:from-[38%] lg:to-[92%]" />
             <div className="absolute inset-0 hidden lg:block bg-gradient-to-b from-transparent from-[80%] to-surface" />
           </div>
           <span className="absolute bottom-[34px] lg:bottom-[62px] left-1/2 h-[18px] w-[150px] lg:w-[190px] -translate-x-1/2 rounded-[50%] bg-black/[0.5] blur-[12px]" aria-hidden="true" />
           <img
-            src={WINE_META[wine.id].img}
+            {...bottle(wine)}
             alt={`${wine.title1} ${wine.title2}`.trim()}
             className="relative h-[460px] lg:h-full lg:max-h-[640px] w-auto object-contain object-bottom drop-shadow-[0_24px_30px_rgba(0,0,0,0.35)] reveal"
           />
@@ -1874,7 +1899,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
           {/* one column on phones so values like "18 months · French oak" stay on one line */}
           <dl className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-10">
             {wine.ficha.map((s) => (
-              <div key={s.label} className={`border-t border-ink/[0.16] py-[16px] ${s.value.length > 24 ? 'sm:col-span-2' : ''}`}>
+              <div key={s.label} className={`border-t border-ink/[0.16] py-[16px] ${clean(s.value).length > 24 ? 'sm:col-span-2' : ''}`}>
                 <dt className="font-['IBM_Plex_Mono:Regular'] text-[10px] tracking-[1.4px] text-ink/[0.5] mb-[6px]">{s.label}</dt>
                 <dd className="font-['Cormorant_Garamond:Regular'] text-[20px] text-ink leading-[1.25]">{s.value}</dd>
               </div>
@@ -1890,7 +1915,7 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
               {t.wineDetail.ctaInfo}
             </button>
             <a
-              href={`${A}/fichas/${lang}/${wine.id}.pdf`}
+              href={wine.sheet ?? `${A}/fichas/${['es', 'en', 'pt'].includes(lang) ? lang : 'en'}/${wine.id}.pdf`}
               target="_blank"
               rel="noopener"
               className="border border-ink/[0.4] px-[31px] py-[16px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-ink hover:border-ink transition-colors"
@@ -1956,10 +1981,10 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
                 onClick={() => onNav('wine-detail', w.id)}
               >
                 <div className="shrink-0 h-[110px] w-[58px] overflow-hidden">
-                  <img src={WINE_META[w.id].img} alt={w.name} className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
+                  <img {...bottle(w)} alt={w.name} className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
                 </div>
                 <div className="flex flex-col gap-2 min-w-0">
-                  <p className={`font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.12px] ${current ? 'text-accent' : 'text-ink/[0.5]'}`}>{WINE_META[w.id].tag}</p>
+                  <p className={`font-['IBM_Plex_Mono:Medium'] text-[8px] tracking-[1.12px] ${current ? 'text-accent' : 'text-ink/[0.5]'}`}>{wineMeta(w).tag}</p>
                   <p className="font-['Cormorant_Garamond:Regular'] text-[20px] text-ink leading-[1.2]">
                     {w.name} <span className="font-['Cormorant_Garamond:Italic'] italic">{w.sub}</span>
                   </p>
@@ -1976,13 +2001,20 @@ function WineDetail({ onNav, wineId }: { onNav: Nav; wineId: string }) {
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 const PAGES: Page[] = ['home', 'vinos', 'vinedos', 'galeria', 'novedades', 'contacto', 'wine-detail', 'privacidad'];
 
+// pages the editors can switch off (privacy always stays reachable)
+function pageOn(p: Page, site: Site) {
+  const on: Partial<Record<Page, boolean>> = {
+    home: site.showHome, vinedos: site.showVineyards, vinos: site.showWines, 'wine-detail': site.showWines,
+    galeria: site.showGallery, novedades: site.showNews, contacto: site.showContact,
+  };
+  return on[p] ?? true;
+}
+
 function parseHash(): { page: Page; wineId?: string } {
   if (typeof window === 'undefined') return { page: 'home' };
   const h = window.location.hash.replace(/^#\/?/, '');
   if (!h || h === 'home') return { page: 'home' };
   if (h.startsWith('wine/')) return { page: 'wine-detail', wineId: h.slice(5) || 'dama' };
-  if (h === 'novedades' && !SHOW_NEWS) return { page: 'home' };
-  if (h === 'galeria' && !SHOW_GALLERY) return { page: 'home' };
   return PAGES.includes(h as Page) && h !== 'wine-detail' ? { page: h as Page } : { page: 'home' };
 }
 
@@ -1994,7 +2026,10 @@ function hashFor(p: Page, wineId?: string): string {
 
 function Site() {
   const initial = parseHash();
-  const [page, setPage] = useState<Page>(initial.page);
+  const [wanted, setPage] = useState<Page>(initial.page);
+  const site = useSite();
+  // a page switched off in the CMS shows the first one still on
+  const page = pageOn(wanted, site) ? wanted : (['home', 'vinos', 'vinedos', 'contacto', 'privacidad'] as Page[]).find((p) => pageOn(p, site))!;
   const [activeWine, setActiveWine] = useState(initial.wineId || 'dama');
   const [inquiry, setInquiry] = useState<string | null>(null);
   const [entered, setEntered] = useState(() => {
@@ -2054,7 +2089,7 @@ function Site() {
 
   return (
     <div className="min-h-screen w-full bg-surface">
-      {!entered && <AgeGate onEnter={enter} />}
+      {!entered && site.showAgeGate && !PREVIEW && <AgeGate onEnter={enter} />}
       {page === 'home' ? (
         <>
           <Header page={page} onNav={navigate} />
@@ -2066,8 +2101,8 @@ function Site() {
           <Header page={page} onNav={navigate} />
           {page === 'vinos' && <Vinos onNav={navigate} />}
           {page === 'vinedos' && <Vinedos />}
-          {SHOW_GALLERY && page === 'galeria' && <Galeria />}
-          {SHOW_NEWS && page === 'novedades' && <Novedades />}
+          {page === 'galeria' && <Galeria />}
+          {page === 'novedades' && <Novedades />}
           {page === 'contacto' && <Contacto onNav={navigate} inquiryWineId={inquiry} />}
           {page === 'privacidad' && <Privacidad />}
           {page === 'wine-detail' && <WineDetail onNav={navigate} wineId={activeWine} />}
