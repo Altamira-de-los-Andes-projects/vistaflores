@@ -22,9 +22,9 @@ const { useQuery, useLiveMode } = createQueryStore({ client, ssr: false });
 
 export default function CmsLive({ onData }: { onData: (c: Cms) => void }) {
   // only the texts and photos of the page on screen (see ALL_PAGES in cms.ts); the query follows the visitor's navigation
-  const [pages, setPages] = useState(() => pagesFor(window.location.hash));
+  const [pages, setPages] = useState(() => pagesFor(window.location.pathname));
   useEffect(() => {
-    const on = () => setPages(pagesFor(window.location.hash));
+    const on = () => setPages(pagesFor(window.location.pathname));
     window.addEventListener('popstate', on);
     window.addEventListener('hashchange', on);
     return () => {

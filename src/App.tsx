@@ -2155,18 +2155,20 @@ function pageOn(p: Page, site: Site) {
   return on[p] ?? true;
 }
 
+// Addresses are plain paths ("/vinos", "/wine/dama"). Old links with a "#/" still work and are rewritten to the plain form.
 function parseHash(): { page: Page; wineId?: string } {
   if (typeof window === 'undefined') return { page: 'home' };
-  const h = window.location.hash.replace(/^#\/?/, '');
+  let h = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+  if (!h) h = window.location.hash.replace(/^#\/?/, '').toLowerCase(); // an old "#/vinos" link
   if (!h || h === 'home') return { page: 'home' };
   if (h.startsWith('wine/')) return { page: 'wine-detail', wineId: h.slice(5) || 'dama' };
   return PAGES.includes(h as Page) && h !== 'wine-detail' ? { page: h as Page } : { page: 'home' };
 }
 
 function hashFor(p: Page, wineId?: string): string {
-  if (p === 'home') return '#/';
-  if (p === 'wine-detail') return '#/wine/' + (wineId || 'dama');
-  return '#/' + p;
+  if (p === 'home') return '/';
+  if (p === 'wine-detail') return '/wine/' + (wineId || 'dama');
+  return '/' + p;
 }
 
 function Site() {
@@ -2185,7 +2187,13 @@ function Site() {
     }
   });
 
-  // Browser back/forward (and refresh / deep links) via hash history.
+  // an old "#/vinos" link opens the page and the address bar shows the plain "/vinos"
+  useEffect(() => {
+    if (window.location.hash.startsWith('#/')) window.history.replaceState(null, '', hashFor(initial.page, initial.wineId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Browser back/forward (and refresh / deep links) via history.
   useEffect(() => {
     const onPop = () => {
       const s = parseHash();
@@ -2206,6 +2214,7 @@ function Site() {
     const names: Partial<Record<Page, string>> = { ...t.nav, 'wine-detail': wine ? clean(`${wine.title1} ${wine.title2}`).trim() : t.nav.vinos, privacidad: t.footer.privacy };
     const name = page === 'home' ? '' : names[page] ?? '';
     document.title = name ? `${name} · ${clean(site.name)}` : clean(site.name);
+    document.querySelector('link[rel=canonical]')?.setAttribute('href', `https://altamiradelosandes.com${hashFor(page, activeWine) === '/' ? '/' : hashFor(page, activeWine)}`);
   }, [page, activeWine, t, site.name, lang]);
   // after a page change, keyboard and screen-reader users start at the new page's content, not on the old menu item
   const moved = useRef(false);
@@ -2228,7 +2237,7 @@ function Site() {
     else if (wineId) setActiveWine(wineId);
     setPage(p);
     const url = hashFor(p, p === 'contacto' ? undefined : wineId);
-    if (typeof window !== 'undefined' && window.location.hash !== url) {
+    if (typeof window !== 'undefined' && window.location.pathname !== url) {
       window.history.pushState({ p, wineId }, '', url);
     }
     if (anchor) {

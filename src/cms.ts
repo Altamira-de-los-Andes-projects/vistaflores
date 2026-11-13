@@ -42,7 +42,7 @@ export const ALL_PAGES = ['home', 'vinos', 'wineDetail', 'vinedos', 'novedades',
 const PAGE_OF_HASH: Record<string, string[]> = {
   '': ['home'], home: ['home'], vinos: ['vinos'], wine: ['wineDetail', 'vinos'], vinedos: ['vinedos'], novedades: ['novedades'], galeria: ['galeria'], contacto: ['contacto'], privacidad: ['legal'],
 };
-export const pagesFor = (hash: string) => [...(PAGE_OF_HASH[hash.replace(/^#\/?/, '').split('/')[0]] ?? ['home']), 'nav', 'a11y', 'footer'];
+export const pagesFor = (path: string) => [...(PAGE_OF_HASH[path.replace(/^[#/]+/, '').split('/')[0]] ?? ['home']), 'nav', 'a11y', 'footer'];
 export const CMS_QUERY = `{
   "texts": *[_type == "uiText" && page in $pages]{key, "value": value[]${L}},
   "wines": *[_type == "wine" && defined(slug.current)] | order(order asc){
