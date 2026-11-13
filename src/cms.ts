@@ -193,9 +193,12 @@ export function applyCms(base: Copy, cms: Cms | null, lang: Lang): Copy {
 export function siteFrom(cms: Cms | null, lang: Lang): Site {
   const { subtitle, ...rest } = cms?.settings ?? {};
   const set = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== null && v !== undefined));
+  // TEMP (design capture only, never committed): show every section, including the ones switched off in the CMS
+  const all = import.meta.env.VITE_SHOW_ALL ? { showGallery: true, showNews: true, showAwards: true, showHome: true, showVineyards: true, showWines: true, showContact: true, showEstate: true, showHomePhoto: true, showHomeVineyards: true, showQuote: true, showMap: true } : {};
   return {
     ...DEFAULT_SITE,
     ...set,
+    ...all,
     subtitle: pick(subtitle, lang) ?? DEFAULT_SITE.subtitle,
     heroVideo: rest.heroVideo ?? undefined,
     heroPoster: photo(rest.heroPoster),
