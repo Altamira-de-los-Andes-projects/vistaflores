@@ -1,4 +1,4 @@
-# Writes src/ucomap.ts for the v2 map (satellite base public/assets/uco-sat.webp, 2400 px wide).
+# Writes src/data/ucomap.ts for the v2 map (satellite base public/assets/uco-sat.webp, 2400 px wide).
 import os, json, math
 D = os.path.dirname(os.path.abspath(__file__))
 L = json.load(open(os.path.join(D, 'v2_lines.json')))
@@ -64,5 +64,5 @@ export const UCO_ZONES = {json.dumps(zones)} as const;
 export const UCO_PT = {json.dumps(pts)} as const;
 export const UCO_KM5 = {round(5000 / m_per_px)};
 """
-open(os.path.join(D, '..', '..', 'src', 'ucomap.ts'), 'w', encoding='utf8').write(out)
+open(os.path.join(D, '..', '..', 'src', 'data', 'ucomap.ts'), 'w', encoding='utf8').write(out)
 print(len(out) / 1024, 'KB', pts, 'km5', round(5000 / m_per_px), 'leftover river ways', len(ways))

@@ -7,7 +7,7 @@
 import os, re
 
 D = os.path.dirname(os.path.abspath(__file__))
-MAPDATA = os.path.abspath(os.path.join(D, '..', '..', 'src', 'mapdata.ts'))
+MAPDATA = os.path.abspath(os.path.join(D, '..', '..', 'src', 'data', 'mapdata.ts'))
 src = open(MAPDATA, encoding='utf-8').read()
 
 def path(name):

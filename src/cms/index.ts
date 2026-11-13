@@ -1,7 +1,7 @@
 // Content from the Sanity CMS (project altamira-cms). The site ships with its own copy (i18n.tsx) and photos and
 // shows those first; whatever the editors have published in Sanity then replaces them, piece by piece. If Sanity
 // can't be reached, the bundled content is simply what stays on screen.
-import type { Copy, Lang } from './i18n';
+import type { Copy, Lang } from '@/i18n';
 
 export const SANITY = { projectId: '65z18eah', dataset: 'production', apiVersion: '2025-02-19' };
 export const STUDIO_URL = 'https://cms.altamiradelosandes.com';

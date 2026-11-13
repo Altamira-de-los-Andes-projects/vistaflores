@@ -1,7 +1,7 @@
 // The contact form's two pickers: a searchable country list and a searchable country-prefix button.
 // Both are plain buttons/inputs with ARIA combobox roles (keyboard: arrows, Enter, Esc), styled with the site's own tokens.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { countries, fold, type Country } from './countries';
+import { countries, fold, type Country } from '@/lib/countries';
 
 export const FIELD_CLASS =
   "cf-input border-b border-ink/[0.28] bg-transparent font-['Archivo:Light'] text-[14px] text-ink py-2 transition-colors hover:border-ink/[0.55] focus:border-ink";

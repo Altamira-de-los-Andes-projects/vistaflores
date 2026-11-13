@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@sanity/client';
 import { createQueryStore } from '@sanity/react-loader';
 import { VisualEditing } from '@sanity/visual-editing/react';
-import { CMS_QUERY, pagesFor, SANITY, STUDIO_URL, type Cms } from './cms';
+import { CMS_QUERY, pagesFor, SANITY, STUDIO_URL, type Cms } from '@/cms';
 
 // fields the site compares or looks up by: they must stay free of the invisible click-to-edit markers
 const NOT_TEXT = new Set(['key', 'file', 'code', 'language', 'line', 'url', 'id']);
