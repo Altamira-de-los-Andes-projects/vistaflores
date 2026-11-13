@@ -1,35 +1,40 @@
-# figma-make-app
+# altamira-de-los-andes-web
 
-React + Vite + Tailwind CSS project running inside Figma Make.
+React 19 + Vite + Tailwind CSS v4 (sitio de la bodega Altamira de los Andes), con contenido en Sanity y una función de Vercel para el formulario de contacto. Empieza por `README.md` y `docs/arquitectura.md`.
 
 ## Development Server
 
-A Vite development server is **already running** on `$PORT` (default 8443). You don't need to start it manually.
+Un servidor Vite ya está corriendo en `$PORT` (por defecto 8443); no hace falta arrancarlo. Los cambios se ven al instante.
 
-- Preview URL: The user can access the running app through the preview panel
-- Hot reload: Changes to source files are reflected immediately
+## Comandos
+
+- `pnpm check` — tipos + pruebas + compilación. Córrelo antes de dar una tarea por terminada.
+- `pnpm typecheck` · `pnpm test` · `pnpm build`
 
 ## Project Structure
 
-This is the canonical project structure. Start with task-relevant files below. Only follow imports or inspect other files when required, when a documented path is missing, or when the repository contradicts this guide.
+Empieza por los archivos de la tarea; sigue imports solo si hace falta.
 
-- `src/main.tsx` - React entrypoint; imports `src/index.css` and mounts `src/App.tsx` into the `#root` element
-- `src/App.tsx` - Primary application component and the usual starting point for UI work
-- `src/index.css` - Global CSS entrypoint and Tailwind CSS v4 import
-- `index.html` - Vite HTML shell containing the `#root` element and loading `src/main.tsx`
-- `package.json` - Project dependencies and the Vite build, development, preview, and formatting scripts
-- `vite.config.ts` - Vite configuration with React, Tailwind CSS v4, and Figma Make plugins plus the `@` alias for `src`
-- `.mise.toml` - Toolchain versions for Node.js and pnpm
+- `src/App.tsx` — punto de entrada (idioma + `SiteRoot`)
+- `src/app/SiteRoot.tsx` — rutas, aviso de edad, títulos, foco
+- `src/pages/` — una pantalla por archivo (`Home`, `Vinos`, `WineDetail`, `Vinedos`, `Galeria`, `Novedades`, `Contacto`, `Privacidad`)
+- `src/components/` — piezas compartidas (`Header`, `Footer`, `UcoMap`, `Gallery`, `AgeGate`…); `contact/` = buscadores de país/prefijo y anti-robots
+- `src/lib/` — `routing.ts` (puro, con prueba), `hooks.ts`, `assets.ts` (rutas de imágenes y catálogo de vinos), `countries.ts`
+- `src/i18n/` — textos: `es.ts` es la fuente de verdad, `en.ts` y `pt.ts` igual de claves; `index.tsx` = proveedor de idioma
+- `src/cms/` — lectura de Sanity; `live.tsx` solo se carga dentro del Studio
+- `src/data/` — datos del mapa **generados** por `tools/map` (no editar a mano)
+- `api/contact.ts` — función de Vercel del formulario
+- `tools/check-*.ts` — pruebas; `tools/map` — generación del mapa
+- `index.html`, `vite.config.ts`, `vercel.json` — shell, build y cabeceras/rutas de Vercel
 
-## Dependencies
+## Reglas
 
-- Runtime: React 19 and React DOM 19
-- Styling: Tailwind CSS v4 with the `@tailwindcss/vite` plugin
-- Build tooling: Vite 8, TypeScript 5.7, and `@vitejs/plugin-react`
-- Formatting: oxfmt
+- Sin texto fijo en componentes: todo por `useT()`, en los tres idiomas a la vez.
+- Fotos por `md()`; colores por las clases del tema (`bg-surface`, `text-ink`…), nunca hexadecimales.
+- Lógica sin DOM en funciones puras con su `tools/check-*.ts`.
+- TypeScript estricto con `noUnusedLocals`: lo que no se usa se borra.
+- Convenciones completas en `CONTRIBUTING.md`.
 
 ## Styling
 
-This project uses **Tailwind CSS v4** through the `@tailwindcss/vite` plugin configured in `vite.config.ts`. `src/index.css` imports Tailwind with `@import 'tailwindcss';`. Use Tailwind utility classes directly in JSX and put global CSS or Tailwind v4 theme customization in `src/index.css`. This scaffold does not need a Tailwind config file or PostCSS config.
-
-`src/main.tsx` imports `src/index.css`, so global font wiring belongs in `src/index.css`. Keep CSS `@import` statements first, then add any `@font-face` rules and font-family defaults there.
+Tailwind v4 vía `@tailwindcss/vite`. `src/index.css` importa Tailwind, define los tokens de color (claro/oscuro) y las fuentes propias (`public/fonts`). No hay `tailwind.config` ni PostCSS.

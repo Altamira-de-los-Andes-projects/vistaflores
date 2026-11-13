@@ -1,5 +1,5 @@
 {
-  "name": "figma-make-app",
+  "name": "altamira-de-los-andes-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -7,14 +7,15 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --no-warnings tools/check-contact.ts && node --experimental-strip-types --no-warnings tools/check-routing.ts",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
     "format": "oxfmt"
   },
   "dependencies": {
     "@sanity/client": "^8.15.1",
     "@sanity/react-loader": "^2.3.0",
     "@sanity/visual-editing": "^6.2.0",
-    "@types/leaflet": "^1.9.22",
-    "leaflet": "^1.9.4",
     "nodemailer": "^7.0.13",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -30,5 +31,10 @@
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",
     "vite": "^8.0.5"
+  },
+  "description": "Sitio web de Altamira de los Andes (Valle de Uco, Mendoza): React + Vite, contenido en Sanity, formulario de contacto en una función de Vercel.",
+  "packageManager": "pnpm@10.34.3",
+  "engines": {
+    "node": ">=22"
   }
 }
