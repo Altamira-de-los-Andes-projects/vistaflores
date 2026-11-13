@@ -3,7 +3,8 @@ import { LangProvider, useLang, useSite, useT, type Lang } from './i18n';
 import { clean, editAttr, md, PREVIEW, type Site } from './cms';
 import { ARG_REST, ARG_MENDOZA, ARG_UCO, CHILE } from './mapdata';
 import { UCO_RIVER } from './ucomap';
-import { CountryCombo, PrefixPicker, FIELD_CLASS, FIELD_STYLE } from './ContactFields';
+import { CountryCombo, PrefixPicker, HumanCheck, HUMAN_CHECK_ON, FIELD_CLASS, FIELD_STYLE } from './ContactFields';
+import { countries } from './countries';
 import { FINCAS_IMG, FINCAS_PT } from './ucofincas';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'galeria' | 'novedades' | 'contacto' | 'wine-detail' | 'privacidad';
@@ -1728,6 +1729,42 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
   const [prefix, setPrefix] = useState(''); // country whose dialling prefix is shown next to the phone
   const [prefixPicked, setPrefixPicked] = useState(false); // once chosen by hand, picking a country no longer changes it
   const [phone, setPhone] = useState('');
+  const [token, setToken] = useState(''); // the robot check's answer
+  const [round, setRound] = useState(0); // a new robot check after every attempt (an answer works once)
+  const [cleared, setCleared] = useState(0); // remounts the pickers after a message is sent
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error' | 'rate' | 'captcha'>('idle');
+  const send = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // only runs once the browser's own checks pass
+    const form = e.currentTarget;
+    if (HUMAN_CHECK_ON && !token) return setStatus('captcha');
+    setStatus('sending');
+    const d = new FormData(form);
+    const list = countries(lang);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: d.get('name'), email: d.get('email'), message: d.get('message'), website: d.get('website'),
+          phone, prefix: list.find((x) => x.code === prefix)?.dial ?? '', country: list.find((x) => x.code === country)?.name ?? '', token,
+        }),
+      });
+      const out = (await res.json().catch(() => ({}))) as { error?: string };
+      if (res.ok) {
+        form.reset();
+        setPhone('');
+        setCountry('');
+        setPrefix('');
+        setPrefixPicked(false);
+        setCleared((n) => n + 1);
+        setStatus('sent');
+      } else setStatus(out.error === 'rate' ? 'rate' : out.error === 'captcha' ? 'captcha' : 'error');
+    } catch {
+      setStatus('error');
+    }
+    setRound((n) => n + 1);
+  };
+  const statusText = { idle: '', sending: c.sending, sent: c.sent, error: c.sendError.replace('{email}', site.email), rate: c.tooMany, captcha: c.captcha }[status];
   // browser validation bubbles, in the site's language
   const say = (miss: string, bad: string) => ({
     onInvalid: (e: React.InvalidEvent<HTMLInputElement>) => e.currentTarget.setCustomValidity(e.currentTarget.validity.valueMissing ? miss : bad),
@@ -1764,7 +1801,11 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
               </div>
             </div>
           )}
-          <form className="flex flex-col gap-0 reveal reveal-d2">
+          <form className="relative flex flex-col gap-0 reveal reveal-d2" onSubmit={send}>
+            {/* a field people never see (and screen readers skip): only spam bots fill it in */}
+            <div aria-hidden="true" className="absolute -left-[9999px] top-0 h-px w-px overflow-hidden">
+              <label>Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
+            </div>
             <div className="flex flex-col gap-[9px] mb-9">
               {label(0, c.fields[0])}
               <input id="cf-0" name="name" type="text" autoComplete="name" className={FIELD_CLASS} style={FIELD_STYLE} />
@@ -1782,6 +1823,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
               {label(2, c.fields[2])}
               <div className="flex items-stretch gap-4">
                 <PrefixPicker
+                  key={cleared}
                   id="cf-prefix" lang={lang} code={prefix}
                   onCode={(code) => { setPrefix(code); setPrefixPicked(true); }}
                   label={c.prefixLabel} placeholder={c.search} empty={c.noResults}
@@ -1798,6 +1840,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
             <div className="flex flex-col gap-[9px] mb-9">
               {label(3, c.fields[3])}
               <CountryCombo
+                key={cleared}
                 id="cf-3" lang={lang} code={country}
                 onCode={(code) => { setCountry(code); if (code && !prefixPicked) setPrefix(code); }}
                 invalid={c.countryInvalid} empty={c.noResults}
@@ -1814,6 +1857,7 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
                 style={FIELD_STYLE}
               />
             </div>
+            <HumanCheck lang={lang} round={round} onToken={(v) => { setToken(v); if (v && status === 'captcha') setStatus('idle'); }} />
             <p className="mb-6 font-['Archivo:Light'] text-[12px] leading-[20px] text-ink/[0.55]" style={{ fontVariationSettings: '"wdth" 100' }}>
               {t.contacto.consentPre}
               <button type="button" onClick={() => onNav('privacidad')} className="underline underline-offset-4 hover:text-ink">
@@ -1823,11 +1867,16 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
             </p>
             <button
               type="submit"
-              className="self-start bg-panel px-[34px] py-[15px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:bg-panel-2 transition-colors"
+              disabled={status === 'sending'}
+              className="self-start bg-panel px-[34px] py-[15px] font-['Archivo:Regular'] text-[11px] tracking-[1.32px] uppercase text-on-dark hover:bg-panel-2 transition-colors disabled:cursor-wait disabled:opacity-70"
               style={{ fontVariationSettings: '"wdth" 100' }}
             >
-              {t.contacto.submit}
+              {status === 'sending' ? c.sending : t.contacto.submit}
             </button>
+            {/* read out by screen readers too */}
+            <p role="status" aria-live="polite" className={`mt-4 min-h-[20px] font-['Archivo:Light'] text-[13px] leading-[20px] ${status === 'sent' ? 'text-ink' : 'text-ink/[0.7]'}`} style={FIELD_STYLE}>
+              {status === 'sending' ? '' : statusText}
+            </p>
           </form>
         </div>
 

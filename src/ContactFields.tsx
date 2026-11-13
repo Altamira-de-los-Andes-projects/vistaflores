@@ -211,3 +211,59 @@ export function PrefixPicker({ id, lang, code, onCode, label, placeholder, empty
     </div>
   );
 }
+
+// ── "I'm not a robot": Cloudflare Turnstile (free, no cookies for tracking). Off until VITE_TURNSTILE_SITE_KEY is set.
+declare global {
+  interface Window {
+    turnstile?: { render: (el: HTMLElement, options: object) => string; remove: (id: string) => void };
+  }
+}
+const SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+export const HUMAN_CHECK_ON = Boolean(SITE_KEY);
+let loading: Promise<void> | null = null;
+const loadTurnstile = () =>
+  window.turnstile
+    ? Promise.resolve()
+    : (loading ??= new Promise<void>((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        s.async = true;
+        s.onload = () => resolve();
+        s.onerror = () => {
+          loading = null;
+          reject(new Error('turnstile'));
+        };
+        document.head.appendChild(s);
+      }));
+
+/** the robot check; `onToken('')` whenever there is no valid answer. Change `round` to get a fresh check (an answer works once). */
+export function HumanCheck({ lang, round, onToken }: { lang: string; round: number; onToken: (token: string) => void }) {
+  const box = useRef<HTMLDivElement>(null);
+  const report = useRef(onToken);
+  report.current = onToken;
+  useEffect(() => {
+    if (!SITE_KEY) return;
+    let id: string | undefined;
+    let gone = false;
+    loadTurnstile()
+      .then(() => {
+        if (gone || !box.current || !window.turnstile) return;
+        id = window.turnstile.render(box.current, {
+          sitekey: SITE_KEY,
+          language: lang,
+          theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
+          size: 'flexible',
+          callback: (token: string) => report.current(token),
+          'expired-callback': () => report.current(''),
+          'error-callback': () => report.current(''),
+        });
+      })
+      .catch(() => {}); // blocked script: the server still refuses messages without a valid answer
+    return () => {
+      gone = true;
+      if (id) window.turnstile?.remove(id);
+      report.current('');
+    };
+  }, [lang, round]);
+  return SITE_KEY ? <div ref={box} className="mb-6 min-h-[65px] max-w-[400px]" /> : null;
+}
