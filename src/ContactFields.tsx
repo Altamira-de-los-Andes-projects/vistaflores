@@ -45,7 +45,7 @@ function Options({ id, items, active, selected, setActive, onPick, empty, showDi
           style={FIELD_STYLE}
         >
           <span>{c.name}</span>
-          {showDial && <span className="font-['IBM_Plex_Mono:Regular'] text-[11px] tracking-[0.5px] text-ink/[0.62]">+{c.dial}</span>}
+          {showDial && <span className="font-['IBM_Plex_Mono:Regular'] text-[11px] tracking-[0.5px] text-ink/[0.5]">+{c.dial}</span>}
         </li>
       ))}
     </>
