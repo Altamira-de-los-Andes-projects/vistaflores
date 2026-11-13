@@ -2,13 +2,13 @@
   "title": "Altamira de los Andes Estate",
   "description": "Boutique Argentine wines from the Uco Valley, Mendoza — crafted at 1,050 metres above sea level.",
   "robots": {
-    "index": false
+    "index": true
   },
   "icons": {
     "icon": "/favicon.svg"
   },
   "openGraph": {
-    "image": "https://altamira-de-los-andes.vercel.app/og-image.jpg"
+    "image": "https://altamiradelosandes.com/og-image.jpg"
   },
   "accessibility": {
     "addBypassLinks": false,

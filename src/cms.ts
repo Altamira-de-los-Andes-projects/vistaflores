@@ -102,14 +102,16 @@ export function cachedCms(): Cms | null {
   }
 }
 
-export async function fetchCms(): Promise<Cms | null> {
+/** `cdn`: Sanity's cached copy (answers in a fraction of the time, but may be up to a minute old) */
+export async function fetchCms(cdn = false): Promise<Cms | null> {
   try {
-    const res = await fetch(`${API}?query=${encodeURIComponent(CMS_QUERY)}&$pages=${encodeURIComponent(JSON.stringify(ALL_PAGES))}`);
+    const res = await fetch(`${cdn ? API.replace('.api.sanity.io', '.apicdn.sanity.io') : API}?query=${encodeURIComponent(CMS_QUERY)}&$pages=${encodeURIComponent(JSON.stringify(ALL_PAGES))}`);
     if (!res.ok) return null;
     const { result } = (await res.json()) as { result: Cms };
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(result));
-    } catch {}
+    if (!cdn)
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(result));
+      } catch {}
     return result;
   } catch {
     return null;
@@ -117,8 +119,8 @@ export async function fetchCms(): Promise<Cms | null> {
 }
 
 const pick = (loc: Loc | undefined, lang: Lang) => loc?.find((v) => v.language === lang)?.value;
-// Sanity's own image CDN: right format and size instead of the original file
-const photo = (url?: string | null) => (url ? `${url}?auto=format&fit=max&w=2400&q=85` : undefined);
+// Sanity's own image CDN: right format and size instead of the original file (`size`: what the page really draws, ×2 for sharp screens)
+const photo = (url?: string | null, size = 'w=2400&q=85') => (url ? `${url}?auto=format&fit=max&${size}` : undefined);
 // in the Studio, text carries invisible markers for click-to-edit; remove them wherever the string is measured or used as a link
 export const clean = (s: string) => s.replace(/[​-‍﻿]/g, '');
 
@@ -154,8 +156,8 @@ function mergeWine(w: any, c: CmsWine, lang: Lang) {
     id: c.id,
     docId: c._id,
     line: c.line,
-    bottle: photo(c.bottle),
-    background: photo(c.background),
+    bottle: photo(c.bottle, 'h=1100&q=80'), // bottles are drawn at most ~520 px tall
+    background: photo(c.background, 'w=1600&q=80'),
     sheet: c.sheets?.find((v) => v.language === lang)?.url ?? undefined,
     name: s(c.name, w.name), sub: s(c.sub, w.sub), gridRegion: s(c.gridRegion, w.gridRegion), region: s(c.region, w.region),
     title1: s(c.title1, w.title1), title2: s(c.title2, w.title2), closing: s(c.closing, w.closing),
