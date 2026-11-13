@@ -3,6 +3,7 @@ import { LangProvider, useLang, useSite, useT, type Lang } from './i18n';
 import { clean, editAttr, md, PREVIEW, type Site } from './cms';
 import { ARG_REST, ARG_MENDOZA, ARG_UCO, CHILE } from './mapdata';
 import { UCO_RIVER } from './ucomap';
+import { CountryCombo, PrefixPicker, FIELD_CLASS, FIELD_STYLE } from './ContactFields';
 import { FINCAS_IMG, FINCAS_PT } from './ucofincas';
 
 type Page = 'home' | 'vinos' | 'vinedos' | 'galeria' | 'novedades' | 'contacto' | 'wine-detail' | 'privacidad';
@@ -1721,12 +1722,20 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
   const inquiryWine = inquiryWineId ? t.wineCatalog.find((w) => w.id === inquiryWineId) : undefined;
   const inquiryName = inquiryWine ? `${inquiryWine.name} ${inquiryWine.sub}` : '';
   const CELLAR = `${A}/altamira-vy.jpg`;
-  const fields = [
-    { label: t.contacto.fields[0], type: 'text' },
-    { label: t.contacto.fields[1], type: 'email' },
-    { label: t.contacto.fields[2], type: 'tel' },
-    { label: t.contacto.fields[3], type: 'text' },
-  ];
+  const { lang } = useLang();
+  const c = t.contacto;
+  const [country, setCountry] = useState('');
+  const [prefix, setPrefix] = useState(''); // country whose dialling prefix is shown next to the phone
+  const [prefixPicked, setPrefixPicked] = useState(false); // once chosen by hand, picking a country no longer changes it
+  const [phone, setPhone] = useState('');
+  // browser validation bubbles, in the site's language
+  const say = (miss: string, bad: string) => ({
+    onInvalid: (e: React.InvalidEvent<HTMLInputElement>) => e.currentTarget.setCustomValidity(e.currentTarget.validity.valueMissing ? miss : bad),
+    onInput: (e: React.FormEvent<HTMLInputElement>) => e.currentTarget.setCustomValidity(''),
+  });
+  const label = (i: number, text: string) => (
+    <label htmlFor={`cf-${i}`} className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{text}</label>
+  );
   return (
     <div className="bg-surface w-full">
       <div className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-72px)]">
@@ -1756,25 +1765,53 @@ function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: string 
             </div>
           )}
           <form className="flex flex-col gap-0 reveal reveal-d2">
-            {fields.map((field, i) => (
-              <div key={field.label} className="flex flex-col gap-[9px] mb-9">
-                <label htmlFor={`cf-${i}`} className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{field.label}</label>
+            <div className="flex flex-col gap-[9px] mb-9">
+              {label(0, c.fields[0])}
+              <input id="cf-0" name="name" type="text" autoComplete="name" className={FIELD_CLASS} style={FIELD_STYLE} />
+            </div>
+            <div className="flex flex-col gap-[9px] mb-9">
+              {label(1, c.fields[1])}
+              <input
+                id="cf-1" name="email" type="email" inputMode="email" autoComplete="email" required maxLength={254}
+                pattern="[^@\s]+@[^@\s]+\.[^@\s]{2,}"
+                {...say(c.required, c.emailInvalid)}
+                className={FIELD_CLASS} style={FIELD_STYLE}
+              />
+            </div>
+            <div className="flex flex-col gap-[9px] mb-9">
+              {label(2, c.fields[2])}
+              <div className="flex items-stretch gap-4">
+                <PrefixPicker
+                  id="cf-prefix" lang={lang} code={prefix}
+                  onCode={(code) => { setPrefix(code); setPrefixPicked(true); }}
+                  label={c.prefixLabel} placeholder={c.search} empty={c.noResults}
+                />
                 <input
-                  id={`cf-${i}`}
-                  type={field.type}
-                  className="border-b border-ink/[0.28] bg-transparent outline-none font-['Archivo:Light'] text-[14px] text-ink py-2 focus:border-ink transition-colors"
-                  style={{ fontVariationSettings: '"wdth" 100' }}
+                  id="cf-2" name="phone" type="tel" inputMode="numeric" autoComplete="tel-national" required maxLength={15}
+                  pattern="[0-9]{6,15}" value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                  {...say(c.required, c.phoneInvalid)}
+                  className={`${FIELD_CLASS} min-w-0 flex-1`} style={FIELD_STYLE}
                 />
               </div>
-            ))}
+            </div>
+            <div className="flex flex-col gap-[9px] mb-9">
+              {label(3, c.fields[3])}
+              <CountryCombo
+                id="cf-3" lang={lang} code={country}
+                onCode={(code) => { setCountry(code); if (code && !prefixPicked) setPrefix(code); }}
+                invalid={c.countryInvalid} empty={c.noResults}
+              />
+            </div>
             <div className="flex flex-col gap-[9px] mb-7">
               <label htmlFor="cf-msg" className="font-['IBM_Plex_Mono:Medium'] text-[8.5px] tracking-[1.36px] text-ink/[0.5]">{t.contacto.messageLabel}</label>
               <textarea
                 id="cf-msg"
                 key={inquiryName}
                 defaultValue={inquiryName ? t.contacto.inquiry.replace('{wine}', inquiryName) : ''}
-                className="border-b border-ink/[0.28] bg-transparent outline-none font-['Archivo:Light'] text-[14px] text-ink py-2 resize-none h-[80px] focus:border-ink transition-colors"
-                style={{ fontVariationSettings: '"wdth" 100' }}
+                name="message"
+                className={`${FIELD_CLASS} resize-none h-[80px]`}
+                style={FIELD_STYLE}
               />
             </div>
             <p className="mb-6 font-['Archivo:Light'] text-[12px] leading-[20px] text-ink/[0.55]" style={{ fontVariationSettings: '"wdth" 100' }}>

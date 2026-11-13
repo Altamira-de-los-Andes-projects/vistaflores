@@ -260,3 +260,18 @@ html { scroll-behavior: smooth; }
 /* Safari draws a native Play button over a video that can't autoplay (Low Power Mode); the hero never shows it */
 .hero-video::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
 .hero-video::-webkit-media-controls { display: none !important; }
+
+/* Contact form fields: focus is the underline getting darker, not the browser's rounded box (which reads pink on the cream page) */
+.cf-input:focus-visible {
+  outline: none;
+  border-radius: 0;
+  border-color: var(--ink);
+  box-shadow: 0 1px 0 0 var(--ink);
+}
+/* browser autofill paints fields blue/yellow: keep the page's own colours */
+.cf-input:-webkit-autofill,
+.cf-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+}
