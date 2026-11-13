@@ -1359,8 +1359,8 @@ const UCO_LABEL_SPOTS = {
 } as const;
 type UcoSpot = keyof typeof UCO_LABEL_SPOTS;
 const UCO_WRAP_W = 96;
-// a point on the Tunuyán between the estates and the river's heading there
-const UCO_RIVER_LABEL = { pt: [850, 960], angle: 0 } as const;
+// a point ON the Tunuyán (between the estates) and the river's heading there: the name runs along the river, just above the blue line
+const UCO_RIVER_LABEL = { pt: [851, 1149], angle: -37 } as const;
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
@@ -1580,7 +1580,7 @@ function UcoMap() {
         {/* context labels */}
         <span
           className={`pointer-events-none absolute whitespace-nowrap font-['Cormorant_Garamond:Regular'] italic text-[clamp(15px,1.5vw,22px)] tracking-[0.08em] text-[#bfe4fb] [text-shadow:0_1px_12px_rgba(0,0,0,0.95),0_0_2px_rgba(0,0,0,0.9)]`}
-          style={{ ...at(UCO_RIVER_LABEL.pt), transform: `translate(-50%,-50%) rotate(${UCO_RIVER_LABEL.angle}deg) translateY(-15px)` }}
+          style={{ ...at(UCO_RIVER_LABEL.pt), transform: `translate(-50%,-50%) rotate(${UCO_RIVER_LABEL.angle}deg) translateY(calc(-0.6em - 9px))` }}
         >
           {art.river}
         </span>
