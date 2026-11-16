@@ -8,6 +8,7 @@
 //   MAIL_TO=<where messages go, defaults to SMTP_USER>   MAIL_TO_PT=<where messages from the Portuguese site go; defaults to MAIL_TO>
 //   TURNSTILE_SECRET_KEY=<from Cloudflare Turnstile>      (and VITE_TURNSTILE_SITE_KEY for the browser widget)
 import nodemailer from 'nodemailer';
+import { renderEmail } from './_email.ts';
 
 const ALLOWED_HOSTS = /(^|\.)altamiradelosandes\.com$|\.vercel\.app$|^localhost$/;
 const LIMIT = Number(process.env.CONTACT_RATE_LIMIT) || 5; // messages per IP… (CONTACT_RATE_LIMIT raises it while testing; delete it afterwards)
@@ -111,17 +112,7 @@ export async function POST(request: Request) {
         from: `"Altamira de los Andes · web" <${SMTP_USER}>`,
         to: recipientFor(f.lang, process.env),
         replyTo: f.email,
-        subject: `Consulta web${f.lang ? ` [${f.lang.toUpperCase()}]` : ''} — ${f.name || f.email}`,
-        // plain text only: nothing the visitor typed is ever interpreted as HTML
-        text: [
-          `Nombre: ${f.name || '—'}`,
-          `Email: ${f.email}`,
-          `Teléfono: ${f.prefix ? `+${f.prefix} ` : ''}${f.phone}`,
-          `País: ${f.country || '—'}`,
-          `Idioma del sitio: ${f.lang || '—'}`,
-          '',
-          f.message || '(sin mensaje)',
-        ].join('\n'),
+        ...renderEmail(f),
       });
     return json(200, { ok: true });
   } catch (e) {
