@@ -1,7 +1,6 @@
 // Self-check for the contact function's rules: node --experimental-strip-types tools/check-contact.ts
 import assert from 'node:assert/strict';
-import { rateLimited, recipientFor, validate } from '../api/contact.ts';
-import { renderEmail } from '../api/_email.ts';
+import { rateLimited, recipientFor, renderEmail, validate } from '../api/contact.ts';
 
 const ok = { email: 'ana@bodega.com', phone: '2614299962', prefix: '54', name: 'Ana', country: 'Argentina', message: 'Hola' };
 assert.equal(validate(ok).ok, true);
