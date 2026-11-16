@@ -55,14 +55,19 @@ export function rateLimited(ip: string, now = Date.now()) {
   return false;
 }
 
-async function humanCheck(token: string, ip: string) {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return false; // not configured: refuse rather than send unprotected
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    body: new URLSearchParams({ secret, response: token, remoteip: ip }),
-  });
-  return ((await res.json()) as { success?: boolean }).success === true;
+/** 'no-secret' = our own configuration is missing (not the visitor's fault); 'invalid' = Cloudflare refused the answer. */
+async function humanCheck(token: string): Promise<'ok' | 'no-secret' | 'invalid'> {
+  const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
+  if (!secret) return 'no-secret'; // not configured: refuse rather than send unprotected
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: new URLSearchParams({ secret, response: token }) });
+    const out = (await res.json()) as { success?: boolean; 'error-codes'?: string[] };
+    if (out.success) return 'ok';
+    console.error('contact: turnstile refused the answer', out['error-codes']); // e.g. invalid-input-secret: the secret is not the one of this widget
+  } catch {
+    console.error('contact: turnstile could not be reached');
+  }
+  return 'invalid';
 }
 
 export async function POST(request: Request) {
@@ -87,7 +92,9 @@ export async function POST(request: Request) {
 
   const ip = (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
   if (rateLimited(ip)) return json(429, { error: 'rate' });
-  if (typeof body.token !== 'string' || !(await humanCheck(body.token, ip))) return json(400, { error: 'captcha' });
+  const human = typeof body.token === 'string' ? await humanCheck(body.token) : 'invalid';
+  if (human === 'no-secret') return json(503, { error: 'send' });
+  if (human !== 'ok') return json(400, { error: 'captcha' });
 
   const checked = validate(body);
   if (!checked.ok) return json(400, { error: checked.error });
@@ -98,7 +105,7 @@ export async function POST(request: Request) {
   try {
     const port = Number(SMTP_PORT || 465);
     await nodemailer
-      .createTransport({ host: SMTP_HOST, port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } })
+      .createTransport({ host: SMTP_HOST.trim().replace(/\.$/, ''), port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } })
       .sendMail({
         from: `"Altamira de los Andes · web" <${SMTP_USER}>`,
         to: recipientFor(f.lang, process.env),
