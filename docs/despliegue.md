@@ -16,7 +16,8 @@ Solo hacen falta para el **formulario de contacto**. Sin ellas la web funciona, 
 | `SMTP_PORT` | `465` |
 | `SMTP_USER` | `inquiries@altamiradelosandes.com` |
 | `SMTP_PASS` | contraseña de ese buzón (secreto) |
-| `MAIL_TO` | (opcional) destino de los mensajes; por defecto `SMTP_USER` |
+| `MAIL_TO` | destino de los mensajes del sitio en **español e inglés**; por defecto `SMTP_USER` |
+| `MAIL_TO_PT` | (opcional) destino de los mensajes del sitio en **portugués**; si falta, van a `MAIL_TO` |
 | `TURNSTILE_SECRET_KEY` | clave secreta de Cloudflare Turnstile (secreto) |
 | `VITE_TURNSTILE_SITE_KEY` | clave pública de Turnstile (va en el navegador) |
 

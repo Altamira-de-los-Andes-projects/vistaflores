@@ -44,7 +44,7 @@ Dentro del iframe de "Editar sobre la web" del Studio (`PREVIEW`), la web carga 
 
 `pages/Contacto.tsx` valida en el navegador (email obligatorio y con forma de email; teléfono solo números, 6–15 dígitos; país de una lista) y envía a `/api/contact`.
 
-`api/contact.ts`, en orden: origen permitido → tamaño máximo → campo trampa (honeypot) → límite de 5 envíos por IP cada 10 minutos → casilla anti-robots de Cloudflare Turnstile → las mismas reglas de campos, otra vez, en el servidor → correo en texto plano por SMTP. Nada de lo que escribe el visitante se interpreta como HTML. Los chequeos de reglas y límites están en `tools/check-contact.ts`.
+`api/contact.ts`, en orden: origen permitido → tamaño máximo → campo trampa (honeypot) → límite de 5 envíos por IP cada 10 minutos → casilla anti-robots de Cloudflare Turnstile → las mismas reglas de campos, otra vez, en el servidor → correo en texto plano por SMTP. El destino depende del idioma del sitio (`recipientFor`): portugués a `MAIL_TO_PT`, el resto a `MAIL_TO`; el navegador solo dice el idioma, nunca la dirección. Nada de lo que escribe el visitante se interpreta como HTML. Los chequeos de reglas y límites están en `tools/check-contact.ts`.
 
 ## Seguridad
 

@@ -4,7 +4,7 @@
 //
 // Vercel environment variables (Project → Settings → Environment Variables):
 //   SMTP_HOST=a0200992.ferozo.com  SMTP_PORT=465  SMTP_USER=inquiries@altamiradelosandes.com  SMTP_PASS=<mailbox password>
-//   MAIL_TO=inquiries@altamiradelosandes.com (optional, defaults to SMTP_USER)
+//   MAIL_TO=<where messages go, defaults to SMTP_USER>   MAIL_TO_PT=<where messages from the Portuguese site go; defaults to MAIL_TO>
 //   TURNSTILE_SECRET_KEY=<from Cloudflare Turnstile>      (and VITE_TURNSTILE_SITE_KEY for the browser widget)
 import nodemailer from 'nodemailer';
 
@@ -15,7 +15,7 @@ const WINDOW_MS = 10 * 60_000; // …every 10 minutes
 // If spam ever gets through, add a Vercel Firewall rate-limit rule on /api/contact.
 const hits = new Map<string, number[]>();
 
-type Fields = { name: string; email: string; prefix: string; phone: string; country: string; message: string };
+type Fields = { lang: string; name: string; email: string; prefix: string; phone: string; country: string; message: string };
 type Result = { ok: true; fields: Fields } | { ok: false; error: string };
 
 const json = (status: number, body: object) =>
@@ -27,6 +27,7 @@ const line = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/[\
 /** the form's rules, again on the server */
 export function validate(body: Record<string, unknown>): Result {
   const fields: Fields = {
+    lang: line(body.lang, 8).toLowerCase(),
     name: line(body.name, 120),
     email: line(body.email, 254),
     prefix: line(body.prefix, 4),
@@ -39,6 +40,11 @@ export function validate(body: Record<string, unknown>): Result {
   if (fields.prefix && !/^\d{1,4}$/.test(fields.prefix)) return { ok: false, error: 'invalid' };
   return { ok: true, fields };
 }
+
+/** Where a message goes: the Portuguese site to its own mailbox, every other language to the main one.
+ *  The browser only says which language the site was in; the address itself never comes from the browser. */
+export const recipientFor = (lang: string, env: { MAIL_TO?: string; MAIL_TO_PT?: string; SMTP_USER?: string }) =>
+  (lang.startsWith('pt') && env.MAIL_TO_PT) || env.MAIL_TO || env.SMTP_USER;
 
 export function rateLimited(ip: string, now = Date.now()) {
   const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
@@ -87,7 +93,7 @@ export async function POST(request: Request) {
   if (!checked.ok) return json(400, { error: checked.error });
   const f = checked.fields;
 
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_TO } = process.env;
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return json(503, { error: 'send' });
   try {
     const port = Number(SMTP_PORT || 465);
@@ -95,15 +101,16 @@ export async function POST(request: Request) {
       .createTransport({ host: SMTP_HOST, port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS } })
       .sendMail({
         from: `"Altamira de los Andes · web" <${SMTP_USER}>`,
-        to: MAIL_TO || SMTP_USER,
+        to: recipientFor(f.lang, process.env),
         replyTo: f.email,
-        subject: `Consulta web — ${f.name || f.email}`,
+        subject: `Consulta web${f.lang ? ` [${f.lang.toUpperCase()}]` : ''} — ${f.name || f.email}`,
         // plain text only: nothing the visitor typed is ever interpreted as HTML
         text: [
           `Nombre: ${f.name || '—'}`,
           `Email: ${f.email}`,
           `Teléfono: ${f.prefix ? `+${f.prefix} ` : ''}${f.phone}`,
           `País: ${f.country || '—'}`,
+          `Idioma del sitio: ${f.lang || '—'}`,
           '',
           f.message || '(sin mensaje)',
         ].join('\n'),

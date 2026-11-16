@@ -37,7 +37,7 @@ export function Contacto({ onNav, inquiryWineId }: { onNav: Nav; inquiryWineId: 
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          name: d.get('name'), email: d.get('email'), message: d.get('message'), website: d.get('website'),
+          lang, name: d.get('name'), email: d.get('email'), message: d.get('message'), website: d.get('website'),
           phone, prefix: list.find((x) => x.code === prefix)?.dial ?? '', country: list.find((x) => x.code === country)?.name ?? '', token,
         }),
       });
