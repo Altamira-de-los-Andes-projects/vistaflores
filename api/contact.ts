@@ -4,12 +4,13 @@
 //
 // Vercel environment variables (Project → Settings → Environment Variables):
 //   SMTP_HOST=a0200992.ferozo.com  SMTP_PORT=465  SMTP_USER=inquiries@altamiradelosandes.com  SMTP_PASS=<mailbox password>
+//   CONTACT_RATE_LIMIT=<optional, messages per IP per 10 minutes; default 5. Raise only while testing>
 //   MAIL_TO=<where messages go, defaults to SMTP_USER>   MAIL_TO_PT=<where messages from the Portuguese site go; defaults to MAIL_TO>
 //   TURNSTILE_SECRET_KEY=<from Cloudflare Turnstile>      (and VITE_TURNSTILE_SITE_KEY for the browser widget)
 import nodemailer from 'nodemailer';
 
 const ALLOWED_HOSTS = /(^|\.)altamiradelosandes\.com$|\.vercel\.app$|^localhost$/;
-const LIMIT = 5; // messages per IP…
+const LIMIT = Number(process.env.CONTACT_RATE_LIMIT) || 5; // messages per IP… (CONTACT_RATE_LIMIT raises it while testing; delete it afterwards)
 const WINDOW_MS = 10 * 60_000; // …every 10 minutes
 // shortcut: memory of one server instance (Vercel may run several, and restarts reset it); Turnstile is the real gate.
 // If spam ever gets through, add a Vercel Firewall rate-limit rule on /api/contact.
