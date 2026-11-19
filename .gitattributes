@@ -111,6 +111,8 @@
 # Vercel serves the static site directly from Git; keep deployable assets in Git
 # instead of LFS so images and video are available during the build.
 public/assets/** -filter -diff -merge
+public/fonts/** -filter -diff -merge
+public/og-image.jpg -filter -diff -merge
 
 # ---------------------------------------------------------------------------
 # Executables & Libraries

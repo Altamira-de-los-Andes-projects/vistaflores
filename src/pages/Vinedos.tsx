@@ -12,7 +12,7 @@ export function Vinedos() {
   const site = useSite();
   return (
     <div className="bg-surface w-full">
-      <section className="relative h-[clamp(480px,62vh,620px)] lg:h-[clamp(620px,86vh,900px)] overflow-hidden flex items-end">
+      <section className="relative h-[clamp(480px,62vh,620px)] lg:h-[clamp(560px,calc(100svh-130px),900px)] overflow-hidden flex items-end">
         <div className="absolute inset-0">
           <img
             {...md(`${A}/la-consulta-real.jpg`)}
@@ -22,7 +22,7 @@ export function Vinedos() {
           <div className="absolute inset-0 bg-gradient-to-b from-[rgba(20,18,15,0.3)] via-transparent via-[32%] to-[rgba(20,18,15,0.6)]" />
           <div className="absolute inset-x-0 bottom-0 h-[68%] bg-gradient-to-t from-[rgba(20,18,15,0.94)] via-[rgba(20,18,15,0.6)] via-[38%] to-transparent" />
         </div>
-        <div className="relative px-5 sm:px-8 lg:px-12 pb-10 flex flex-col gap-[11px] [text-shadow:0_2px_16px_rgba(0,0,0,0.95)]">
+        <div className="relative px-5 sm:px-8 lg:px-12 pb-10 lg:pb-[90px] flex flex-col gap-[11px] [text-shadow:0_2px_16px_rgba(0,0,0,0.95)]">
           <h1 className="font-['Cormorant_Garamond:Light'] text-[clamp(27px,3.7vw,46px)] lg:whitespace-nowrap text-on-dark leading-[1.08] hero-line-2">
             {t.vinedos.heroTitle1} {t.vinedos.heroTitle2}
           </h1>
