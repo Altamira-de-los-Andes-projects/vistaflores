@@ -108,7 +108,7 @@ tools/hero/    script ffmpeg que arma el video del hero (ver §5)
   - En modo oscuro los enlaces son rosa claro y el texto lleva sombra.
   - **A John le gustó así.**
 - **Botellas oficiales** del sitio viejo del cliente: `reserva-cf.webp` y `reserva-malbec.webp`.
-  - Otras botellas actuales: `5c918.webp` (Dama), `navigato.webp` (Navigato, versión con "Family Selection"), `4600e.webp` (VAV Malbec), `73703.webp` (Tres Fincas). Las PNG originales están en `originals/`.
+  - Otras botellas actuales: `5c918.webp` (Dama), `navigato.webp` (Navigato, versión con "Family Selection"), `4600e.webp` (VAV Malbec), `73703.webp` (Tres Fincas). Las PNG originales se guardaron fuera del repositorio.
   - Hay más renders oficiales en `vistafloresestate.com/wp-content/uploads/2025/05/propuesta2-NN-834x1536.png`. El de Dama (14‑1) trae una sombra gris incrustada.
 
 ### Stock (temporales)

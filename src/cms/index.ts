@@ -119,8 +119,8 @@ export async function fetchCms(cdn = false): Promise<Cms | null> {
 }
 
 const pick = (loc: Loc | undefined, lang: Lang) => loc?.find((v) => v.language === lang)?.value;
-// Sanity's own image CDN: right format and size instead of the original file (`size`: what the page really draws, ×2 for sharp screens)
-const photo = (url?: string | null, size = 'w=2400&q=85') => (url ? `${url}?auto=format&fit=max&${size}` : undefined);
+// Sanity's own image CDN: WebP (not auto: it sent AVIF, which some iPads draw blank on transparent bottles) at the right size instead of the original file (`size`: what the page really draws, ×2 for sharp screens)
+const photo = (url?: string | null, size = 'w=2400&q=85') => (url ? `${url}?fm=webp&fit=max&${size}` : undefined);
 // in the Studio, text carries invisible markers for click-to-edit; remove them wherever the string is measured or used as a link
 export const clean = (s: string) => s.replace(/[​-‍﻿]/g, '');
 

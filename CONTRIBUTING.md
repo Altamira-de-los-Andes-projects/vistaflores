@@ -32,7 +32,7 @@ Lee `docs/arquitectura.md` (15 minutos) y `docs/contenido-y-cms.md`.
 
 ## Imágenes y archivos pesados
 
-Todo lo de `public/` se publica: nada de originales de cámara, RAW ni PSD (van en `originals/`, fuera de `public/`). Las botellas, en WebP; las fotos, hasta ~2000 px de ancho.
+Todo lo de `public/` se publica: nada de originales de cámara, RAW ni PSD (se guardan fuera del repositorio, en la carpeta de originales del equipo). Las botellas, en WebP; las fotos, hasta ~2000 px de ancho.
 
 ## Dependencias
 

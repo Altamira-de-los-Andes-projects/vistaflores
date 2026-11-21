@@ -48,4 +48,4 @@ Una por vino e idioma, en el campo "Ficha técnica" del vino en el CMS. Las de r
 
 - Fotos de la web: JPG/WebP, no más de ~2000 px de ancho; botellas WebP con fondo transparente.
 - Lo que se sube al CMS lo sirve el CDN de Sanity al tamaño pedido (`?auto=format&w=…`); no hace falta optimizarlo a mano.
-- Las fotos originales de cámara **no van en `public/`** (todo lo de `public/` se publica). Están en `originals/`.
+- Las fotos originales de cámara **no van en `public/`** (todo lo de `public/` se publica). Se guardan fuera del repositorio (no pesan en git).

@@ -28,3 +28,7 @@ tools/map/s2z*/
 graphify-out/
 tools/map/tiles/
 tools/map/elev*
+originals/
+
+# Handover documents (invoice, budget, emails, access list): kept outside the repository
+docs/entrega/
