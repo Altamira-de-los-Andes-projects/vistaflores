@@ -1,4 +1,17 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+
+# AI search and assistants are welcome to read and cite the site
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
 
 Sitemap: https://altamiradelosandes.com/sitemap.xml
